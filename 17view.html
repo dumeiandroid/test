@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apakah Kamu Sahabat yang Baik?</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --sahabat: #6c5ce7;
+            --dekat: #00cec9;
+            --biasa: #fab1a0;
+            --bg: #f9f9fb;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--sahabat), #a29bfe);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .profile-section {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .profile-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-item strong {
+            color: var(--text-dark);
+            font-size: 13px;
+        }
+
+        .profile-item span {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .chart-section {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .chart-wrapper {
+            max-width: 400px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .score-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .score-number {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--sahabat), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-label {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 6px solid;
+            margin: 25px 0;
+        }
+
+        .result-card h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-card .description {
+            color: var(--text-dark);
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .characteristics {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .characteristics h3 {
+            color: var(--text-dark);
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .characteristics ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .characteristics li {
+            padding: 10px 0;
+            padding-left: 25px;
+            position: relative;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .characteristics li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--sahabat);
+            font-weight: bold;
+        }
+
+        .suggestions {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .suggestions h3 {
+            color: #856404;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggestions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .suggestions li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        .suggestions li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .dimension-scores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .dimension-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dimension-item .dim-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .dimension-item .dim-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--sahabat);
+        }
+
+        .dimension-item .dim-max {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--sahabat), #a29bfe);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--sahabat);
+            border: 2px solid var(--sahabat);
+        }
+
+        .btn-secondary:hover {
+            background: var(--sahabat);
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: var(--text-light);
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .action-buttons {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .result-card h2 {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="loading">
+            <h2>⏳ Menganalisis profil persahabatan Anda...</h2>
+            <p>Mohon tunggu sebentar</p>
+        </div>
+    </div>
+
+    <script>
+        const pointMap = {
+            1: { a: 2, b: 3, c: 1 },
+            2: { a: 3, b: 2, c: 1 },
+            3: { a: 2, b: 3, c: 2 },
+            4: { a: 1, b: 1, c: 2 },
+            5: { a: 2, b: 2, c: 1 },
+            6: { a: 2, b: 2, c: 3 },
+            7: { a: 2, b: 1, c: 2 },
+            8: { a: 2, b: 3, c: 3 },
+            9: { a: 1, b: 2, c: 3 },
+            10: { a: 2, b: 2, c: 3 }
+        };
+
+        const dimensionLabels = [
+            'Kepercayaan',
+            'Dukungan',
+            'Komunikasi',
+            'Empati',
+            'Loyalitas',
+            'Kejujuran',
+            'Ketersediaan',
+            'Pengertian',
+            'Kebersamaan',
+            'Penghargaan'
+        ];
+
+        async function loadData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (!token) {
+                showError('Token tidak ditemukan. Silakan kembali dan isi form terlebih dahulu.');
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`,
+                    { headers: { 'X-Custom-Auth': 'admin' } }
+                );
+                
+                const res = await response.json();
+                
+                if (res.success && res.count > 0) {
+                    renderUI(res.data[0]);
+                } else {
+                    showError('Data tidak ditemukan. Pastikan Anda telah mengisi form dengan benar.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Terjadi kesalahan sistem. Silakan coba lagi nanti.');
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('app').innerHTML = `
+                <div class="error">
+                    <h2>❌ Oops!</h2>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function renderUI(data) {
+            const dataDiri = JSON.parse(data.x_02);
+            const jawaban = JSON.parse(data.x_03);
+            
+            let skorList = [];
+            let total = 0;
+
+            for (let i = 1; i <= 10; i++) {
+                const point = pointMap[i][jawaban[`q${i}`]];
+                total += point;
+                skorList.push(point);
+            }
+
+            const result = getResult(total);
+            const tipeColor = result.color;
+            
+            document.getElementById('app').innerHTML = `
+                <div class="header">
+                    <h1>🤝 Apakah Kamu Sahabat yang Baik?</h1>
+                    <p>Analisis Kualitas Persahabatan Berdasarkan 10 Dimensi</p>
+                </div>
+
+                <div class="content" id="downloadContent">
+                    <div class="profile-section">
+                        <div class="profile-item">
+                            <strong>👤 Nama:</strong>
+                            <span>${dataDiri.nama}</span>
+                        </div>
+                        <div class="profile-item">
+                            <strong>🎂 Usia:</strong>
+                            <span>${dataDiri.usia} Tahun</span>
+                        </div>
+                        <div class="profile-item">
+                            <strong>🎓 Pendidikan:</strong>
+                            <span>${dataDiri.pendidikan}</span>
+                        </div>
+                        <div class="profile-item">
+                            <strong>📅 Tanggal Tes:</strong>
+                            <span>${data.x_05}</span>
+                        </div>
+                    </div>
+
+                    <div class="score-display">
+                        <div class="score-number">${total}</div>
+                        <div class="score-label">dari 30 poin maksimal</div>
+                    </div>
+
+                    <div class="chart-section">
+                        <div class="chart-wrapper">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="dimension-scores">
+                        ${skorList.map((score, idx) => `
+                            <div class="dimension-item">
+                                <div class="dim-label">${dimensionLabels[idx]}</div>
+                                <div class="dim-score">${score}<span class="dim-max">/3</span></div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="result-card" style="border-color: ${tipeColor}">
+                        <h2 style="color: ${tipeColor}">
+                            ${result.icon} ${result.title}
+                        </h2>
+                        <div class="description">
+                            ${result.description}
+                        </div>
+
+                        <div class="characteristics">
+                            <h3>💫 Karakteristik Anda</h3>
+                            <ul>
+                                ${result.characteristics.map(char => `<li>${char}</li>`).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="suggestions">
+                            <h3>💡 Saran Pengembangan</h3>
+                            <ul>
+                                ${result.suggestions.map(sug => `<li>${sug}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="downloadAsImage()">
+                            📥 Download Hasil (JPG)
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.print()">
+                            🖨️ Cetak Laporan
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            drawRadarChart(skorList);
+        }
+
+        function getResult(total) {
+            if (total >= 24) {
+                return {
+                    title: 'SAHABAT SEJATI',
+                    color: '#6c5ce7',
+                    icon: '⭐',
+                    description: 'Luar biasa! Kamu adalah tipe sahabat yang sangat ideal dan berharga. Kamu memiliki hampir semua kualitas yang dibutuhkan dalam sebuah persahabatan yang kuat dan bermakna.',
+                    characteristics: [
+                        'Dapat dipercaya dan konsisten dalam menjaga kepercayaan',
+                        'Selalu hadir saat dibutuhkan, baik di saat senang maupun susah',
+                        'Komunikasi yang terbuka dan jujur tanpa menyakiti',
+                        'Memiliki empati tinggi dan mampu memahami perasaan orang lain',
+                        'Loyal dan setia dalam segala kondisi',
+                        'Menghargai dan mendukung pencapaian sahabat'
+                    ],
+                    suggestions: [
+                        'Pertahankan kualitas persahabatan yang sudah sangat baik ini',
+                        'Jadilah mentor bagi orang lain tentang cara menjadi sahabat yang baik',
+                        'Terus jaga keseimbangan antara memberi dan menerima',
+                        'Jangan lupa untuk tetap menjaga diri sendiri sambil mendukung orang lain'
+                    ]
+                };
+            } else if (total >= 19) {
+                return {
+                    title: 'TEMAN DEKAT',
+                    color: '#00cec9',
+                    icon: '💙',
+                    description: 'Bagus! Kamu termasuk teman yang solid dan dapat diandalkan. Ada kepercayaan yang kuat dalam hubunganmu dengan sahabat, meskipun masih ada beberapa area yang bisa ditingkatkan.',
+                    characteristics: [
+                        'Cukup dapat dipercaya dalam kebanyakan situasi',
+                        'Komunikasi yang baik meskipun kadang perlu ditingkatkan',
+                        'Memiliki empati yang cukup baik terhadap perasaan orang lain',
+                        'Cukup loyal namun bisa lebih konsisten',
+                        'Sering hadir untuk sahabat di saat dibutuhkan',
+                        'Menghargai hubungan persahabatan yang ada'
+                    ],
+                    suggestions: [
+                        'Tingkatkan komunikasi dengan lebih proaktif bertanya kabar sahabat',
+                        'Usahakan lebih konsisten dalam menjaga komitmen',
+                        'Latih empati dengan lebih sering mendengarkan secara aktif',
+                        'Tunjukkan apresiasi lebih sering kepada sahabat',
+                        'Jadilah lebih hadir secara emosional, bukan hanya fisik',
+                        'Berani mengambil inisiatif untuk memperdalam hubungan'
+                    ]
+                };
+            } else {
+                return {
+                    title: 'TEMAN BIASA',
+                    color: '#fab1a0',
+                    icon: '🤝',
+                    description: 'Kamu adalah teman yang baik, namun kedekatanmu masih dalam kategori biasa. Masih banyak ruang untuk berkembang menjadi sahabat yang lebih dekat dan bermakna.',
+                    characteristics: [
+                        'Memiliki niat baik dalam berteman',
+                        'Kadang hadir untuk teman, tapi tidak selalu konsisten',
+                        'Komunikasi cenderung terbatas pada hal-hal permukaan',
+                        'Empati perlu dikembangkan lebih dalam',
+                        'Loyalitas bergantung pada situasi',
+                        'Masih perlu membangun kepercayaan yang lebih kuat'
+                    ],
+                    suggestions: [
+                        'Pelajari cara menjadi pendengar yang lebih baik dan aktif',
+                        'Tunjukkan lebih banyak inisiatif dalam menjalin komunikasi',
+                        'Latih empati dengan mencoba memahami perspektif orang lain',
+                        'Jadilah lebih konsisten dalam menjaga janji dan komitmen',
+                        'Berani membuka diri dan berbagi dengan lebih jujur',
+                        'Tingkatkan ketersediaan emosional untuk teman-teman',
+                        'Pelajari cara memberikan dukungan yang bermakna',
+                        'Fokus pada kualitas interaksi, bukan hanya kuantitas',
+                        'Bangun kepercayaan dengan konsisten dan jujur',
+                        'Investasikan waktu untuk memahami teman lebih dalam'
+                    ]
+                };
+            }
+        }
+
+        function drawRadarChart(skorList) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: dimensionLabels,
+                    datasets: [{
+                        label: 'Skor Anda',
+                        data: skorList,
+                        backgroundColor: 'rgba(108, 92, 231, 0.2)',
+                        borderColor: 'rgba(108, 92, 231, 1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: 'rgba(108, 92, 231, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(108, 92, 231, 1)',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 3,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Skor: ${context.parsed.r}/3`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function downloadAsImage() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '⏳ Memproses...';
+
+            try {
+                const content = document.getElementById('downloadContent');
+                const canvas = await html2canvas(content, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    windowWidth: content.scrollWidth,
+                    windowHeight: content.scrollHeight
+                });
+
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    const date = new Date().toISOString().split('T')[0];
+                    link.download = `Hasil-Tes-Sahabat-${date}.jpg`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+
+                    button.disabled = false;
+                    button.textContent = '✅ Berhasil! Download Lagi?';
+                    setTimeout(() => {
+                        button.innerHTML = '📥 Download Hasil (JPG)';
+                    }, 3000);
+                }, 'image/jpeg', 0.95);
+
+            } catch (error) {
+                console.error('Error:', error);
+                button.disabled = false;
+                button.textContent = '❌ Gagal. Coba Lagi';
+                setTimeout(() => {
+                    button.innerHTML = '📥 Download Hasil (JPG)';
+                }, 3000);
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Kepemimpinan</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #2980b9; --bg: #f8f9fa; --red-yt: #ff0000; --blue-fb: #1877f2; --text: #34495e; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; background: var(--bg); display: flex; flex-direction: column; align-items: center; color: var(--text); }
+        .main-wrapper { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Video & Social Header */
+        .video-box { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .social-buttons { display: flex; gap: 10px; justify-content: center; }
+        .btn-social { flex: 1; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
+        .btn-subscribe { background: var(--red-yt); } .btn-like { background: var(--blue-fb); }
+
+        /* Quiz UI */
+        .quiz-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; border-top: 5px solid var(--primary); position: relative; }
+        .progress-bar { position: absolute; top: 0; left: 0; height: 5px; background: var(--accent); transition: width 0.3s; border-radius: 5px 5px 0 0; }
+        .question-number { font-size: 1.1rem; font-weight: bold; color: var(--accent); margin-bottom: 20px; display: block; }
+        .question-text { font-size: 1.2rem; color: #2c3e50; margin-bottom: 35px; min-height: 3.5em; line-height: 1.6; }
+        
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .opt-btn { width: 100%; padding: 15px; font-size: 1rem; cursor: pointer; border: 2px solid #ecf0f1; background: #fff; color: var(--text); border-radius: 10px; font-weight: 500; transition: 0.2s; text-align: left; }
+        .opt-btn:hover { border-color: var(--accent); background: #f7fbff; }
+        .opt-btn span { font-weight: bold; color: var(--accent); margin-right: 10px; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; }
+        .input-group { margin: 15px 0; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .btn-submit { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <!-- Video Referensi Kepemimpinan -->
+    <div class="video-box"><iframe src="https://www.youtube.com/embed/hqzBQ-QlzIg?si=zmh6lZjrV0hdU5jY" allowfullscreen></iframe></div>
+    
+    <!-- Social Actions -->
+    <div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">🔔 SUBSCRIBE CHANNEL</a>
+        <a href="https://www.youtube.com/watch?v=nU0lQ-39klo" target="_blank" class="btn-social btn-like">👍 LIKE VIDEO</a>
+    </div>
+
+    <!-- Quiz Section -->
+    <div id="quiz-container" class="quiz-card">
+        <div id="progress" class="progress-bar" style="width: 0%;"></div>
+        <span class="question-number" id="q-number">Pertanyaan 1 / 14</span>
+        <p class="question-text" id="q-text">Sedang memuat pertanyaan...</p>
+        
+        <div class="options">
+            <button class="opt-btn" onclick="answer('a')"><span>A</span> <span id="opt-a">Pilihan A</span></button>
+            <button class="opt-btn" onclick="answer('b')"><span>B</span> <span id="opt-b">Pilihan B</span></button>
+            <button class="opt-btn" onclick="answer('c')"><span>C</span> <span id="opt-c">Pilihan C</span></button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Data Diri -->
+<div id="form-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="text-align:center; color: var(--primary); margin-top:0;">Hasil Analisis</h3>
+        <p style="text-align:center; font-size: 0.9rem; color: #666; margin-bottom: 20px;">Lengkapi data diri untuk melihat profil kepemimpinan Anda.</p>
+        <div class="input-group">
+            <input type="text" id="nama" placeholder="Nama Lengkap" required>
+        </div>
+        <div class="input-group">
+            <input type="number" id="usia" placeholder="Usia" required>
+        </div>
+        <div class="input-group">
+            <select id="pendidikan">
+                <option value="">Pendidikan Terakhir</option>
+                <option value="SMA/K">SMA/K</option>
+                <option value="Diploma">Diploma</option>
+                <option value="Sarjana (S1)">Sarjana (S1)</option>
+                <option value="Magister (S2)">Magister (S2)</option>
+            </select>
+        </div>
+        <button class="btn-submit" onclick="submitFinal()">LIHAT PROFIL PEMIMPIN</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "Ketika tim Anda mengalami kegagalan, apa tindakan pertama Anda?", a: "Mencari siapa yang bersalah.", b: "Menganalisis prosesnya bersama tim.", c: "Mengambil tanggung jawab penuh sendiri." },
+        { q: "Bagaimana Anda membagi tugas kepada anggota tim?", a: "Memberikan tugas yang paling mudah ke orang baru.", b: "Menyesuaikan dengan minat dan keahlian mereka.", c: "Membagi rata tanpa memandang keahlian." },
+        { q: "Apa yang Anda lakukan jika ada anggota tim yang tidak produktif?", a: "Langsung memberikan teguran keras.", b: "Mengajaknya bicara empat mata untuk mencari solusi.", c: "Membiarkannya selama pekerjaan lain selesai." },
+        { q: "Dalam pengambilan keputusan penting, Anda biasanya...", a: "Memutuskan sendiri karena saya pemimpinnya.", b: "Mendengarkan masukan tim lalu memutuskan.", c: "Menunggu konsensus bulat dari seluruh tim." },
+        { q: "Bagaimana Anda menyikapi kritik dari bawahan?", a: "Merasa otoritas saya terancam.", b: "Menjadikannya bahan evaluasi diri.", c: "Mendengarkan tapi tidak melakukan perubahan." },
+        { q: "Visi menurut Anda adalah...", a: "Target angka yang harus dicapai.", b: "Gambaran masa depan yang menginspirasi tim.", c: "Aturan main yang harus ditaati semua orang." },
+        { q: "Ketika anggota tim sukses, Anda akan...", a: "Mengklaim itu berkat arahan Anda.", b: "Memberikan apresiasi dan pengakuan publik.", c: "Biasa saja karena itu sudah tugas mereka." },
+        { q: "Gaya komunikasi favorit Anda adalah...", a: "Instruksi langsung dan satu arah.", b: "Dialog terbuka dan diskusi dua arah.", c: "Melalui email atau perantara saja." },
+        { q: "Bagaimana Anda menangani konflik antar anggota tim?", a: "Menyuruh mereka menyelesaikannya sendiri.", b: "Menjadi mediator untuk mencari jalan tengah.", c: "Memihak pada anggota yang lebih senior." },
+        { q: "Apa prioritas utama Anda sebagai pemimpin?", a: "Mencapai target hasil secepat mungkin.", b: "Mengembangkan potensi anggota tim.", c: "Menjaga stabilitas dan posisi saya." },
+        { q: "Dalam situasi krisis yang mendesak, Anda...", a: "Panik dan menyalahkan keadaan.", b: "Tetap tenang dan memberikan instruksi jelas.", c: "Menunggu instruksi dari atasan yang lebih tinggi." },
+        { q: "Bagaimana Anda memotivasi tim yang sedang jenuh?", a: "Memberikan ancaman sanksi.", b: "Mengingatkan kembali tujuan besar mereka.", c: "Memberikan tambahan beban kerja agar sibuk." },
+        { q: "Integritas bagi seorang pemimpin berarti...", a: "Selalu terlihat benar di depan orang.", b: "Kesesuaian antara kata dan perbuatan.", c: "Kemampuan menyembunyikan kelemahan." },
+        { q: "Seorang pemimpin sukses adalah mereka yang...", a: "Memiliki banyak pengikut patuh.", b: "Mampu melahirkan pemimpin-pemimpin baru.", c: "Memiliki kekuasaan paling besar." }
+    ];
+
+    let currentIndex = 0;
+    let answers = {};
+
+    function updateUI() {
+        const item = questions[currentIndex];
+        document.getElementById('q-number').innerText = `Pertanyaan ${currentIndex + 1} / ${questions.length}`;
+        document.getElementById('q-text').innerText = item.q;
+        document.getElementById('opt-a').innerText = item.a;
+        document.getElementById('opt-b').innerText = item.b;
+        document.getElementById('opt-c').innerText = item.c;
+        document.getElementById('progress').style.width = `${((currentIndex) / questions.length) * 100}%`;
+    }
+
+    function answer(val) {
+        answers[`q${currentIndex + 1}`] = val;
+        currentIndex++;
+        if (currentIndex < questions.length) {
+            updateUI();
+        } else {
+            document.getElementById('progress').style.width = "100%";
+            document.getElementById('form-modal').style.display = 'flex';
+        }
+    }
+
+    async function submitFinal() {
+        const nama = document.getElementById('nama').value;
+        const usia = document.getElementById('usia').value;
+        const pend = document.getElementById('pendidikan').value;
+
+        if (!nama || !usia || !pend) { alert("Lengkapi data diri Anda!"); return; }
+
+        const token = "LEADER-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+        const payload = {
+            x_01: "tes kepemimpinan",
+            x_02: JSON.stringify({ nama, usia, pendidikan: pend }),
+            x_03: JSON.stringify(answers),
+            x_04: token,
+            x_05: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        };
+
+        try {
+            const res = await fetch("https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': 'admin' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                window.open(`21view.html?token=${token}`, '_blank');
+                location.reload();
+            } else {
+                alert("Gagal mengirim data.");
+            }
+        } catch (e) {
+            alert("Kesalahan koneksi.");
+        }
+    }
+
+    // Init
+    window.onload = updateUI;
+</script>
+
+</body>
+</html>

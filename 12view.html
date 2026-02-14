@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Tes Tipe Cinta</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+            min-height: 100vh;
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2em; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 1.1em; }
+        .content { padding: 40px; }
+        .profile-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #ff6b9d;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .profile-item { display: flex; flex-direction: column; }
+        .profile-label {
+            font-size: 0.85em;
+            color: #ff6b9d;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .profile-value { font-size: 1.1em; color: #2c3e50; }
+        .result-card {
+            background: linear-gradient(135deg, #fff5f8 0%, #ffe9f0 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 8px solid;
+        }
+        .result-card h2 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .chart-container { position: relative; height: 320px; margin: 30px 0; }
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .score-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 3px solid;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .score-card.dominant {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .score-icon { font-size: 3em; margin-bottom: 10px; }
+        .score-name { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
+        .score-value { font-size: 2em; font-weight: bold; margin: 10px 0; }
+        .info-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-section ul { list-style: none; padding-left: 0; }
+        .info-section li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+            color: #555;
+        }
+        .info-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #ff6b9d;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-download { background: #ff6b9d; color: white; }
+        .btn-download:hover {
+            background: #ff5a8c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
+        }
+        .btn-print { background: #2c3e50; color: white; }
+        .btn-print:hover { background: #1a252f; transform: translateY(-2px); }
+        .error-msg { text-align: center; padding: 60px 40px; color: #e74c3c; }
+        .loading { text-align: center; padding: 60px 40px; color: #7f8c8d; }
+        @media print {
+            body { background: white; padding: 0; }
+            .button-group { display: none; }
+            .container { box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.5em; }
+            .result-card h2 { font-size: 1.8em; }
+            .button-group { grid-template-columns: 1fr; }
+            .score-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+    <div class="loading">
+        <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
+        <h3>Memuat Hasil Analisis...</h3>
+    </div>
+</div>
+
+<script>
+const LOVE_TYPES = {
+    A: {
+        name: 'ROMANTIS',
+        color: '#ff4757',
+        icon: '💕',
+        description: 'Anda menghargai hubungan yang penuh perasaan, kenangan indah, dan kedekatan emosional yang mendalam.',
+        characteristics: [
+            'Mengutamakan kualitas waktu bersama',
+            'Menghargai gesture romantis dan kejutan',
+            'Senang berbagi perasaan dan pikiran intim',
+            'Mengingat tanggal-tanggal penting',
+            'Ekspresif dalam menunjukkan cinta',
+            'Menghargai komunikasi yang dalam'
+        ],
+        strengths: [
+            'Koneksi emosional yang kuat',
+            'Ekspresi cinta yang jelas',
+            'Perhatian pada detail hubungan',
+            'Komitmen emosional tinggi'
+        ],
+        ideal_partner: [
+            'Orang yang ekspresif dan komunikatif',
+            'Yang menghargai waktu berkualitas',
+            'Yang romantis dan perhatian',
+            'Yang tidak takut berbagi perasaan'
+        ],
+        tips: [
+            'Berikan perhatian kecil secara konsisten',
+            'Luangkan waktu berkualitas tanpa distraksi',
+            'Komunikasi terbuka tentang perasaan',
+            'Ciptakan momen-momen spesial bersama',
+            'Ingat dan rayakan moment penting'
+        ]
+    },
+    B: {
+        name: 'DOMESTIK',
+        color: '#2ed573',
+        icon: '🏡',
+        description: 'Anda menunjukkan cinta melalui tindakan praktis, pelayanan, dan menciptakan kenyamanan di rumah.',
+        characteristics: [
+            'Cinta melalui tindakan, bukan kata',
+            'Menciptakan kenyamanan rumah',
+            'Memasak dan merawat pasangan',
+            'Melayani kebutuhan praktis pasangan',
+            'Menghargai rutinitas dan stabilitas',
+            'Membangun kehidupan bersama'
+        ],
+        strengths: [
+            'Dapat diandalkan',
+            'Praktis dan supportif',
+            'Komitmen jangka panjang',
+            'Menciptakan stabilitas'
+        ],
+        ideal_partner: [
+            'Yang menghargai tindakan lebih dari kata',
+            'Yang menghargai rumah dan keluarga',
+            'Yang praktis dan ground-to-earth',
+            'Yang menghargai pelayanan dan bantuan'
+        ],
+        tips: [
+            'Bantu pasangan dalam tugas sehari-hari',
+            'Ciptakan rumah yang nyaman',
+            'Masak makanan kesukaan pasangan',
+            'Tunjukkan cinta lewat tindakan konsisten',
+            'Dukung kebutuhan praktis pasangan'
+        ]
+    },
+    C: {
+        name: 'PETUALANG',
+        color: '#ffa502',
+        icon: '✈️',
+        description: 'Anda menunjukkan cinta melalui pengalaman baru, petualangan, dan kejutan yang menyenangkan.',
+        characteristics: [
+            'Cinta melalui pengalaman bersama',
+            'Menyukai tantangan dan hal baru',
+            'Spontan dan penuh kejutan',
+            'Mencari kegembiraan dalam hubungan',
+            'Benci rutinitas yang membosankan',
+            'Petualangan sebagai bonding'
+        ],
+        strengths: [
+            'Hubungan yang dinamis',
+            'Selalu ada hal baru',
+            'Spontanitas',
+            'Kegembiraan dan antusiasme'
+        ],
+        ideal_partner: [
+            'Yang suka petualangan',
+            'Yang terbuka pada hal baru',
+            'Yang fleksibel dan spontan',
+            'Yang tidak suka rutinitas membosankan'
+        ],
+        tips: [
+            'Rencanakan kejutan dan aktivitas baru',
+            'Coba hal-hal baru bersama',
+            'Jelajahi tempat-tempat baru',
+            'Hindari rutinitas yang monoton',
+            'Ciptakan kenangan petualangan bersama'
+        ]
+    },
+    D: {
+        name: 'ELEGAN',
+        color: '#5352ed',
+        icon: '👑',
+        description: 'Anda menghargai kualitas, kemewahan, dan menunjukkan cinta melalui pemberian dan perhatian yang berkelas.',
+        characteristics: [
+            'Menghargai kualitas di atas kuantitas',
+            'Cinta ditunjukkan lewat pemberian',
+            'Menghargai kemewahan dan estetika',
+            'Perhatian pada detail dan penampilan',
+            'Menjaga martabat dalam hubungan',
+            'Menghargai gesture yang berkelas'
+        ],
+        strengths: [
+            'Standar tinggi',
+            'Apresiasi kualitas',
+            'Perhatian detail',
+            'Kemewahan dalam cinta'
+        ],
+        ideal_partner: [
+            'Yang menghargai kualitas',
+            'Yang memiliki selera baik',
+            'Yang sophisticated',
+            'Yang menghargai pemberian berkualitas'
+        ],
+        tips: [
+            'Berikan hadiah berkualitas, bukan mahal',
+            'Perhatikan detail dalam gesture',
+            'Ciptakan momen yang berkesan',
+            'Jaga penampilan dan presentasi',
+            'Tunjukkan apresiasi dengan cara berkelas'
+        ]
+    }
+};
+
+async function loadData() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const container = document.getElementById('mainContainer');
+
+    if (!token) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Error</h2><p>Token tidak ditemukan di URL</p></div>`;
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`, {
+            headers: { 'X-Custom-Auth': 'admin' }
+        });
+        const res = await response.json();
+
+        if (res.success && res.count > 0) {
+            renderResult(res.data[0]);
+        } else {
+            container.innerHTML = `<div class="error-msg"><h2>❌ Data Tidak Ditemukan</h2><p>Token tidak valid atau sudah kadaluarsa</p></div>`;
+        }
+    } catch (e) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Kesalahan Koneksi</h2><p>Tidak dapat terhubung ke server</p></div>`;
+    }
+}
+
+function renderResult(data) {
+    const dataDiri = JSON.parse(data.x_02 || "{}");
+    const scores = JSON.parse(data.x_03 || "{}");
+    
+    const total = 10;
+    const skorRomantis = scores.A || 0;
+    const skorDomestik = scores.B || 0;
+    const skorPetualang = scores.C || 0;
+    const skorElegan = scores.D || 0;
+    
+    let dominantKey = 'A';
+    if (skorDomestik > scores[dominantKey]) dominantKey = 'B';
+    if (skorPetualang > scores[dominantKey]) dominantKey = 'C';
+    if (skorElegan > scores[dominantKey]) dominantKey = 'D';
+    
+    const dominant = LOVE_TYPES[dominantKey];
+
+    const html = `
+        <div class="header">
+            <h1>💖 Hasil Tes Tipe Cinta</h1>
+            <p>Bagaimana Anda Mengekspresikan dan Menerima Cinta?</p>
+        </div>
+        <div class="content">
+            <div class="profile-section">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 Informasi Peserta</h3>
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <span class="profile-label">Nama Lengkap</span>
+                        <span class="profile-value">${dataDiri.nama || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Usia</span>
+                        <span class="profile-value">${dataDiri.usia || '-'} Tahun</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Pendidikan</span>
+                        <span class="profile-value">${dataDiri.pendidikan || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Tanggal Tes</span>
+                        <span class="profile-value">${data.x_05 || '-'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card" style="border-color: ${dominant.color};">
+                <h2 style="color: ${dominant.color};">${dominant.icon} TIPE ${dominant.name}</h2>
+                <p style="font-size: 1.1em; color: #555; margin-bottom: 20px;">${dominant.description}</p>
+            </div>
+
+            <div class="score-grid">
+                <div class="score-card ${dominantKey === 'A' ? 'dominant' : ''}" style="border-color: #ff4757;">
+                    <div class="score-icon">💕</div>
+                    <div class="score-name" style="color: #ff4757;">Romantis</div>
+                    <div class="score-value" style="color: #ff4757;">${skorRomantis}/${total}</div>
+                    <div style="color: #666;">${Math.round((skorRomantis/total)*100)}%</div>
+                </div>
+                <div class="score-card ${dominantKey === 'B' ? 'dominant' : ''}" style="border-color: #2ed573;">
+                    <div class="score-icon">🏡</div>
+                    <div class="score-name" style="color: #2ed573;">Domestik</div>
+                    <div class="score-value" style="color: #2ed573;">${skorDomestik}/${total}</div>
+                    <div style="color: #666;">${Math.round((skorDomestik/total)*100)}%</div>
+                </div>
+                <div class="score-card ${dominantKey === 'C' ? 'dominant' : ''}" style="border-color: #ffa502;">
+                    <div class="score-icon">✈️</div>
+                    <div class="score-name" style="color: #ffa502;">Petualang</div>
+                    <div class="score-value" style="color: #ffa502;">${skorPetualang}/${total}</div>
+                    <div style="color: #666;">${Math.round((skorPetualang/total)*100)}%</div>
+                </div>
+                <div class="score-card ${dominantKey === 'D' ? 'dominant' : ''}" style="border-color: #5352ed;">
+                    <div class="score-icon">👑</div>
+                    <div class="score-name" style="color: #5352ed;">Elegan</div>
+                    <div class="score-value" style="color: #5352ed;">${skorElegan}/${total}</div>
+                    <div style="color: #666;">${Math.round((skorElegan/total)*100)}%</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
+
+            <div class="info-section">
+                <h3>💝 Karakteristik Tipe Cinta Anda</h3>
+                <ul>
+                    ${dominant.characteristics.map(char => `<li>${char}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>💪 Kekuatan Anda dalam Hubungan</h3>
+                <ul>
+                    ${dominant.strengths.map(strength => `<li>${strength}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>💑 Pasangan yang Cocok untuk Anda</h3>
+                <ul>
+                    ${dominant.ideal_partner.map(partner => `<li>${partner}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>💡 Tips untuk Hubungan yang Lebih Baik</h3>
+                <ul>
+                    ${dominant.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section" style="background: #fff3e0; border-color: #ff9800;">
+                <h3 style="color: #e65100;">💫 Catatan Penting</h3>
+                <p style="color: #555; line-height: 1.8;">
+                    Setiap orang mungkin memiliki lebih dari satu tipe cinta, dan tipe cinta Anda dapat berkembang seiring waktu dan pengalaman. 
+                    Yang penting adalah memahami bagaimana Anda mengekspresikan cinta dan bagaimana Anda ingin menerima cinta dari pasangan. 
+                    Komunikasi yang terbuka tentang kebutuhan cinta masing-masing adalah kunci hubungan yang sehat dan bahagia.
+                </p>
+            </div>
+
+            <div class="info-section">
+                <h3>📚 Tentang Tipe Cinta</h3>
+                <p style="color: #555; line-height: 1.8;">
+                    Konsep tipe cinta ini terinspirasi dari teori "Five Love Languages" oleh Gary Chapman, yang kemudian dikembangkan lebih lanjut. 
+                    Memahami tipe cinta Anda dan pasangan membantu menciptakan hubungan yang lebih harmonis, karena Anda dapat mengekspresikan cinta 
+                    dengan cara yang paling bermakna bagi pasangan Anda, dan sebaliknya.
+                </p>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-download" onclick="downloadAsImage()">📥 Download JPG</button>
+                <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('mainContainer').innerHTML = html;
+    createChart(skorRomantis, skorDomestik, skorPetualang, skorElegan);
+}
+
+function createChart(skorRomantis, skorDomestik, skorPetualang, skorElegan) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Romantis', 'Domestik', 'Petualang', 'Elegan'],
+            datasets: [{
+                label: 'Skor Tipe Cinta',
+                data: [skorRomantis, skorDomestik, skorPetualang, skorElegan],
+                backgroundColor: 'rgba(255, 107, 157, 0.2)',
+                borderColor: '#ff6b9d',
+                borderWidth: 3,
+                pointBackgroundColor: ['#ff4757', '#2ed573', '#ffa502', '#5352ed'],
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: {
+                        stepSize: 2,
+                        font: { size: 12 }
+                    },
+                    pointLabels: {
+                        font: { size: 13, weight: 'bold' }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Skor: ${context.parsed.r}/10`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function downloadAsImage() {
+    const button = event.target;
+    button.disabled = true;
+    button.textContent = '⏳ Memproses...';
+    
+    try {
+        const container = document.getElementById('mainContainer');
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false
+        });
+        
+        const link = document.createElement('a');
+        link.download = `Hasil-Tipe-Cinta-${Date.now()}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+        
+        button.disabled = false;
+        button.textContent = '✅ Download Berhasil!';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    } catch (error) {
+        button.disabled = false;
+        button.textContent = '❌ Gagal';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>

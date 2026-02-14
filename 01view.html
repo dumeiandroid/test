@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Tes Gaya Belajar VAK</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .content {
+            padding: 40px;
+        }
+        .profile-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .profile-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .profile-label {
+            font-size: 0.85em;
+            color: #667eea;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .profile-value {
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 30px 0;
+        }
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 8px solid;
+        }
+        .result-card h2 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .percentage-bars {
+            margin: 25px 0;
+        }
+        .bar-item {
+            margin-bottom: 20px;
+        }
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .bar-bg {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-left: 15px;
+            color: white;
+            font-weight: bold;
+            transition: width 1s ease;
+        }
+        .info-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .info-section li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+            color: #555;
+        }
+        .info-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-download {
+            background: #667eea;
+            color: white;
+        }
+        .btn-download:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-print {
+            background: #2c3e50;
+            color: white;
+        }
+        .btn-print:hover {
+            background: #1a252f;
+            transform: translateY(-2px);
+        }
+        .error-msg {
+            text-align: center;
+            padding: 60px 40px;
+            color: #e74c3c;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px 40px;
+            color: #7f8c8d;
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .button-group { display: none; }
+            .container { box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.5em; }
+            .result-card h2 { font-size: 1.8em; }
+            .button-group { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+    <div class="loading">
+        <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
+        <h3>Memuat Hasil Analisis Gaya Belajar...</h3>
+    </div>
+</div>
+
+<script>
+const LEARNING_STYLES = {
+    A: {
+        name: 'VISUAL',
+        color: '#4a90e2',
+        icon: '👁️',
+        description: 'Anda belajar paling efektif dengan melihat dan mengamati',
+        characteristics: [
+            'Lebih mudah mengingat apa yang dilihat daripada yang didengar',
+            'Suka menggunakan diagram, grafik, dan gambar saat belajar',
+            'Mengingat wajah lebih baik daripada nama',
+            'Lebih suka membaca instruksi daripada mendengarkan penjelasan',
+            'Sering membuat catatan visual atau mind map'
+        ],
+        tips: [
+            'Gunakan highlighter warna-warni saat membaca',
+            'Buat diagram, flowchart, atau mind mapping',
+            'Tonton video pembelajaran atau tutorial visual',
+            'Gunakan flashcard dengan gambar',
+            'Visualisasikan konsep dalam bentuk gambar mental',
+            'Catat informasi penting dengan warna berbeda'
+        ]
+    },
+    B: {
+        name: 'AUDITORY',
+        color: '#f39c12',
+        icon: '👂',
+        description: 'Anda belajar paling efektif dengan mendengar dan berbicara',
+        characteristics: [
+            'Lebih mudah mengingat informasi yang didengar',
+            'Suka berdiskusi dan menjelaskan konsep kepada orang lain',
+            'Senang mendengarkan ceramah atau podcast',
+            'Sering membaca dengan suara keras atau berbicara pada diri sendiri',
+            'Mudah terganggu oleh suara bising'
+        ],
+        tips: [
+            'Rekam materi pelajaran dan dengarkan berulang kali',
+            'Berdiskusi dengan teman atau kelompok belajar',
+            'Dengarkan podcast atau audiobook edukatif',
+            'Bacakan materi dengan suara keras',
+            'Ikuti webinar atau kelas online dengan penjelasan verbal',
+            'Gunakan musik latar yang menenangkan saat belajar'
+        ]
+    },
+    C: {
+        name: 'KINESTETIK',
+        color: '#2ecc71',
+        icon: '🤸',
+        description: 'Anda belajar paling efektif dengan praktik dan gerakan',
+        characteristics: [
+            'Lebih suka belajar dengan melakukan langsung',
+            'Sulit duduk diam dalam waktu lama',
+            'Sering menggunakan gerakan tangan saat berbicara',
+            'Belajar lebih baik melalui eksperimen dan praktik',
+            'Mengingat lebih baik melalui aktivitas fisik'
+        ],
+        tips: [
+            'Praktikkan langsung apa yang dipelajari',
+            'Gunakan alat peraga atau model fisik',
+            'Buat eksperimen atau simulasi',
+            'Berjalan atau bergerak saat menghafalkan',
+            'Gunakan role play untuk memahami konsep',
+            'Ambil jeda istirahat untuk bergerak setiap 20-30 menit'
+        ]
+    }
+};
+
+async function loadData() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const container = document.getElementById('mainContainer');
+
+    if (!token) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Error</h2><p>Token tidak ditemukan di URL</p></div>`;
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`, {
+            headers: { 'X-Custom-Auth': 'admin' }
+        });
+        const res = await response.json();
+
+        if (res.success && res.count > 0) {
+            renderResult(res.data[0]);
+        } else {
+            container.innerHTML = `<div class="error-msg"><h2>❌ Data Tidak Ditemukan</h2><p>Token tidak valid atau sudah kadaluarsa</p></div>`;
+        }
+    } catch (e) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Kesalahan Koneksi</h2><p>Tidak dapat terhubung ke server</p></div>`;
+    }
+}
+
+function renderResult(data) {
+    const dataDiri = JSON.parse(data.x_02 || "{}");
+    const jawaban = JSON.parse(data.x_03 || "{}");
+    
+    // Hitung skor
+    let skor = { A: 0, B: 0, C: 0 };
+    Object.values(jawaban).forEach(v => { if(skor[v] !== undefined) skor[v]++; });
+    
+    const total = 15;
+    const persentase = {
+        A: Math.round((skor.A / total) * 100),
+        B: Math.round((skor.B / total) * 100),
+        C: Math.round((skor.C / total) * 100)
+    };
+    
+    const dominan = Object.keys(skor).reduce((a, b) => skor[a] > skor[b] ? a : b);
+    const style = LEARNING_STYLES[dominan];
+
+    const html = `
+        <div class="header">
+            <h1>📚 Hasil Tes Gaya Belajar</h1>
+            <p>Gaya Belajar yang Cocok dan Pas Buat Saya Adalah</p>
+        </div>
+        <div class="content">
+            <div class="profile-section">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 Informasi Peserta</h3>
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <span class="profile-label">Nama Lengkap</span>
+                        <span class="profile-value">${dataDiri.nama || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Usia</span>
+                        <span class="profile-value">${dataDiri.usia || '-'} Tahun</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Pendidikan</span>
+                        <span class="profile-value">${dataDiri.pendidikan || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Tanggal Tes</span>
+                        <span class="profile-value">${data.x_05 || '-'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card" style="border-color: ${style.color};">
+                <h2 style="color: ${style.color};">${style.icon} ${style.name}</h2>
+                <p style="font-size: 1.1em; color: #555; margin-bottom: 20px;">${style.description}</p>
+                
+                <div class="percentage-bars">
+                    <div class="bar-item">
+                        <div class="bar-label">
+                            <span>👁️ Visual</span>
+                            <span>${persentase.A}%</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="width: ${persentase.A}%; background: #4a90e2;">
+                                ${skor.A}/${total}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">
+                            <span>👂 Auditory</span>
+                            <span>${persentase.B}%</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="width: ${persentase.B}%; background: #f39c12;">
+                                ${skor.B}/${total}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">
+                            <span>🤸 Kinestetik</span>
+                            <span>${persentase.C}%</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="width: ${persentase.C}%; background: #2ecc71;">
+                                ${skor.C}/${total}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
+
+            <div class="info-section">
+                <h3>🎯 Karakteristik Anda</h3>
+                <ul>
+                    ${style.characteristics.map(char => `<li>${char}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>💡 Saran & Tips Belajar Efektif</h3>
+                <ul>
+                    ${style.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-download" onclick="downloadAsImage()">📥 Download JPG</button>
+                <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('mainContainer').innerHTML = html;
+    createChart(skor, persentase);
+}
+
+function createChart(skor, persentase) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Visual', 'Auditory', 'Kinestetik'],
+            datasets: [{
+                data: [skor.A, skor.B, skor.C],
+                backgroundColor: ['#4a90e2', '#f39c12', '#2ecc71'],
+                borderWidth: 3,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: { size: 14, weight: 'bold' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const percentage = persentase[String.fromCharCode(65 + context.dataIndex)];
+                            return `${label}: ${value}/15 (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function downloadAsImage() {
+    const button = event.target;
+    button.disabled = true;
+    button.textContent = '⏳ Memproses...';
+    
+    try {
+        const container = document.getElementById('mainContainer');
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false
+        });
+        
+        const link = document.createElement('a');
+        link.download = `Hasil-Gaya-Belajar-${Date.now()}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+        
+        button.disabled = false;
+        button.textContent = '✅ Download Berhasil!';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    } catch (error) {
+        button.disabled = false;
+        button.textContent = '❌ Gagal';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>

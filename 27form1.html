@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Keberanian</title>
+    <style>
+        :root {
+            --accent: #6366f1;
+            --bg: #f8fafc;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 850px; background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 26px; color: var(--text-main); }
+        .header p { color: var(--text-sub); font-size: 14px; margin-top: 8px; }
+
+        .section-title { 
+            font-weight: 700; font-size: 16px; margin-top: 25px; margin-bottom: 15px;
+            padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; 
+            color: var(--text-main); 
+        }
+        
+        .input-group { margin: 15px 0; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .input-group input, .input-group select { 
+            width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; 
+            border-radius: 10px; box-sizing: border-box; font-size: 14px;
+            transition: border 0.2s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none; border-color: var(--accent);
+        }
+
+        .quiz-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
+        
+        .q-card { 
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+            transition: 0.2s;
+        }
+        .q-card:hover { border-color: var(--accent); background: #fcfcff; }
+        .q-info { font-weight: 600; font-size: 14px; color: #334155; }
+
+        .options { display: flex; gap: 6px; }
+        .options input { display: none; }
+        .opt-label {
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer;
+            font-size: 12px; font-weight: 700; color: #94a3b8; transition: 0.2s;
+        }
+        .options input:checked + .opt-label { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .btn-calc { 
+            width: 100%; padding: 18px; background: var(--text-main); color: white; border: none; 
+            border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 30px;
+        }
+        .btn-calc:hover { background: #000; }
+
+        @media (max-width: 650px) { .quiz-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Tes Keberanian Diri</h1>
+        <p>Isi data diri dan jawaban sesuai dengan soal yang Anda miliki</p>
+    </div>
+
+    <form id="braveForm">
+        <div class="section-title">Data Diri</div>
+        <div class="input-group">
+            <label>Nama Lengkap</label>
+            <input type="text" name="nama" required placeholder="Masukkan nama...">
+        </div>
+        <div class="input-group">
+            <label>Usia</label>
+            <input type="number" name="usia" required placeholder="Contoh: 17">
+        </div>
+        <div class="input-group">
+            <label>Pendidikan Terakhir</label>
+            <select name="pendidikan" required>
+                <option value="">Pilih Pendidikan...</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA/SMK">SMA/SMK</option>
+                <option value="Diploma/S1">Diploma/S1</option>
+                <option value="S2/S3">S2/S3</option>
+            </select>
+        </div>
+
+        <div class="section-title">Lembar Jawaban</div>
+        <small style="color: var(--text-sub); font-size: 0.85em;">Pindahkan jawaban A-E dari lembar soal Anda (Total 26 Nomor)</small>
+        <div class="quiz-grid" id="grid"></div>
+        
+        <button type="button" class="btn-calc" onclick="submitData()">Simpan & Lihat Hasil</button>
+    </form>
+</div>
+
+<script>
+    const API_URL = "https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes";
+    
+    const grid = document.getElementById('grid');
+    for (let i = 1; i <= 26; i++) {
+        grid.innerHTML += `
+            <div class="q-card">
+                <div class="q-info">No. ${i}</div>
+                <div class="options">
+                    ${['A','B','C','D','E'].map(opt => `
+                        <label>
+                            <input type="radio" name="q${i}" value="${opt}" required>
+                            <span class="opt-label">${opt}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>`;
+    }
+
+    async function submitData() {
+        const form = document.getElementById('braveForm');
+        if (!form.checkValidity()) return alert("Mohon lengkapi data diri dan semua jawaban!");
+
+        const formData = new FormData(form);
+        const dataDiri = {
+            nama: formData.get('nama'),
+            usia: formData.get('usia'),
+            pendidikan: formData.get('pendidikan')
+        };
+
+        const jawaban = {};
+        for (let i = 1; i <= 26; i++) { 
+            jawaban[`q${i}`] = formData.get(`q${i}`); 
+        }
+
+        const token = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+        const tgl = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const payload = {
+            x_01: "keberanian",
+            x_02: JSON.stringify(dataDiri),
+            x_03: JSON.stringify(jawaban),
+            x_04: token,
+            x_05: tgl
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Custom-Auth': 'admin' 
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            console.log('Response:', result);
+            
+            if (result.success) {
+                window.location.href = `27view.html?token=${token}`;
+            } else {
+                alert("Gagal menyimpan: " + (result.message || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error('Error:', e);
+            alert("Gagal menyimpan data: " + e.message);
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Tes Temperamen</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 850px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .content {
+            padding: 40px;
+        }
+        .profile-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .profile-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .profile-label {
+            font-size: 0.85em;
+            color: #667eea;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .profile-value {
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 8px solid;
+            text-align: center;
+        }
+        .result-card h2 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        .temperament-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .temp-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 3px solid;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .temp-card.dominant {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .temp-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        .temp-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .temp-score {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin: 30px 0;
+        }
+        .info-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .info-section li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+            color: #555;
+        }
+        .info-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .strength-weakness {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .sw-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .sw-box h4 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid;
+        }
+        .sw-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sw-box li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #444;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-download {
+            background: #667eea;
+            color: white;
+        }
+        .btn-download:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-print {
+            background: #2c3e50;
+            color: white;
+        }
+        .btn-print:hover {
+            background: #1a252f;
+            transform: translateY(-2px);
+        }
+        .error-msg {
+            text-align: center;
+            padding: 60px 40px;
+            color: #e74c3c;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px 40px;
+            color: #7f8c8d;
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .button-group { display: none; }
+            .container { box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.5em; }
+            .result-card h2 { font-size: 1.8em; }
+            .button-group { grid-template-columns: 1fr; }
+            .temperament-grid { grid-template-columns: 1fr; }
+            .strength-weakness { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+    <div class="loading">
+        <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
+        <h3>Memuat Hasil Tes Temperamen...</h3>
+    </div>
+</div>
+
+<script>
+const TEMPERAMENTS = {
+    A: {
+        name: 'SANGUINIS',
+        color: '#f1c40f',
+        icon: '😄',
+        tagline: 'Si Periang yang Populer',
+        description: 'Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.',
+        characteristics: [
+            'Ceria, optimis, dan penuh semangat',
+            'Mudah bergaul dan populer',
+            'Suka berbicara dan menghibur',
+            'Spontan dan kreatif',
+            'Tidak suka rutinitas yang membosankan',
+            'Emosional dan ekspresif'
+        ],
+        strengths: [
+            'Komunikator yang baik',
+            'Memotivasi orang lain',
+            'Mudah beradaptasi',
+            'Antusiasme tinggi',
+            'Kreatif dan inovatif'
+        ],
+        weaknesses: [
+            'Kurang disiplin',
+            'Mudah terdistraksi',
+            'Tidak detail-oriented',
+            'Terlalu banyak bicara',
+            'Sulit menepati janji'
+        ],
+        careers: ['Sales & Marketing', 'Public Relations', 'Event Organizer', 'Entertainer', 'Presenter', 'Teacher'],
+        tips: [
+            'Buat to-do list untuk tetap fokus',
+            'Latih kedisiplinan dan manajemen waktu',
+            'Dengarkan lebih banyak, bicara seperlunya',
+            'Selesaikan satu tugas sebelum mulai yang baru',
+            'Catat janji dan komitmen penting'
+        ]
+    },
+    B: {
+        name: 'KOLERIS',
+        color: '#e67e22',
+        icon: '💪',
+        tagline: 'Si Pemimpin yang Kuat',
+        description: 'Ekstrovert, tegas, dan berorientasi pada tujuan. Suka memimpin dan mengambil keputusan.',
+        characteristics: [
+            'Tegas dan percaya diri',
+            'Berorientasi pada hasil',
+            'Suka tantangan dan kompetisi',
+            'Pengambil keputusan yang cepat',
+            'Produktif dan efisien',
+            'Tidak sabaran dengan ketidakefisienan'
+        ],
+        strengths: [
+            'Kepemimpinan alami',
+            'Berani mengambil risiko',
+            'Orientasi tujuan yang kuat',
+            'Tegas dalam keputusan',
+            'Produktivitas tinggi'
+        ],
+        weaknesses: [
+            'Terlalu bossy',
+            'Kurang sensitif',
+            'Tidak sabaran',
+            'Sulit menerima kritik',
+            'Workaholic'
+        ],
+        careers: ['CEO/Manager', 'Entrepreneur', 'Politisi', 'Direktur', 'Pilot', 'Lawyer'],
+        tips: [
+            'Latih empati dan mendengarkan',
+            'Beri apresiasi pada tim',
+            'Kontrol kemarahan dan ketidaksabaran',
+            'Delegasikan tugas, jangan micromanage',
+            'Work-life balance sangat penting'
+        ]
+    },
+    C: {
+        name: 'MELANKOLIS',
+        color: '#9b59b6',
+        icon: '🤔',
+        tagline: 'Si Pemikir yang Perfeksionis',
+        description: 'Introvert, analitis, dan detail-oriented. Suka kesempurnaan dan kedalaman.',
+        characteristics: [
+            'Perfeksionis dan teliti',
+            'Berpikir mendalam dan analitis',
+            'Sensitif dan idealis',
+            'Loyal dan setia',
+            'Suka keteraturan dan struktur',
+            'Cenderung pesimistis'
+        ],
+        strengths: [
+            'Perhatian pada detail',
+            'Analisis mendalam',
+            'Standar tinggi',
+            'Kreatif dan artistik',
+            'Dapat diandalkan'
+        ],
+        weaknesses: [
+            'Terlalu kritis',
+            'Overthinking',
+            'Perfeksionisme berlebihan',
+            'Sulit puas',
+            'Mudah depresi'
+        ],
+        careers: ['Scientist', 'Analyst', 'Artist', 'Writer', 'Programmer', 'Accountant'],
+        tips: [
+            'Terima bahwa kesempurnaan tidak selalu mungkin',
+            'Jangan overthink, ambil action',
+            'Fokus pada progress, bukan perfection',
+            'Belajar menerima kritik konstruktif',
+            'Kelola ekspektasi terhadap diri sendiri'
+        ]
+    },
+    D: {
+        name: 'PHLEGMATIS',
+        color: '#3498db',
+        icon: '😌',
+        tagline: 'Si Pendamai yang Tenang',
+        description: 'Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.',
+        characteristics: [
+            'Tenang dan sabar',
+            'Pendamai dan diplomatik',
+            'Pendengar yang baik',
+            'Stabil dan konsisten',
+            'Tidak suka konflik',
+            'Santai dan easy-going'
+        ],
+        strengths: [
+            'Kemampuan diplomasi',
+            'Sabar dan tenang',
+            'Pendengar yang baik',
+            'Konsisten dan stabil',
+            'Mudah bergaul'
+        ],
+        weaknesses: [
+            'Kurang inisiatif',
+            'Terlalu pasif',
+            'Sulit membuat keputusan',
+            'Menghindari konfrontasi',
+            'Kurang ambisi'
+        ],
+        careers: ['Counselor', 'Mediator', 'HR', 'Customer Service', 'Nurse', 'Social Worker'],
+        tips: [
+            'Berani ambil inisiatif',
+            'Jangan menghindari konflik yang perlu',
+            'Tetapkan tujuan yang jelas',
+            'Latih kemampuan decision making',
+            'Keluar dari zona nyaman sesekali'
+        ]
+    }
+};
+
+async function loadData() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const container = document.getElementById('mainContainer');
+
+    if (!token) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Error</h2><p>Token tidak ditemukan di URL</p></div>`;
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`, {
+            headers: { 'X-Custom-Auth': 'admin' }
+        });
+        const res = await response.json();
+
+        if (res.success && res.count > 0) {
+            renderResult(res.data[0]);
+        } else {
+            container.innerHTML = `<div class="error-msg"><h2>❌ Data Tidak Ditemukan</h2><p>Token tidak valid atau sudah kadaluarsa</p></div>`;
+        }
+    } catch (e) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Kesalahan Koneksi</h2><p>Tidak dapat terhubung ke server</p></div>`;
+    }
+}
+
+function renderResult(data) {
+    const dataDiri = JSON.parse(data.x_02 || "{}");
+    const scores = JSON.parse(data.x_03 || "{}");
+    
+    // scores format: {A: skorSanguinis, B: skorKoleris, C: skorMelankolis, D: skorPhlegmatis}
+    const total = 26; // Total pertanyaan
+    
+    const dominantKey = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+    const dominant = TEMPERAMENTS[dominantKey];
+    
+    const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    
+    let tempCardsHTML = '';
+    sortedScores.forEach(([key, score]) => {
+        const temp = TEMPERAMENTS[key];
+        const percentage = Math.round((score / total) * 100);
+        tempCardsHTML += `
+            <div class="temp-card ${key === dominantKey ? 'dominant' : ''}" style="border-color: ${temp.color};">
+                <div class="temp-icon">${temp.icon}</div>
+                <div class="temp-name" style="color: ${temp.color};">${temp.name}</div>
+                <div class="temp-score" style="color: ${temp.color};">${score}/${total}</div>
+                <div style="color: #666; font-size: 0.9em;">${percentage}%</div>
+            </div>
+        `;
+    });
+
+    const html = `
+        <div class="header">
+            <h1>🎭 Hasil Tes Temperamen</h1>
+            <p>Apa Temperamen yang Kita Miliki?</p>
+        </div>
+        <div class="content">
+            <div class="profile-section">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 Informasi Peserta</h3>
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <span class="profile-label">Nama Lengkap</span>
+                        <span class="profile-value">${dataDiri.nama || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Usia</span>
+                        <span class="profile-value">${dataDiri.usia || '-'} Tahun</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Pendidikan</span>
+                        <span class="profile-value">${dataDiri.pendidikan || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Tanggal Tes</span>
+                        <span class="profile-value">${data.x_05 || '-'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card" style="border-color: ${dominant.color};">
+                <h2 style="color: ${dominant.color};">${dominant.icon} ${dominant.name}</h2>
+                <p style="font-size: 1.3em; font-weight: bold; color: #555; margin-bottom: 10px;">${dominant.tagline}</p>
+                <p style="font-size: 1.1em; color: #555;">${dominant.description}</p>
+            </div>
+
+            <div class="temperament-grid">
+                ${tempCardsHTML}
+            </div>
+
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
+
+            <div class="info-section">
+                <h3>🎯 Karakteristik Temperamen ${dominant.name}</h3>
+                <ul>
+                    ${dominant.characteristics.map(char => `<li>${char}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="strength-weakness">
+                <div class="sw-box">
+                    <h4 style="color: #27ae60; border-color: #27ae60;">💪 Kekuatan</h4>
+                    <ul>
+                        ${dominant.strengths.map(s => `<li style="color: #27ae60;">✓ ${s}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="sw-box">
+                    <h4 style="color: #e74c3c; border-color: #e74c3c;">⚠️ Kelemahan</h4>
+                    <ul>
+                        ${dominant.weaknesses.map(w => `<li style="color: #e74c3c;">✗ ${w}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>💼 Karir yang Cocok</h3>
+                <p style="color: #555; line-height: 1.8; font-size: 1.1em;">
+                    ${dominant.careers.join(' • ')}
+                </p>
+            </div>
+
+            <div class="info-section">
+                <h3>💡 Saran Pengembangan Diri</h3>
+                <ul>
+                    ${dominant.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>📚 Tentang Temperamen</h3>
+                <p style="line-height: 1.8; color: #555;">
+                    Teori temperamen berasal dari Hippocrates yang membagi kepribadian manusia menjadi 4 tipe dasar. 
+                    Setiap orang biasanya memiliki kombinasi dari keempat temperamen, namun satu atau dua akan lebih dominan. 
+                    Memahami temperamen membantu kita mengenali kekuatan dan kelemahan diri, serta cara berinteraksi dengan orang lain yang memiliki temperamen berbeda.
+                </p>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-download" onclick="downloadAsImage()">📥 Download JPG</button>
+                <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('mainContainer').innerHTML = html;
+    createChart(scores);
+}
+
+function createChart(scores) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: ['Sanguinis', 'Koleris', 'Melankolis', 'Phlegmatis'],
+            datasets: [{
+                data: [scores.A, scores.B, scores.C, scores.D],
+                backgroundColor: [
+                    'rgba(241, 196, 15, 0.7)',
+                    'rgba(230, 126, 34, 0.7)',
+                    'rgba(155, 89, 182, 0.7)',
+                    'rgba(52, 152, 219, 0.7)'
+                ],
+                borderColor: [
+                    '#f1c40f',
+                    '#e67e22',
+                    '#9b59b6',
+                    '#3498db'
+                ],
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: { size: 14, weight: 'bold' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed.r}/26`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 26,
+                    ticks: {
+                        stepSize: 5
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function downloadAsImage() {
+    const button = event.target;
+    button.disabled = true;
+    button.textContent = '⏳ Memproses...';
+    
+    try {
+        const container = document.getElementById('mainContainer');
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false
+        });
+        
+        const link = document.createElement('a');
+        link.download = `Hasil-Temperamen-${Date.now()}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+        
+        button.disabled = false;
+        button.textContent = '✅ Download Berhasil!';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    } catch (error) {
+        button.disabled = false;
+        button.textContent = '❌ Gagal';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>

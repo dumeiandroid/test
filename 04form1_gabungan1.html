@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Temperamen - Lidan Psikologi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2f3640;
+            --accent: #353b48;
+            --bg: #f5f6fa;
+            --white: #ffffff;
+            --sanguinis: #f1c40f;
+            --koleris: #e67e22;
+            --melankolis: #9b59b6;
+            --flegmatis: #3498db;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0; padding: 15px; background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+
+        /* --- HALAMAN PEMBUKA --- */
+        #welcome-screen {
+            max-width: 650px; width: 100%; background: var(--white);
+            border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .hero-header { 
+            background: var(--primary); 
+            color: white; padding: 40px 25px; text-align: center; 
+        }
+        .info-text { padding: 30px; color: #444; line-height: 1.7; }
+        
+        .temp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0; }
+        .temp-item { padding: 10px; border-radius: 8px; text-align: center; color: white; font-weight: bold; font-size: 0.9rem; }
+
+        .token-box { background: #f8fafc; padding: 25px; border-top: 1px solid #edf2f7; text-align: center; }
+        .token-input { 
+            width: 100%; max-width: 300px; padding: 12px; border: 2px solid #cbd5e0; border-radius: 8px; 
+            text-align: center; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; outline: none;
+        }
+
+        .wa-link {
+            display: block; margin-top: 15px; color: #e74c3c; font-size: 0.85rem;
+            text-decoration: none; font-weight: bold; line-height: 1.4;
+        }
+        .wa-link:hover { text-decoration: underline; }
+
+        /* --- BUTTONS --- */
+        .btn-main { 
+            width: 100%; max-width: 300px; padding: 15px; border: none; border-radius: 10px; 
+            background: var(--primary); color: white; font-weight: bold; cursor: pointer; font-size: 1rem;
+            transition: 0.3s;
+        }
+        .btn-main:hover { background: #000; transform: translateY(-2px); }
+
+        /* --- KUIS --- */
+        #quiz-container, #result-container { display: none; width: 100%; max-width: 700px; }
+        .video-box { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 20px; }
+        .video-box iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
+        
+        .quiz-card { background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .options-row { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-opt { padding: 15px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 10px; border: 2px solid var(--primary); background: white; color: var(--primary); cursor: pointer; transition: 0.3s; }
+        .btn-opt:hover { background: var(--primary); color: white; }
+
+        /* --- HASIL --- */
+        .result-paper { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.1); padding: 30px; }
+        .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem; border-left: 5px solid var(--primary); }
+        .chart-box { height: 300px; margin: 20px 0; }
+
+        /* --- MODAL --- */
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000; }
+        .modal { background:white; padding:30px; border-radius:15px; width:90%; max-width:400px; }
+        input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+    <div class="hero-header">
+        <h1>Tes Temperamen</h1>
+        <p>Kenali Pola Alami Perilaku Anda</p>
+    </div>
+    <div class="info-text">
+        <p>Selamat datang di Tes Temperamen. Halo semuanya. Pernahkah kamu bertanya-tanya mengapa kamu bereaksi dengan cara tertentu dalam situasi tertentu?</p>
+        <p>Mengapa ada orang yang selalu ceria dan mudah bergaul sementara yang lain lebih tenang dan pendiam? Atau ada yang tegas dan suka memimpin, tapi ada juga yang perfeksionis dan sangat detail.</p>
+        
+        <div class="temp-grid">
+            <div class="temp-item" style="background:var(--sanguinis)">Sanguinis (Populer)</div>
+            <div class="temp-item" style="background:var(--koleris)">Kolerik (Pemimpin)</div>
+            <div class="temp-item" style="background:var(--melankolis)">Melankolis (Perfeksionis)</div>
+            <div class="temp-item" style="background:var(--flegmatis)">Flegmatik (Pendamai)</div>
+        </div>
+
+        <p>Jawabannya terletak pada temperamen, sebuah pola alami perilaku dan emosi yang sudah ada sejak kita lahir. Temperamen mempengaruhi cara kita berinteraksi dengan dunia, mengambil keputusan, dan bahkan memilih karir.</p>
+        <p style="text-align: center; font-weight: bold; color: var(--primary); border: 2px dashed var(--primary); padding: 15px; border-radius: 10px;">
+            Siapkan dulu kertas dan pulpen untuk mencatat jawaban kamu, ya. Yup, kita mulai tesnya sekarang!
+        </p>
+    </div>
+
+    <div class="token-box">
+        <input type="text" id="token-input" class="token-input" placeholder="Masukkan Kode Token...">
+        <br>
+        <button class="btn-main" onclick="validateToken()">MULAI SEKARANG</button>
+        
+        <a href="https://wa.me/6285159601400?text=sy%20ingin%20mendapatkan%20token%20tes%20temperamen%2C%20berapakah%20biayanya%3F" 
+           target="_blank" class="wa-link">
+            Apabila kamu belum memiliki token,<br>silahkan hubungi Lidan Psikologi (Klik Di Sini)
+        </a>
+    </div>
+</div>
+
+<div id="quiz-container">
+    <div class="video-box">
+        <iframe src="https://www.youtube.com/embed/hqzBQ-QlzIg?si=zmh6lZjrV0hdU5jY" allowfullscreen></iframe>
+    </div>
+    <div class="quiz-card">
+        <h2 id="q-label" style="margin: 0; color: var(--primary);">Soal Nomor 1</h2>
+        <div class="options-row">
+            <button class="btn-opt" onclick="submitAnswer('A')">A</button>
+            <button class="btn-opt" onclick="submitAnswer('B')">B</button>
+            <button class="btn-opt" onclick="submitAnswer('C')">C</button>
+            <button class="btn-opt" onclick="submitAnswer('D')">D</button>
+        </div>
+    </div>
+</div>
+
+<div id="data-modal" class="overlay">
+    <div class="modal">
+        <h3 style="margin-top:0; text-align:center;">Analisis Selesai!</h3>
+        <label>Nama Lengkap</label>
+        <input type="text" id="user-name">
+        <label>Usia</label>
+        <input type="number" id="user-age">
+        <button class="btn-main" style="max-width:none; width:100%;" onclick="generateResult()">LIHAT HASIL</button>
+    </div>
+</div>
+
+<div id="result-container">
+    <div class="result-paper" id="capture-area">
+        <h2 style="text-align: center; color: var(--primary); margin-bottom: 20px;">📊 Laporan Profil Temperamen</h2>
+        <div class="profile-grid">
+            <div><b>Nama:</b> <span id="res-name"></span></div>
+            <div><b>Usia:</b> <span id="res-age"></span> Thn</div>
+            <div><b>Tanggal:</b> <span id="res-date"></span></div>
+            <div><b>Status:</b> Terverifikasi</div>
+        </div>
+        <div class="chart-box">
+            <canvas id="barChart"></canvas>
+        </div>
+        <div id="result-text" style="background:#f8fafc; padding:20px; border-radius:12px; border-left:8px solid var(--primary);">
+            </div>
+    </div>
+    <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <button class="btn-main" style="background:#27ae60; max-width:none;" onclick="downloadJPG()">📥 Download JPG</button>
+        <button class="btn-main" style="background:#2c3e50; max-width:none;" onclick="window.print()">🖨️ Cetak PDF</button>
+    </div>
+    <button class="btn-main" style="background:#95a5a6; max-width:none; width:100%; margin-top:10px;" onclick="location.reload()">🔄 Ulangi Tes</button>
+</div>
+
+<script>
+    const TOKEN_KEY = "123abc";
+    let currentQ = 1;
+    let scores = { A: 0, B: 0, C: 0, D: 0 };
+
+    function validateToken() {
+        if (document.getElementById('token-input').value === TOKEN_KEY) {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+        } else {
+            alert("Token tidak valid! Hubungi Lidan Psikologi.");
+        }
+    }
+
+    function submitAnswer(val) {
+        scores[val]++;
+        if (currentQ < 26) { // Sesuai jumlah soal tes temperamen standar
+            currentQ++;
+            document.getElementById('q-label').innerText = "Soal Nomor " + currentQ;
+        } else {
+            document.getElementById('data-modal').style.display = 'flex';
+        }
+    }
+
+    function generateResult() {
+        const name = document.getElementById('user-name').value || "Sobat Lidan";
+        document.getElementById('data-modal').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+
+        document.getElementById('res-name').innerText = name;
+        document.getElementById('res-age').innerText = document.getElementById('user-age').value;
+        document.getElementById('res-date').innerText = new Date().toLocaleDateString('id-ID');
+
+        const labels = ['Sanguinis', 'Koleris', 'Melankolis', 'Flegmatis'];
+        const dataValues = [scores.A, scores.B, scores.C, scores.D];
+        const colors = ['#f1c40f', '#e67e22', '#9b59b6', '#3498db'];
+
+        const maxScore = Math.max(...dataValues);
+        const dominantIndex = dataValues.indexOf(maxScore);
+        const dominantType = labels[dominantIndex];
+
+        const analysis = {
+            'Sanguinis': 'Anda adalah pribadi yang ceria, penuh semangat, dan suka bersosialisasi. Anda membawa energi positif ke lingkungan sekitar.',
+            'Koleris': 'Anda adalah pemimpin alami, tegas, dan berorientasi pada target. Anda sangat efektif dalam mengambil keputusan.',
+            'Melankolis': 'Anda adalah pribadi yang mendalam, perfeksionis, dan sangat detail. Anda memiliki kemampuan analisis dan empati yang tinggi.',
+            'Flegmatis': 'Anda adalah pendamai yang tenang, setia, dan stabil. Anda sangat baik dalam menjaga keharmonisan kelompok.'
+        };
+
+        document.getElementById('result-text').innerHTML = `
+            <h3 style="color:${colors[dominantIndex]}; margin-top:0;">Tipe Dominan: ${dominantType}</h3>
+            <p>${analysis[dominantType]}</p>
+        `;
+
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataValues,
+                    backgroundColor: colors,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    async function downloadJPG() {
+        const area = document.getElementById('capture-area');
+        const canvas = await html2canvas(area, { scale: 2 });
+        const link = document.createElement('a');
+        link.download = `Hasil-Temperamen.jpg`;
+        link.href = canvas.toDataURL('image/jpeg');
+        link.click();
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Gaya Belajar Interaktif</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Container Utama */
+        .main-wrapper {
+            width: 100%;
+            max-width: 700px; /* Membatasi lebar agar pas di layar */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Container Video yang Dikecilkan */
+        .video-box {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* Ratio 16:9 */
+            height: 0;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .video-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Area Quiz Lebih Ramping */
+        .quiz-card {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .question-number {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Tombol Berjejer Horizontal */
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button.option-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: 2px solid var(--accent-color);
+            background: white;
+            color: var(--accent-color);
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        button.option-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Hasil */
+        #result {
+            display: none;
+            text-align: left;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .result-box { padding: 15px; border-radius: 8px; margin-top: 10px; }
+        .visual { background: #e3f2fd; border-left: 5px solid #2196f3; }
+        .auditory { background: #f1f8e9; border-left: 5px solid #8bc34a; }
+        .kinestetik { background: #fff3e0; border-left: 5px solid #ff9800; }
+
+        /* Responsif untuk HP Kecil */
+        @media (max-width: 480px) {
+            .options { flex-direction: row; }
+            button.option-btn { padding: 10px 5px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="video-box">
+            <iframe src="https://www.youtube.com/embed/hqzBQ-QlzIg?si=zmh6lZjrV0hdU5jY" 
+                    title="YouTube video player" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+            </iframe>
+        </div>
+
+        <div id="quiz-section" class="quiz-card">
+            <span class="question-number" id="q-number">Soal Nomor 1</span>
+            
+            <div class="options">
+                <button class="option-btn" onclick="nextQuestion('A')">PILIHAN A</button>
+                <button class="option-btn" onclick="nextQuestion('B')">PILIHAN B</button>
+                <button class="option-btn" onclick="nextQuestion('C')">PILIHAN C</button>
+            </div>
+            <p style="font-size: 0.8rem; color: #777; margin-top: 10px;">Klik tombol sesuai jawaban Anda di video</p>
+        </div>
+
+        <div id="result">
+            <h2 style="text-align: center;">Hasil Analisis</h2>
+            <div id="result-content"></div>
+            <button class="option-btn" style="margin-top: 20px; width: 100%;" onclick="location.reload()">Ulangi Tes</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        let score = { A: 0, B: 0, C: 0 };
+        const totalQuestions = 15;
+
+        function nextQuestion(choice) {
+            score[choice]++;
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                document.getElementById('q-number').innerText = "Soal Nomor " + currentQuestion;
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-section').style.display = 'none';
+            // Sembunyikan video saat hasil muncul agar fokus ke teks
+            document.querySelector('.video-box').style.display = 'none';
+            
+            const resultDiv = document.getElementById('result');
+            const content = document.getElementById('result-content');
+            resultDiv.style.display = 'block';
+
+            let maxScore = Math.max(score.A, score.B, score.C);
+            let resultHTML = "";
+
+            if (score.A === maxScore) {
+                resultHTML = `
+                <div class="result-box visual">
+                    <h3>TIPE VISUAL (Dominan A)</h3>
+                    <p>Dominan indera pengelihatan.</p>
+                    <strong>Strategi:</strong>
+                    <ul>
+                        <li>Gunakan variasi warna catatatan.</li>
+                        <li>Gunakan buku dengan banyak gambar ilustrasi.</li>
+                        <li>Pastikan penerangan cukup saat belajar.</li>
+                    </ul>
+                </div>`;
+            } else if (score.B === maxScore) {
+                resultHTML = `
+                <div class="result-box auditory">
+                    <h3>TIPE AUDITORY (Dominan B)</h3>
+                    <p>Dominan indera pendengaran.</p>
+                    <strong>Strategi:</strong>
+                    <ul>
+                        <li>Gunakan perekam suara saat belajar.</li>
+                        <li>Perbanyak diskusi dan tanya jawab.</li>
+                        <li>Belajar sambil mendengarkan musik lembut.</li>
+                    </ul>
+                </div>`;
+            } else {
+                resultHTML = `
+                <div class="result-box kinestetik">
+                    <h3>TIPE KINESTETIK (Dominan C)</h3>
+                    <p>Dominan gerakan tubuh dan aktivitas fisik.</p>
+                    <strong>Strategi:</strong>
+                    <ul>
+                        <li>Perbanyak praktik langsung/simulasi.</li>
+                        <li>Jangan duduk terlalu lama saat belajar.</li>
+                        <li>Gunakan gerakan tubuh untuk membantu ingatan.</li>
+                    </ul>
+                </div>`;
+            }
+            content.innerHTML = resultHTML;
+        }
+    </script>
+</body>
+</html>

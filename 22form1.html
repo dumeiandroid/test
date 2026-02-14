@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Gaya Kepemimpinan</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #16a085; --bg: #f4f7f6; --red-yt: #ff0000; --blue-fb: #1877f2; --text: #34495e; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; background: var(--bg); display: flex; flex-direction: column; align-items: center; color: var(--text); }
+        .main-wrapper { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Video & Social Header */
+        .video-box { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .social-buttons { display: flex; gap: 10px; justify-content: center; }
+        .btn-social { flex: 1; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
+        .btn-subscribe { background: var(--red-yt); } .btn-like { background: var(--blue-fb); }
+
+        /* Quiz UI */
+        .quiz-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; border-top: 5px solid var(--accent); position: relative; }
+        .progress-bar { position: absolute; top: 0; left: 0; height: 5px; background: var(--accent); transition: width 0.3s; border-radius: 5px 5px 0 0; }
+        .question-number { font-size: 1.1rem; font-weight: bold; color: var(--accent); margin-bottom: 20px; display: block; }
+        .question-text { font-size: 1.2rem; color: #2c3e50; margin-bottom: 35px; min-height: 3.5em; line-height: 1.6; }
+        
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .opt-btn { width: 100%; padding: 15px; font-size: 1rem; cursor: pointer; border: 2px solid #ecf0f1; background: #fff; color: var(--text); border-radius: 10px; font-weight: 500; transition: 0.2s; text-align: left; }
+        .opt-btn:hover { border-color: var(--accent); background: #f0f9f8; }
+        .opt-btn span { font-weight: bold; color: var(--accent); margin-right: 10px; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; }
+        .input-group { margin: 15px 0; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .btn-submit { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <!-- Video Gaya Kepemimpinan -->
+    <div class="video-box">
+        <iframe src="https://www.youtube.com/embed/nU0lQ-39klo?si=zmh6lZjrV0hdU5jY" allowfullscreen></iframe>
+    </div>
+    
+    <!-- Social Actions -->
+    <div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">🔔 SUBSCRIBE CHANNEL</a>
+        <a href="https://www.youtube.com/watch?v=nU0lQ-39klo" target="_blank" class="btn-social btn-like">👍 LIKE VIDEO</a>
+    </div>
+
+    <!-- Quiz Section -->
+    <div id="quiz-container" class="quiz-card">
+        <div id="progress" class="progress-bar" style="width: 0%;"></div>
+        <span class="question-number" id="q-number">Pertanyaan 1 / 10</span>
+        <p class="question-text" id="q-text">Sedang memuat pertanyaan...</p>
+        
+        <div class="options">
+            <button class="opt-btn" onclick="answer('a')"><span>A</span> <span id="opt-a">Pilihan A</span></button>
+            <button class="opt-btn" onclick="answer('b')"><span>B</span> <span id="opt-b">Pilihan B</span></button>
+            <button class="opt-btn" onclick="answer('c')"><span>C</span> <span id="opt-c">Pilihan C</span></button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Data Diri -->
+<div id="form-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="text-align:center; color: var(--primary); margin-top:0;">Hasil Gaya Kepemimpinan</h3>
+        <p style="text-align:center; font-size: 0.9rem; color: #666; margin-bottom: 20px;">Lengkapi data diri untuk melihat hasil analisis gaya kepemimpinan Anda.</p>
+        <div class="input-group">
+            <input type="text" id="nama" placeholder="Nama Lengkap" required>
+        </div>
+        <div class="input-group">
+            <input type="number" id="usia" placeholder="Usia" required>
+        </div>
+        <div class="input-group">
+            <select id="pendidikan">
+                <option value="">Pendidikan Terakhir</option>
+                <option value="SMA/K">SMA/K</option>
+                <option value="Diploma">Diploma</option>
+                <option value="Sarjana (S1)">Sarjana (S1)</option>
+                <option value="Magister (S2)">Magister (S2)</option>
+            </select>
+        </div>
+        <button class="btn-submit" onclick="submitFinal()">LIHAT GAYA SAYA</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "Bagaimana Anda biasanya membuat keputusan besar untuk tim?", a: "Saya memutuskan sendiri berdasarkan pengalaman saya.", b: "Saya mendiskusikan berbagai opsi dengan tim dan mencari mufakat.", c: "Saya membiarkan anggota tim yang ahli di bidangnya memutuskan." },
+        { q: "Apa pendekatan Anda terhadap aturan di tempat kerja?", a: "Aturan harus diikuti secara ketat tanpa pengecualian.", b: "Aturan bisa disesuaikan jika tim merasa itu perlu diubah.", c: "Saya memberikan kebebasan penuh pada tim selama hasil tercapai." },
+        { q: "Bagaimana Anda memantau kemajuan pekerjaan tim?", a: "Saya memeriksa setiap detail pekerjaan mereka setiap saat.", b: "Saya mengadakan rapat rutin untuk mendengar laporan progres.", c: "Saya hanya memeriksa hasil akhir setelah proyek selesai." },
+        { q: "Jika terjadi kesalahan dalam proyek, apa yang Anda lakukan?", a: "Menegur keras pihak yang melakukan kesalahan tersebut.", b: "Mengadakan sesi evaluasi bersama untuk belajar dari kesalahan.", c: "Memberikan ruang bagi tim untuk memperbaikinya sendiri." },
+        { q: "Bagaimana Anda memberikan instruksi kepada bawahan?", a: "Memberikan instruksi spesifik yang tidak boleh dipertanyakan.", b: "Menjelaskan tujuan akhir dan meminta masukan cara mencapainya.", c: "Hanya memberikan garis besar dan membiarkan mereka berkreasi." },
+        { q: "Apa pandangan Anda tentang kolaborasi?", a: "Kolaborasi bagus, selama saya tetap memegang kendali penuh.", b: "Kolaborasi adalah kunci utama kesuksesan organisasi.", c: "Saya lebih suka anggota tim bekerja secara mandiri." },
+        { q: "Bagaimana Anda memotivasi anggota tim?", a: "Dengan sistem hadiah dan hukuman yang jelas.", b: "Dengan melibatkan mereka dalam visi dan misi organisasi.", c: "Dengan memberikan kepercayaan penuh atas otonomi mereka." },
+        { q: "Apa respon Anda saat anggota tim memiliki ide baru?", a: "Saya menolaknya jika ide tersebut tidak sesuai dengan cara saya.", b: "Saya mendengarkan dan mempertimbangkannya bersama tim.", c: "Saya mendorong mereka untuk langsung mencoba ide tersebut." },
+        { q: "Menurut Anda, peran seorang pemimpin adalah...", a: "Menjadi pengarah utama dan pengambil keputusan.", b: "Menjadi fasilitator dan pembimbing bagi pertumbuhan tim.", c: "Menjadi pendukung yang tidak terlalu banyak ikut campur." },
+        { q: "Dalam situasi darurat, apa tindakan Anda?", a: "Segera mengambil alih dan memberi komando tunggal.", b: "Memanggil perwakilan tim untuk diskusi cepat mencari solusi.", c: "Percaya bahwa tim sudah tahu apa yang harus dilakukan." }
+    ];
+
+    let currentIndex = 0;
+    let scores = { a: 0, b: 0, c: 0 };
+
+    function updateUI() {
+        const item = questions[currentIndex];
+        document.getElementById('q-number').innerText = `Pertanyaan ${currentIndex + 1} / ${questions.length}`;
+        document.getElementById('q-text').innerText = item.q;
+        document.getElementById('opt-a').innerText = item.a;
+        document.getElementById('opt-b').innerText = item.b;
+        document.getElementById('opt-c').innerText = item.c;
+        document.getElementById('progress').style.width = `${((currentIndex) / questions.length) * 100}%`;
+    }
+
+    function answer(val) {
+        scores[val]++;
+        currentIndex++;
+        if (currentIndex < questions.length) {
+            updateUI();
+        } else {
+            document.getElementById('progress').style.width = "100%";
+            document.getElementById('form-modal').style.display = 'flex';
+        }
+    }
+
+    async function submitFinal() {
+        const nama = document.getElementById('nama').value;
+        const usia = document.getElementById('usia').value;
+        const pend = document.getElementById('pendidikan').value;
+
+        if (!nama || !usia || !pend) { alert("Mohon lengkapi data diri Anda!"); return; }
+
+        const token = "STYLE-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+        const payload = {
+            x_01: "gaya kepemimpinan",
+            x_02: JSON.stringify({ nama, usia, pendidikan: pend }),
+            x_03: JSON.stringify(scores),
+            x_04: token,
+            x_05: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        };
+
+        try {
+            const res = await fetch("https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': 'admin' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                window.open(`22view.html?token=${token}`, '_blank');
+                location.reload();
+            } else {
+                alert("Gagal mengirim data.");
+            }
+        } catch (e) {
+            alert("Terjadi kesalahan koneksi.");
+        }
+    }
+
+    window.onload = updateUI;
+</script>
+
+</body>
+</html>

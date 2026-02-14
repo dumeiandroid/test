@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Dominasi Otak - Lidan Psikologi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --left-brain: #2980b9;
+            --right-brain: #e74c3c;
+            --balanced: #8e44ad;
+            --bg: #f4f7f6;
+            --accent: #667eea;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+
+        /* --- HALAMAN PEMBUKA --- */
+        #welcome-screen {
+            max-width: 650px; width: 100%; background: white;
+            border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: block; margin-top: 20px;
+        }
+        .hero-header { 
+            background: linear-gradient(135deg, var(--left-brain) 0%, var(--right-brain) 100%); 
+            color: white; padding: 40px 25px; text-align: center; 
+        }
+        .info-text { padding: 30px; color: #444; line-height: 1.7; }
+        
+        .token-box { background: #f8fafc; padding: 25px; border-top: 1px solid #edf2f7; text-align: center; }
+        .token-input { 
+            width: 100%; max-width: 300px; padding: 12px; border: 2px solid #cbd5e0; border-radius: 8px; 
+            text-align: center; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; outline: none;
+        }
+
+        /* --- KUIS --- */
+        #quiz-container { display: none; width: 100%; max-width: 700px; margin-top: 20px; }
+        .video-box { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .video-box iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
+        
+        .quiz-card { background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .btn-opt { padding: 18px; width: 100%; margin-bottom: 10px; font-size: 1.1rem; font-weight: bold; border-radius: 12px; border: 2px solid var(--left-brain); background: white; color: var(--left-brain); cursor: pointer; transition: 0.3s; }
+        .btn-opt:hover { background: var(--left-brain); color: white; transform: scale(1.02); }
+
+        /* --- HASIL (MODIFIKASI SEPERTI VIEW) --- */
+        #result-container { display: none; width: 100%; max-width: 850px; margin-top: 10px; margin-bottom: 50px; }
+        .container-result { background: white; border-radius: 25px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+        .header-res { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .content-res { padding: 30px; }
+        
+        .profile-section { background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 25px; border-left: 5px solid #667eea; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .profile-label { font-size: 0.8em; color: #667eea; font-weight: bold; text-transform: uppercase; }
+        .profile-value { font-size: 1em; color: #2c3e50; display: block; }
+
+        .result-card { padding: 25px; border-radius: 15px; margin: 25px 0; border-left: 8px solid; background: #fdfdfd; }
+        .brain-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .brain-side { background: white; padding: 15px; border-radius: 12px; text-align: center; border: 3px solid #eee; }
+        .brain-side.active { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: inherit; }
+        .brain-percentage { font-size: 2.5em; font-weight: bold; }
+
+        .info-section { background: white; padding: 20px; border-radius: 15px; margin: 15px 0; border: 1px solid #eee; }
+        .info-section h3 { color: #2c3e50; margin-bottom: 12px; font-size: 1.2em; border-bottom: 2px solid #f0f0f0; padding-bottom: 5px; }
+        .info-section ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px; }
+        .info-section li { padding-left: 25px; position: relative; line-height: 1.4; color: #555; }
+        .info-section li:before { content: "✓"; position: absolute; left: 0; color: #667eea; font-weight: bold; }
+
+        .chart-container { position: relative; height: 300px; margin: 20px 0; }
+
+        /* --- BUTTONS --- */
+        .btn-main { width: 100%; max-width: 300px; padding: 15px; border: none; border-radius: 10px; background: var(--accent); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; padding: 0 20px; }
+        .btn-download { background: #27ae60; flex: 1; }
+        .btn-print { background: #2c3e50; flex: 1; }
+
+        /* --- MODAL --- */
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:none; justify-content:center; align-items:center; z-index:1000; }
+        .modal { background:white; padding:30px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0 18px 0; border: 1px solid #ddd; border-radius: 10px; }
+
+        @media (max-width: 600px) { .brain-comparison { grid-template-columns: 1fr; } .btn-group { flex-direction: column; } }
+    </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+    <div class="hero-header">
+        <h1>Saya Termasuk Golongan Otak Kiri atau Kanan, Yah?</h1>
+    </div>
+    <div class="info-text">
+        <p>Halo semuanya!</p>
+        <p>Cara kita berpikir, belajar, dan menyelesaikan masalah memang dipengaruhi oleh dominasi salah satu belahan otak kita. Apakah kamu si Logis yang terstruktur atau si Kreatif yang penuh imajinasi?</p>
+        <p style="text-align: center; font-weight: bold; color: var(--left-brain); border: 2px dashed var(--left-brain); padding: 15px; border-radius: 10px;">
+            Siapkan diri kamu untuk mengetahui potensi tersembunyimu!<br>Yuk, kita mulai sekarang!
+        </p>
+    </div>
+    <div class="token-box">
+        <input type="text" id="token-input" class="token-input" placeholder="Masukkan Kode Token...">
+        <br>
+        <button class="btn-main" onclick="validateToken()">MULAI SEKARANG</button>
+    </div>
+</div>
+
+<div id="quiz-container">
+    <div class="video-box">
+        <iframe src="https://www.youtube.com/embed/bs-NtSzt_Tw?si=Pk5QENI38yfRL_gj" allowfullscreen></iframe>
+    </div>
+    <div class="quiz-card">
+        <span id="side-label" style="font-weight:bold; color:var(--left-brain); letter-spacing: 1px;">GOLONGAN A (OTAK KIRI)</span>
+        <h2 id="q-label" style="margin: 15px 0 25px 0;">Pernyataan Nomor 1</h2>
+        <div style="max-width:450px; margin: 0 auto;">
+            <button class="btn-opt" id="btn-yes" onclick="answer(1)">✅ SESUAI DENGAN SAYA</button>
+            <button class="btn-opt" onclick="answer(0)" style="border-color:#ddd; color:#999;">❌ TIDAK SESUAI</button>
+        </div>
+    </div>
+</div>
+
+<div id="data-modal" class="overlay">
+    <div class="modal">
+        <h3 style="margin-top:0; text-align:center; color: var(--accent);">Tes Selesai! 🧠</h3>
+        <p style="text-align:center; color:#666; font-size: 0.9em; margin-bottom: 20px;">Lengkapi data diri untuk melihat hasil analisis lengkap.</p>
+        <label>Nama Lengkap</label>
+        <input type="text" id="user-name" placeholder="Nama Anda...">
+        <label>Usia</label>
+        <input type="number" id="user-age" placeholder="Contoh: 20">
+        <label>Pendidikan</label>
+        <select id="user-edu">
+            <option value="SMA/SMK">SMA/SMK</option>
+            <option value="Diploma/S1">Diploma/S1</option>
+            <option value="S2/S3">S2/S3</option>
+            <option value="Lainnya">Lainnya</option>
+        </select>
+        <button class="btn-main" style="max-width:none; width:100%;" onclick="processResult()">LIHAT ANALISIS LENGKAP</button>
+    </div>
+</div>
+
+<div id="result-container">
+    <div class="container-result" id="capture-area">
+        <div class="header-res">
+            <h1>🧠 Hasil Analisis Dominasi Otak</h1>
+            <p>Laporan Kecenderungan Berpikir & Potensi Diri</p>
+        </div>
+        
+        <div class="content-res">
+            <div class="profile-section">
+                <div><span class="profile-label">Nama</span><span class="profile-value" id="res-name">-</span></div>
+                <div><span class="profile-label">Usia</span><span class="profile-value" id="res-age">-</span></div>
+                <div><span class="profile-label">Pendidikan</span><span class="profile-value" id="res-edu">-</span></div>
+                <div><span class="profile-label">Tanggal</span><span class="profile-value" id="res-date">-</span></div>
+            </div>
+
+            <div id="result-card-box" class="result-card">
+                <h2 id="res-type-title" style="font-size: 2em; margin-bottom: 10px;"></h2>
+                <p id="res-description" style="color: #555; line-height: 1.6; margin-bottom: 20px;"></p>
+                
+                <div class="brain-comparison">
+                    <div id="side-left-box" class="brain-side">
+                        <h4 style="color: var(--left-brain)">Otak Kiri</h4>
+                        <div class="brain-percentage" id="perc-left" style="color: var(--left-brain)">0%</div>
+                    </div>
+                    <div id="side-right-box" class="brain-side">
+                        <h4 style="color: var(--right-brain)">Otak Kanan</h4>
+                        <div class="brain-percentage" id="perc-right" style="color: var(--right-brain)">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="brainChart"></canvas>
+            </div>
+
+            <div class="info-section"><h3>🎯 Karakteristik</h3><ul id="list-char"></ul></div>
+            <div class="info-section"><h3>💪 Kekuatan Utama</h3><ul id="list-strength"></ul></div>
+            <div class="info-section"><h3>💼 Karier Yang Cocok</h3><ul id="list-career"></ul></div>
+            <div class="info-section"><h3>💡 Tips Pengembangan</h3><ul id="list-tips"></ul></div>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-main btn-download" onclick="downloadResult()">📥 Simpan Gambar (JPG)</button>
+        <button class="btn-main btn-print" onclick="window.print()">🖨️ Cetak PDF</button>
+    </div>
+    <button class="btn-main" style="background:#95a5a6; max-width:none; width:100%; margin-top:15px;" onclick="location.reload()">🔄 Ulangi Tes</button>
+</div>
+
+<script>
+    const TOKEN_VALID = "123abc";
+    let currentQ = 1;
+    let scoreLeft = 0;
+    let scoreRight = 0;
+
+    const BRAIN_DATA = {
+        LEFT: {
+            name: 'OTAK KIRI', color: '#2980b9', icon: '🧠',
+            desc: 'Anda memiliki kecenderungan berpikir secara Logis, Analitis, dan Terstruktur.',
+            char: ['Berpikir logis dan sistematis', 'Suka hal terstruktur', 'Pandai matematika/sains', 'Kemampuan verbal baik', 'Realistis & praktis', 'Suka detail dan fakta'],
+            strengths: ['Pemikiran kritis', 'Analisis data', 'Perencanaan strategis', 'Pemecahan masalah matematis', 'Kemampuan bahasa'],
+            careers: ['Akuntan', 'Programmer', 'Analis Data', 'Insinyur', 'Ilmuwan', 'Pengacara', 'Dokter'],
+            tips: ['Buat jadwal terstruktur', 'Gunakan metode analisis langkah-demi-langkah', 'Fokus pada fakta konkret', 'Latih kreativitas untuk keseimbangan']
+        },
+        RIGHT: {
+            name: 'OTAK KANAN', color: '#e74c3c', icon: '🎨',
+            desc: 'Anda memiliki kecenderungan berpikir secara Kreatif, Intuitif, dan Imajinatif.',
+            char: ['Berpikir kreatif dan imajinatif', 'Intuisi yang kuat', 'Pandai dalam seni/musik', 'Proses informasi secara visual', 'Spontan & fleksibel', 'Melihat gambaran besar'],
+            strengths: ['Kreativitas tinggi', 'Pemikiran visual-spasial', 'Intuisi tajam', 'Inovasi', 'Ekspresi emosional'],
+            careers: ['Desainer Grafis', 'Seniman', 'Musisi', 'Arsitek', 'Penulis Kreatif', 'Fotografer', 'Marketing Kreatif'],
+            tips: ['Gunakan mind mapping', 'Ekspresikan ide melalui visual', 'Manfaatkan intuisi dalam keputusan', 'Ciptakan lingkungan kerja inspiratif']
+        },
+        BALANCED: {
+            name: 'OTAK SEIMBANG', color: '#8e44ad', icon: '☯️',
+            desc: 'Anda memiliki profil "Whole Brain Thinking" yang luar biasa seimbang!',
+            char: ['Mampu beralih antara logika dan kreativitas', 'Sangat adaptif dalam berbagai situasi', 'Mempertimbangkan fakta dan perasaan', 'Multitasking teknis dan artistik', 'Melihat masalah dari berbagai sudut pandang'],
+            strengths: ['Fleksibilitas kognitif', 'Manajemen proyek kompleks', 'Komunikasi empatik namun logis', 'Kemampuan belajar cepat', 'Harmonisasi visi besar dan detail'],
+            careers: ['Project Manager', 'Sutradara', 'Wirausahawan', 'Konsultan Strategis', 'Editor Film', 'Psikolog'],
+            tips: ['Jadilah jembatan antara tim kreatif dan teknis', 'Waspadai keraguan karena terlalu banyak pertimbangan', 'Latih pengambilan keputusan cepat', 'Gunakan kedua sisi otak secara sadar']
+        }
+    };
+
+    function validateToken() {
+        if (document.getElementById('token-input').value === TOKEN_VALID) {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+        } else {
+            alert("Token tidak valid! Silakan hubungi Lidan Psikologi.");
+        }
+    }
+
+    function answer(val) {
+        if (val === 1) {
+            if (currentQ <= 11) scoreLeft++;
+            else scoreRight++;
+        }
+
+        if (currentQ < 22) {
+            currentQ++;
+            document.getElementById('q-label').innerText = "Pernyataan Nomor " + (currentQ > 11 ? currentQ - 11 : currentQ);
+            if (currentQ === 12) {
+                document.getElementById('side-label').innerText = "GOLONGAN B (OTAK KANAN)";
+                document.getElementById('side-label').style.color = "var(--right-brain)";
+                document.getElementById('btn-yes').style.color = "var(--right-brain)";
+                document.getElementById('btn-yes').style.borderColor = "var(--right-brain)";
+            }
+        } else {
+            document.getElementById('data-modal').style.display = 'flex';
+        }
+    }
+
+    function processResult() {
+        const name = document.getElementById('user-name').value || "Peserta";
+        document.getElementById('data-modal').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+
+        // Set Info Profil
+        document.getElementById('res-name').innerText = name;
+        document.getElementById('res-age').innerText = document.getElementById('user-age').value + " Thn";
+        document.getElementById('res-edu').innerText = document.getElementById('user-edu').value;
+        document.getElementById('res-date').innerText = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        // Kalkulasi Skor
+        const total = 11;
+        const pLeft = Math.round((scoreLeft / total) * 100);
+        const pRight = Math.round((scoreRight / total) * 100);
+        
+        document.getElementById('perc-left').innerText = pLeft + "%";
+        document.getElementById('perc-right').innerText = pRight + "%";
+
+        // Tentukan Dominasi
+        let dom;
+        if (scoreLeft === scoreRight) dom = BRAIN_DATA.BALANCED;
+        else dom = scoreLeft > scoreRight ? BRAIN_DATA.LEFT : BRAIN_DATA.RIGHT;
+
+        // Render Data Dinamis
+        const card = document.getElementById('result-card-box');
+        card.style.borderColor = dom.color;
+        document.getElementById('res-type-title').innerHTML = `${dom.icon} ${dom.name}`;
+        document.getElementById('res-type-title').style.color = dom.color;
+        document.getElementById('res-description').innerText = dom.desc;
+
+        // Active State Side
+        document.getElementById('side-left-box').classList.toggle('active', scoreLeft >= scoreRight);
+        document.getElementById('side-right-box').classList.toggle('active', scoreRight >= scoreLeft);
+        if(scoreLeft >= scoreRight) document.getElementById('side-left-box').style.borderColor = dom.color;
+        if(scoreRight >= scoreLeft) document.getElementById('side-right-box').style.borderColor = dom.color;
+
+        // Render List
+        const renderList = (id, items) => {
+            document.getElementById(id).innerHTML = items.map(i => `<li>${i}</li>`).join('');
+        };
+        renderList('list-char', dom.char);
+        renderList('list-strength', dom.strengths);
+        renderList('list-career', dom.careers);
+        renderList('list-tips', dom.tips);
+
+        // Chart
+        new Chart(document.getElementById('brainChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Otak Kiri', 'Otak Kanan'],
+                datasets: [{ 
+                    data: [scoreLeft, scoreRight], 
+                    backgroundColor: [BRAIN_DATA.LEFT.color, BRAIN_DATA.RIGHT.color],
+                    hoverOffset: 10,
+                    borderWidth: 5,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    async function downloadResult() {
+        const btn = document.querySelector('.btn-download');
+        btn.innerText = "⏳ Memproses...";
+        const area = document.getElementById('capture-area');
+        const canvas = await html2canvas(area, { scale: 2 });
+        const link = document.createElement('a');
+        link.download = `Hasil-Tes-Otak-${document.getElementById('res-name').innerText}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.9);
+        link.click();
+        btn.innerText = "📥 Simpan Gambar (JPG)";
+    }
+</script>
+</body>
+</html>

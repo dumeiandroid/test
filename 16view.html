@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apakah Saya Termasuk Orang yang Setia?</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); 
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 1.8em; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 0.95em; }
+        .content { padding: 30px; }
+        .profile-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .profile-item { display: flex; flex-direction: column; }
+        .profile-label { 
+            font-size: 0.85em; 
+            color: #666; 
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .profile-value { 
+            font-size: 1.05em; 
+            color: #2d3436;
+            font-weight: 500;
+        }
+        .score-hero {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 15px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .score-hero:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(52, 152, 219, 0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+        .score-main {
+            font-size: 5em;
+            font-weight: 800;
+            margin: 20px 0;
+            position: relative;
+            z-index: 1;
+        }
+        .score-main.adventurous { color: #e74c3c; }
+        .score-main.loyal { color: #3498db; }
+        .score-main.rigid { color: #2ecc71; }
+        .score-subtitle {
+            font-size: 1.2em;
+            color: #666;
+            position: relative;
+            z-index: 1;
+        }
+        .chart-section {
+            margin: 30px 0;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .gauge-container { 
+            max-width: 350px; 
+            margin: 0 auto;
+            position: relative;
+        }
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 0 20px;
+        }
+        .gauge-label {
+            font-size: 0.85em;
+            color: #666;
+            text-align: center;
+        }
+        .gauge-label.rigid { color: #2ecc71; }
+        .gauge-label.loyal { color: #3498db; }
+        .gauge-label.adventurous { color: #e74c3c; }
+        .result-section {
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-left: 8px solid;
+        }
+        .result-section.adventurous {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe9e9 100%);
+            border-color: #e74c3c;
+        }
+        .result-section.loyal {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-color: #3498db;
+        }
+        .result-section.rigid {
+            background: linear-gradient(135deg, #f0fff4 0%, #dcfce7 100%);
+            border-color: #2ecc71;
+        }
+        .result-type {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .result-section.adventurous .result-type { color: #e74c3c; }
+        .result-section.loyal .result-type { color: #3498db; }
+        .result-section.rigid .result-type { color: #2ecc71; }
+        .result-description {
+            font-size: 1.05em;
+            line-height: 1.8;
+            color: #2d3436;
+            margin-bottom: 20px;
+        }
+        .info-section {
+            background: #f1f3f5;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+        .info-title {
+            font-size: 1.3em;
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+        .info-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #dee2e6;
+            line-height: 1.6;
+        }
+        .info-list li:last-child { border-bottom: none; }
+        .info-list strong { color: #3498db; }
+        .warning-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .warning-box h4 {
+            color: #d68910;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .strength-weakness {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        .strength-box, .weakness-box {
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid;
+        }
+        .strength-box {
+            background: linear-gradient(135deg, #f0fff4 0%, #dcfce7 100%);
+            border-color: #22c55e;
+        }
+        .weakness-box {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #ef4444;
+        }
+        .strength-box h4 { color: #22c55e; margin-bottom: 10px; }
+        .weakness-box h4 { color: #ef4444; margin-bottom: 10px; }
+        .advice-section {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-left: 5px solid #27ae60;
+        }
+        .advice-title {
+            font-size: 1.3em;
+            color: #27ae60;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .advice-list {
+            list-style: none;
+            padding: 0;
+        }
+        .advice-list li {
+            padding: 10px 0 10px 25px;
+            position: relative;
+            line-height: 1.7;
+            color: #2d3436;
+        }
+        .advice-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .loyalty-scale {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffedd5 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-left: 5px solid #f59e0b;
+        }
+        .scale-bar {
+            height: 40px;
+            background: linear-gradient(to right, #2ecc71 0%, #3498db 50%, #e74c3c 100%);
+            border-radius: 20px;
+            position: relative;
+            margin: 20px 0;
+        }
+        .scale-indicator {
+            position: absolute;
+            top: -10px;
+            width: 4px;
+            height: 60px;
+            background: #2d3436;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: left 0.5s ease;
+        }
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        .btn-secondary {
+            background: white;
+            color: #3498db;
+            border: 2px solid #3498db;
+        }
+        .btn-secondary:hover {
+            background: #3498db;
+            color: white;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        .error {
+            background: #fff5f5;
+            color: #e74c3c;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 5px solid #e74c3c;
+        }
+        @media print {
+            .buttons { display: none; }
+            body { background: white; }
+            .container { box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.4em; }
+            .result-type { font-size: 1.4em; }
+            .score-main { font-size: 3.5em; }
+            .buttons { grid-template-columns: 1fr; }
+            .strength-weakness { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div class="loading">Memuat hasil analisis...</div>
+</div>
+
+<script>
+    const AUTH_KEY = "admin";
+    
+    const pointMap = {
+        1: { a: 3, b: 2, c: 1 }, 2: { a: 3, b: 2, c: 1 }, 3: { a: 1, b: 1, c: 1 },
+        4: { a: 2, b: 3, c: 1 }, 5: { a: 1, b: 3, c: 2 }, 6: { a: 2, b: 3, c: 1 },
+        7: { a: 2, b: 1, c: 3 }, 8: { a: 1, b: 1, c: 1 }, 9: { a: 1, b: 3, c: 2 },
+        10: { a: 2, b: 1, c: 3 }
+    };
+    
+    const loyaltyTypes = {
+        adventurous: {
+            title: "Petualang Cinta - Rentan Perselingkuhan ⚠️",
+            minScore: 21,
+            color: "adventurous",
+            description: "Anda memiliki kecenderungan yang cukup tinggi untuk terjerumus dalam situasi perselingkuhan. Ketika menghadapi kebosanan atau masalah dalam hubungan, Anda cenderung mencari pelarian atau sosok lain. Ini bukan berarti Anda pasti akan selingkuh, tetapi Anda perlu extra waspada dan proaktif dalam menjaga komitmen.",
+            characteristics: [
+                "Mudah bosan dalam rutinitas hubungan",
+                "Terbuka terhadap perhatian dari lawan jenis",
+                "Cenderung mencari validasi dari luar hubungan",
+                "Kurang puas dengan monotoni dalam hubungan",
+                "Mungkin menikmati flirtasi atau perhatian dari orang lain",
+                "Kesulitan menolak godaan ketika merasa tidak dihargai"
+            ],
+            risks: [
+                "Rentan terhadap emotional affair atau physical affair",
+                "Dapat merusak kepercayaan dalam hubungan jangka panjang",
+                "Risiko kehilangan pasangan yang baik karena keputusan impulsif",
+                "Potensi menyakiti banyak orang (pasangan, keluarga, dll)",
+                "Dampak psikologis jangka panjang dari rasa bersalah"
+            ],
+            advice: [
+                "SEGERA identifikasi trigger yang membuat Anda rentan selingkuh",
+                "Komunikasikan kebutuhan Anda dengan pasangan SEBELUM mencari di luar",
+                "Tetapkan boundaries yang jelas dengan lawan jenis",
+                "Jangan menempatkan diri dalam situasi yang berisiko",
+                "Hindari hubungan one-on-one yang intens dengan lawan jenis",
+                "Jika merasa bosan, investasikan energi untuk memperbaiki hubungan",
+                "Pertimbangkan konseling pasangan jika ada masalah serius",
+                "Ingat konsekuensi jangka panjang dari keputusan jangka pendek",
+                "Kembangkan hobby dan interest yang sehat",
+                "Jaga komunikasi terbuka dengan pasangan tentang kebutuhan emosional",
+                "Jika tidak bahagia, honest conversation atau ending relationship lebih baik dari selingkuh"
+            ]
+        },
+        loyal: {
+            title: "Setia & Menyenangkan - Zona Aman 💙",
+            minScore: 11,
+            color: "loyal",
+            description: "Selamat! Anda memiliki keseimbangan yang sangat baik antara kesetiaan dan fleksibilitas sosial. Anda tidak mudah terbujuk rayuan lawan jenis, namun tetap bisa menjadi pribadi yang menyenangkan dan tidak kaku. Anda memiliki komitmen yang kuat terhadap pasangan sambil tetap menjaga pergaulan yang sehat.",
+            characteristics: [
+                "Memiliki komitmen yang kuat terhadap hubungan",
+                "Mampu membedakan antara persahabatan dan romansa",
+                "Tidak mudah terpengaruh rayuan dari lawan jenis",
+                "Tetap menyenangkan tanpa menyalahi boundaries",
+                "Menghargai pasangan sambil tetap bersosialisasi normal",
+                "Tahu kapan harus menjauh dari situasi yang tidak tepat"
+            ],
+            strengths: [
+                "Balance antara kesetiaan dan kehidupan sosial",
+                "Kepercayaan diri dalam hubungan",
+                "Komunikasi yang baik dengan pasangan",
+                "Boundaries yang jelas namun tidak berlebihan",
+                "Mampu mempertahankan hubungan jangka panjang"
+            ],
+            advice: [
+                "Pertahankan balance yang sudah baik ini",
+                "Terus komunikasikan boundaries dengan pasangan",
+                "Jangan pernah complacent - hubungan tetap butuh effort",
+                "Keep dating your partner - jaga spark tetap hidup",
+                "Appreciate pasangan Anda secara regular",
+                "Tetap waspada terhadap situasi yang bisa jadi slippery slope",
+                "Jadilah role model bagi teman-teman yang sedang berjuang",
+                "Terus invest dalam kualitas hubungan Anda"
+            ]
+        },
+        rigid: {
+            title: "Sangat Setia - Hitam Putih (Terlalu Kaku) 💚",
+            minScore: 0,
+            color: "rigid",
+            description: "Risiko Anda untuk berselingkuh sangat minimal atau bahkan tidak ada sama sekali. Anda memiliki prinsip yang sangat kuat tentang kesetiaan. Namun, perlu diwaspadai bahwa kekakuan Anda mungkin membuat Anda dianggap terlalu strict atau kurang fleksibel dalam pergaulan sosial. Ada kemungkinan orang di sekitar merasa Anda sulit untuk diajak santai.",
+            characteristics: [
+                "Prinsip kesetiaan yang sangat kuat dan tidak tergoyahkan",
+                "Cenderung berpikir hitam-putih tanpa grey area",
+                "Sangat hati-hati bahkan dalam interaksi biasa dengan lawan jenis",
+                "Mungkin menghindari situasi sosial untuk menghindari kesalahpahaman",
+                "Standar moral yang sangat tinggi untuk diri sendiri dan orang lain",
+                "Kesulitan untuk bersikap casual dalam pergaulan"
+            ],
+            strengths: [
+                "Tidak akan pernah mengkhianati pasangan",
+                "Dapat dipercaya sepenuhnya",
+                "Konsisten dengan nilai-nilai",
+                "Role model untuk kesetiaan"
+            ],
+            weaknesses: [
+                "Mungkin dianggap terlalu serius atau tidak fun",
+                "Kesulitan dalam networking atau pergaulan professional",
+                "Bisa membuat teman merasa tidak nyaman",
+                "Mungkin terlalu judgmental terhadap orang lain",
+                "Kurang fleksibel dalam situasi sosial normal"
+            ],
+            advice: [
+                "Kesetiaan Anda luar biasa - pertahankan itu!",
+                "Namun, belajarlah untuk lebih relax dalam situasi sosial yang innocent",
+                "Tidak semua interaksi dengan lawan jenis = ancaman",
+                "Percayai diri sendiri dan pasangan untuk navigate social situations",
+                "Jangan sampai kekakuan Anda membuat Anda isolated",
+                "Ada perbedaan antara friendly dan flirty - learn the nuance",
+                "Networking profesional itu penting - don't sabotage karir Anda",
+                "Pertimbangkan bahwa sedikit fleksibilitas tidak akan merusak kesetiaan",
+                "Communicate dengan pasangan tentang comfort level masing-masing",
+                "Remember: being fun and loyal bukan mutually exclusive"
+            ]
+        }
+    };
+
+    async function loadData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        
+        if (!token) {
+            showError("Token tidak ditemukan di URL");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`, 
+                { headers: { 'X-Custom-Auth': AUTH_KEY } }
+            );
+            
+            const res = await response.json();
+            
+            if (res.success && res.count > 0) {
+                renderResults(res.data[0]);
+            } else {
+                showError("Data tidak ditemukan");
+            }
+        } catch (error) {
+            showError("Gagal memuat data: " + error.message);
+        }
+    }
+
+    function renderResults(data) {
+        const profile = JSON.parse(data.x_02);
+        const answers = JSON.parse(data.x_03);
+        
+        let totalScore = 0;
+        for (let i = 1; i <= 10; i++) {
+            totalScore += pointMap[i][answers[`q${i}`]];
+        }
+
+        let type;
+        if (totalScore >= 21) type = loyaltyTypes.adventurous;
+        else if (totalScore >= 11) type = loyaltyTypes.loyal;
+        else type = loyaltyTypes.rigid;
+
+        const percentage = ((totalScore - 10) / 20 * 100).toFixed(0);
+
+        const html = `
+            <div class="header">
+                <h1>Apakah Saya Termasuk Orang yang Setia?</h1>
+                <p>Analisis Kecenderungan Kesetiaan dalam Hubungan</p>
+            </div>
+            
+            <div class="content" id="printable-area">
+                <div class="profile-section">
+                    <h3 style="margin-bottom: 15px; color: #2d3436;">Informasi Peserta</h3>
+                    <div class="profile-grid">
+                        <div class="profile-item">
+                            <span class="profile-label">Nama</span>
+                            <span class="profile-value">${profile.nama}</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Usia</span>
+                            <span class="profile-value">${profile.usia} Tahun</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Pendidikan</span>
+                            <span class="profile-value">${profile.pendidikan}</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Tanggal Tes</span>
+                            <span class="profile-value">${data.x_05}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score-hero">
+                    <div class="score-main ${type.color}">${totalScore}</div>
+                    <div class="score-subtitle">dari 30 poin</div>
+                </div>
+
+                <div class="loyalty-scale">
+                    <h4 style="color: #2d3436; margin-bottom: 15px;">Spektrum Kesetiaan</h4>
+                    <div class="scale-bar">
+                        <div class="scale-indicator" style="left: ${percentage}%"></div>
+                    </div>
+                    <div class="scale-labels">
+                        <span style="color: #2ecc71; font-weight: 600;">Sangat Setia<br>(Kaku)</span>
+                        <span style="color: #3498db; font-weight: 600;">Seimbang<br>(Ideal)</span>
+                        <span style="color: #e74c3c; font-weight: 600;">Rentan<br>(Petualang)</span>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: #2d3436;">Level Kesetiaan Anda</h3>
+                    <div class="gauge-container">
+                        <canvas id="gaugeChart"></canvas>
+                    </div>
+                    <div class="gauge-labels">
+                        <div class="gauge-label rigid">10<br>Kaku</div>
+                        <div class="gauge-label loyal">20<br>Ideal</div>
+                        <div class="gauge-label adventurous">30<br>Rentan</div>
+                    </div>
+                </div>
+
+                <div class="result-section ${type.color}">
+                    <div class="result-type">${type.title}</div>
+                    <div class="result-description">${type.description}</div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">
+                        📋 Karakteristik Anda
+                    </div>
+                    <ul class="info-list">
+                        ${type.characteristics.map(char => `<li><strong>•</strong> ${char}</li>`).join('')}
+                    </ul>
+                </div>
+
+                ${type.risks ? `
+                    <div class="warning-box">
+                        <h4>⚠️ Risiko yang Perlu Diwaspadai</h4>
+                        <ul class="info-list" style="margin-top: 10px;">
+                            ${type.risks.map(risk => `<li><strong>•</strong> ${risk}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                ${type.strengths || type.weaknesses ? `
+                    <div class="strength-weakness">
+                        ${type.strengths ? `
+                            <div class="strength-box">
+                                <h4>✅ Kekuatan Anda</h4>
+                                <ul class="info-list">
+                                    ${type.strengths.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${type.weaknesses ? `
+                            <div class="weakness-box">
+                                <h4>⚠️ Area yang Perlu Diperhatikan</h4>
+                                <ul class="info-list">
+                                    ${type.weaknesses.map(w => `<li>${w}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+
+                <div class="advice-section">
+                    <div class="advice-title">💡 Saran untuk Anda</div>
+                    <ul class="advice-list">
+                        ${type.advice.map(adv => `<li>${adv}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">🎯 Memahami Kesetiaan</div>
+                    <ul class="info-list">
+                        <li><strong>Kesetiaan bukan hanya soal tidak selingkuh secara fisik.</strong> Emotional affair juga merupakan bentuk ketidaksetiaan yang merusak.</li>
+                        <li><strong>Boundaries adalah kunci.</strong> Tetapkan batasan yang jelas dalam interaksi dengan lawan jenis, terutama di tempat kerja atau media sosial.</li>
+                        <li><strong>Komunikasi dengan pasangan.</strong> Jika merasa tidak puas atau bosan, bicarakan dengan pasangan, bukan cari di luar.</li>
+                        <li><strong>Prevention is better than cure.</strong> Jangan menempatkan diri dalam situasi yang berisiko, sekecil apapun.</li>
+                        <li><strong>Invest in your relationship.</strong> Hubungan yang sehat dan memuaskan secara natural mengurangi keinginan untuk mencari di luar.</li>
+                        <li><strong>Self-awareness is powerful.</strong> Mengetahui kecenderungan Anda adalah langkah pertama untuk membuat pilihan yang bijak.</li>
+                    </ul>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">💪 Tips Menjaga Kesetiaan</div>
+                    <ul class="info-list">
+                        <li><strong>Jaga komunikasi terbuka</strong> dengan pasangan tentang kebutuhan dan keinginan</li>
+                        <li><strong>Hindari situasi berisiko</strong> seperti minum berdua dengan lawan jenis di malam hari</li>
+                        <li><strong>Transparent dengan pasangan</strong> tentang friendships Anda</li>
+                        <li><strong>Keep the romance alive</strong> dengan date nights dan quality time</li>
+                        <li><strong>Work on yourself</strong> untuk menjadi partner yang lebih baik</li>
+                        <li><strong>Seek help early</strong> jika ada masalah dalam hubungan</li>
+                    </ul>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn-primary" onclick="window.print()">🖨️ Cetak Laporan</button>
+                    <button class="btn-secondary" onclick="downloadAsImage()">📥 Download Gambar</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('app').innerHTML = html;
+        drawGaugeChart(totalScore);
+    }
+
+    function drawGaugeChart(score) {
+        const ctx = document.getElementById('gaugeChart').getContext('2d');
+        
+        let color;
+        if (score >= 21) color = '#e74c3c';
+        else if (score >= 11) color = '#3498db';
+        else color = '#2ecc71';
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [score, 30 - score],
+                    backgroundColor: [color, '#e9ecef'],
+                    borderWidth: 0,
+                    circumference: 180,
+                    rotation: 270
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '75%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
+            },
+            plugins: [{
+                id: 'gaugeText',
+                afterDatasetDraw(chart) {
+                    const { ctx, chartArea: { width, height } } = chart;
+                    ctx.save();
+                    ctx.font = 'bold 2.5em "Segoe UI"';
+                    ctx.fillStyle = color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(score, width / 2, height / 2 + 10);
+                    ctx.restore();
+                }
+            }]
+        });
+    }
+
+    function downloadAsImage() {
+        const element = document.getElementById('printable-area');
+        const buttons = document.querySelector('.buttons');
+        buttons.style.display = 'none';
+        
+        html2canvas(element, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false,
+            windowWidth: 1200
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Hasil-Kesetiaan-${new Date().getTime()}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+            buttons.style.display = 'grid';
+        });
+    }
+
+    function showError(message) {
+        document.getElementById('app').innerHTML = `
+            <div class="header">
+                <h1>Apakah Saya Termasuk Orang yang Setia?</h1>
+            </div>
+            <div class="content">
+                <div class="error">
+                    <h3>Terjadi Kesalahan</h3>
+                    <p>${message}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    loadData();
+</script>
+
+</body>
+</html>

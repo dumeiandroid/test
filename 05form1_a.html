@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Extrovert vs Introvert</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e74c3c;
+            --bg-body: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; }
+
+        /* Welcome Screen */
+        #welcome-screen { position: fixed; inset: 0; z-index: 1000; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); display: flex; align-items: center; justify-content: center; padding: 15px; overflow-y: auto; }
+        .welcome-card { background: white; width: 100%; max-width: 650px; padding: 35px; border-radius: var(--radius); text-align: center; margin: auto; }
+        .welcome-text { text-align: justify; line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
+        
+        .token-form { background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .input-token { width: 100%; padding: 14px; border: 2px solid #cbd5e1; border-radius: 8px; text-align: center; margin-bottom: 10px; font-size: 1.1rem; }
+        .contact-info { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
+        .contact-info a { color: #25d366; text-decoration: none; font-weight: bold; }
+        .btn-start { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+
+        /* Main App */
+        .app-container { display: none; width: 100%; max-width: 750px; padding: 20px; flex-direction: column; gap: 20px; }
+        .video-box { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: var(--radius); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .video-box iframe { width: 100%; height: 100%; border: none; }
+
+        .quiz-card { background: white; padding: 20px; border-radius: var(--radius); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .q-number { display: block; font-size: 1.3rem; font-weight: 800; color: var(--accent); margin-bottom: 15px; }
+        
+        /* Opsi Ringkas Satu Baris */
+        .options { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .opt-btn { width: 60px; height: 60px; border: 2px solid var(--accent); background: white; border-radius: 10px; font-size: 1.4rem; font-weight: 800; cursor: pointer; color: var(--accent); transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .opt-btn:hover { background: var(--accent); color: white; }
+
+        /* Modal */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-box { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: var(--radius); }
+        .modal-box h3 { margin-bottom: 20px; text-align: center; color: var(--primary); }
+        .modal-box input, .modal-box select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .hidden { display: none; }
+        /* Container utama untuk tombol */
+.social-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+    max-width: 700px; /* Menyesuaikan lebar maksimal seperti di kode asal */
+    margin: 10px 0;
+}
+
+/* Gaya dasar tombol */
+.btn-social {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: opacity 0.2s;
+}
+
+/* Efek saat tombol diarahkan kursor */
+.btn-social:hover {
+    opacity: 0.9;
+}
+
+/* Warna khusus Tombol Subscribe (Merah YouTube) */
+.btn-subscribe { 
+    background-color: #ff0000; 
+}
+
+/* Warna khusus Tombol Like (Biru Facebook/Standard) */
+.btn-like { 
+    background-color: #1877f2; 
+}
+    </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+    <div class="welcome-card">
+        <h1 style="color:var(--primary); margin-bottom:20px;">Saya Termasuk Ekstrovert atau Introvert?</h1>
+        <div class="welcome-text">
+            <p>Halo semuanya!</p>
+            <p>Pernahkah kamu mendengar seseorang berkata, "Aku introvert nih, makanya nggak suka keramaian," atau "Aku ekstrovert banget, nggak bisa diem di rumah!"? Tapi, apa sebenarnya perbedaan antara ekstrovert dan introvert? Dan yang lebih penting, kamu termasuk yang mana?</p>
+            <p>Ternyata, perbedaan utama bukan tentang pemalu atau tidak pemalu, tapi tentang dari mana kita mendapatkan energi. Ekstrovert mendapatkan energi dari berinteraksi dengan orang lain dan lingkungan luar, sementara introvert mendapatkan energi dari waktu sendiri untuk refleksi dan pemikiran dalam.</p>
+            <p>Memahami apakah kamu ekstrovert atau introvert sangat penting untuk mengenal diri sendiri, memilih karir yang tepat, dan bahkan membangun hubungan yang lebih baik dengan orang lain. Siapa tahu, kamu ternyata ambivert—yang berada di tengah-tengah dan punya karakteristik dari keduanya!</p>
+            <p>Sebelum kita mulai, siapkan dulu kertas dan pulpen untuk mencatat jawaban kamu ya!</p>
+            <p><b>Yuk, kita mulai tesnya sekarang!</b></p>
+        </div>
+        <div class="token-form">
+            <input type="text" id="token-input" class="input-token" placeholder="Masukkan Token Akses">
+            <div class="contact-info">
+                Jika tidak memiliki token, hubungi:<br>
+                <a href="https://wa.me/6285159601400" target="_blank">Lidan Psikologi (+62 851 5960 1400)</a>
+            </div>
+            <button class="btn-start" onclick="verifikasiToken()">MULAI TES SEKARANG</button>
+        </div>
+    </div>
+</div>
+
+<div class="app-container" id="main-content">
+    <div class="video-box">
+        <iframe src="https://www.youtube.com/embed/DSN3amtc528" allowfullscreen></iframe>
+    </div>
+<div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">
+            🔔 Subscribe
+        </a>
+        <a href="https://youtu.be/DSN3amtc528?si=fEpKMYHEH_iNOGWi" target="_blank" class="btn-social btn-like">
+            👍 Like Video
+        </a>
+    </div>
+    <div class="quiz-card">
+        <span class="q-number" id="q-text">Soal Nomor 1</span>
+        <p style="margin-bottom: 15px; color: #555; font-size: 1rem;">Pilih pernyataan yang paling menggambarkan diri Anda</p>
+        <div class="options">
+            <button class="opt-btn" onclick="pilih('A')">A</button>
+            <button class="opt-btn" onclick="pilih('B')">B</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-data" class="modal">
+    <div class="modal-box">
+        <h3>Lengkapi Data Diri</h3>
+        <input type="text" id="inp-nama" placeholder="Nama Lengkap">
+        <input type="number" id="inp-usia" placeholder="Usia">
+        <select id="inp-edu">
+            <option value="" disabled selected>Pendidikan Terakhir</option>
+            <option value="SD">SD</option>
+            <option value="SMP">SMP</option>
+            <option value="SMA/SMK">SMA/SMK</option>
+            <option value="Diploma/S1">Diploma/S1</option>
+            <option value="S2/S3">S2/S3</option>
+        </select>
+        <button class="btn-start" id="btn-final" onclick="kirimData()">LIHAT HASIL ANALISIS</button>
+        <p id="loading" class="hidden" style="text-align:center; margin-top:10px; color: var(--accent); font-weight: bold;">Menganalisis kepribadian Anda...</p>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes";
+    let currentTotalQ = 1;
+    let scores = { A: 0, B: 0 };
+
+    function verifikasiToken() {
+        if (document.getElementById('token-input').value.toLowerCase().trim() === "123abc") {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'flex';
+        } else { alert("Token salah!"); }
+    }
+
+    function pilih(choice) {
+        scores[choice]++;
+        if (currentTotalQ < 17) {
+            currentTotalQ++;
+            document.getElementById('q-text').innerText = `Soal Nomor ${currentTotalQ}`;
+        } else {
+            document.getElementById('modal-data').style.display = 'flex';
+        }
+    }
+
+    async function kirimData() {
+        const nama = document.getElementById('inp-nama').value;
+        const usia = document.getElementById('inp-usia').value;
+        const edu = document.getElementById('inp-edu').value;
+
+        if (!nama || !usia || !edu) return alert("Mohon lengkapi semua data!");
+
+        document.getElementById('btn-final').classList.add('hidden');
+        document.getElementById('loading').classList.remove('hidden');
+
+        const tokenHasil = "EI-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+        const payload = {
+            x_01: "extrovert introvert",
+            x_02: JSON.stringify({ nama, usia, pendidikan: edu }),
+            x_03: JSON.stringify(scores),
+            x_04: tokenHasil,
+            x_05: new Date().toLocaleDateString('id-ID')
+        };
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': 'admin' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                window.open(`05view.html?token=${tokenHasil}`, '_blank');
+                alert("Berhasil! Data Anda telah tersimpan.");
+                
+                document.getElementById('modal-data').style.display = 'none';
+                document.getElementById('btn-final').classList.remove('hidden');
+                document.getElementById('loading').classList.add('hidden');
+                
+                // Form bersih, nomor tetap di 17
+                document.getElementById('inp-nama').value = "";
+                document.getElementById('inp-usia').value = "";
+                document.getElementById('inp-edu').value = "";
+            }
+        } catch (e) {
+            alert("Gagal mengirim data.");
+            document.getElementById('btn-final').classList.remove('hidden');
+            document.getElementById('loading').classList.add('hidden');
+        }
+    }
+</script>
+</body>
+</html>

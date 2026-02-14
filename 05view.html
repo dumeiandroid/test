@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Tes Ekstrovert vs Introvert</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 850px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .content {
+            padding: 40px;
+        }
+        .profile-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .profile-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .profile-label {
+            font-size: 0.85em;
+            color: #667eea;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .profile-value {
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 40px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 8px solid;
+            text-align: center;
+        }
+        .result-card h2 {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        .result-tagline {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .spectrum {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+        }
+        .spectrum-side {
+            flex: 1;
+            text-align: center;
+        }
+        .spectrum-icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+        .spectrum-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .spectrum-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .spectrum-bar {
+            flex: 2;
+            position: relative;
+        }
+        .bar-container {
+            height: 40px;
+            background: linear-gradient(to right, #e74c3c, #34495e);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .bar-marker {
+            position: absolute;
+            top: -30px;
+            transform: translateX(-50%);
+            font-size: 2em;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 30px 0;
+        }
+        .info-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .info-section li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+            color: #555;
+        }
+        .info-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .comparison-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .table-column {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .table-column h4 {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid;
+            font-size: 1.2em;
+        }
+        .table-column ul {
+            list-style: none;
+            padding: 0;
+        }
+        .table-column li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #444;
+        }
+        .table-column li:before {
+            content: "•";
+            position: absolute;
+            left: 5px;
+            font-size: 1.5em;
+        }
+        .myth-buster {
+            background: linear-gradient(135deg, #fff3cd 0%, #fff9e6 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+        }
+        .myth-buster h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+        .myth-buster p {
+            color: #856404;
+            line-height: 1.8;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-download {
+            background: #667eea;
+            color: white;
+        }
+        .btn-download:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-print {
+            background: #2c3e50;
+            color: white;
+        }
+        .btn-print:hover {
+            background: #1a252f;
+            transform: translateY(-2px);
+        }
+        .error-msg {
+            text-align: center;
+            padding: 60px 40px;
+            color: #e74c3c;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px 40px;
+            color: #7f8c8d;
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .button-group { display: none; }
+            .container { box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.5em; }
+            .result-card h2 { font-size: 2em; }
+            .button-group { grid-template-columns: 1fr; }
+            .comparison-table { grid-template-columns: 1fr; }
+            .spectrum { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+    <div class="loading">
+        <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
+        <h3>Memuat Hasil Tes Kepribadian...</h3>
+    </div>
+</div>
+
+<script>
+const PERSONALITY_TYPES = {
+    EXTROVERT: {
+        name: 'EKSTROVERT',
+        color: '#e74c3c',
+        icon: '🎉',
+        tagline: 'Energi dari Dunia Luar',
+        description: 'Anda mendapatkan energi dari interaksi sosial dan lingkungan eksternal. Anda cenderung outgoing, ekspresif, dan menikmati keramaian.',
+        characteristics: [
+            'Mendapat energi dari bersosialisasi',
+            'Senang menjadi pusat perhatian',
+            'Berbicara untuk berpikir (think out loud)',
+            'Memiliki banyak teman dan kenalan',
+            'Berani mengambil risiko sosial',
+            'Merasa kesepian saat sendirian terlalu lama',
+            'Suka bekerja dalam tim',
+            'Ekspresif dan antusias'
+        ],
+        strengths: [
+            'Komunikasi yang baik',
+            'Networking luas',
+            'Mudah beradaptasi sosial',
+            'Antusiasme menular',
+            'Kolaborasi tim'
+        ],
+        careers: ['Sales & Marketing', 'Event Manager', 'Public Relations', 'Teacher', 'Politician', 'Entertainer', 'HR Manager'],
+        tips: [
+            'Luangkan waktu untuk me-time sesekali',
+            'Dengarkan lebih banyak, jangan mendominasi percakapan',
+            'Belajar menikmati kesendirian',
+            'Fokus pada kualitas hubungan, bukan kuantitas',
+            'Latih kemampuan refleksi diri'
+        ]
+    },
+    INTROVERT: {
+        name: 'INTROVERT',
+        color: '#34495e',
+        icon: '📚',
+        tagline: 'Energi dari Dunia Dalam',
+        description: 'Anda mendapatkan energi dari waktu sendiri dan refleksi internal. Anda cenderung thoughtful, fokus, dan lebih nyaman dengan interaksi mendalam.',
+        characteristics: [
+            'Mendapat energi dari waktu sendirian',
+            'Lebih suka percakapan mendalam daripada small talk',
+            'Berpikir sebelum berbicara',
+            'Memiliki lingkaran pertemanan kecil tapi dekat',
+            'Butuh waktu untuk "recharge" setelah bersosialisasi',
+            'Lebih suka mengamati daripada menjadi pusat perhatian',
+            'Suka bekerja mandiri',
+            'Reflektif dan thoughtful'
+        ],
+        strengths: [
+            'Mendengarkan dengan baik',
+            'Pemikiran mendalam',
+            'Fokus dan konsentrasi tinggi',
+            'Kemandirian',
+            'Hubungan yang bermakna'
+        ],
+        careers: ['Writer', 'Programmer', 'Researcher', 'Accountant', 'Designer', 'Analyst', 'Librarian'],
+        tips: [
+            'Dorong diri untuk bersosialisasi secara teratur',
+            'Jangan takut untuk speak up saat dibutuhkan',
+            'Manfaatkan kekuatan mendengarkan Anda',
+            'Cari teman yang menghargai kedalaman',
+            'Keluar dari comfort zone dalam dosis kecil'
+        ]
+    },
+    AMBIVERT: {
+        name: 'AMBIVERT',
+        color: '#9b59b6',
+        icon: '⚖️',
+        tagline: 'Seimbang di Antara Dua Dunia',
+        description: 'Anda berada di tengah-tengah spektrum. Anda fleksibel dan dapat menyesuaikan diri baik dalam situasi sosial maupun saat sendirian.',
+        characteristics: [
+            'Fleksibel antara sosial dan solitude',
+            'Bisa menikmati pesta maupun waktu sendiri',
+            'Tidak terlalu ekstrem dalam preferensi',
+            'Adaptif terhadap situasi',
+            'Seimbang dalam ekspresi',
+            'Networking yang strategis'
+        ],
+        strengths: [
+            'Adaptabilitas tinggi',
+            'Balanced perspective',
+            'Fleksibilitas sosial',
+            'Empati seimbang',
+            'Versatilitas'
+        ],
+        careers: ['Project Manager', 'Consultant', 'Entrepreneur', 'Trainer', 'Negotiator'],
+        tips: [
+            'Manfaatkan fleksibilitas Anda',
+            'Kenali kapan Anda butuh energi dari mana',
+            'Jangan memaksakan diri ke salah satu ekstrem',
+            'Gunakan kemampuan adaptasi sebagai kekuatan'
+        ]
+    }
+};
+
+async function loadData() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const container = document.getElementById('mainContainer');
+
+    if (!token) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Error</h2><p>Token tidak ditemukan di URL</p></div>`;
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`, {
+            headers: { 'X-Custom-Auth': 'admin' }
+        });
+        const res = await response.json();
+
+        if (res.success && res.count > 0) {
+            renderResult(res.data[0]);
+        } else {
+            container.innerHTML = `<div class="error-msg"><h2>❌ Data Tidak Ditemukan</h2><p>Token tidak valid atau sudah kadaluarsa</p></div>`;
+        }
+    } catch (e) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Kesalahan Koneksi</h2><p>Tidak dapat terhubung ke server</p></div>`;
+    }
+}
+
+function renderResult(data) {
+    const dataDiri = JSON.parse(data.x_02 || "{}");
+    const scores = JSON.parse(data.x_03 || "{}");
+    
+    // scores format: {A: skorEkstrovert, B: skorIntrovert}
+    const total = 17; // Total pertanyaan
+    const skorExt = scores.A || 0;
+    const skorInt = scores.B || 0;
+    
+    const persenExt = Math.round((skorExt / total) * 100);
+    const persenInt = Math.round((skorInt / total) * 100);
+    
+    // Tentukan tipe
+    let personality;
+    const difference = Math.abs(skorExt - skorInt);
+    
+    if (difference <= 3) {
+        personality = PERSONALITY_TYPES.AMBIVERT;
+    } else if (skorExt > skorInt) {
+        personality = PERSONALITY_TYPES.EXTROVERT;
+    } else {
+        personality = PERSONALITY_TYPES.INTROVERT;
+    }
+    
+    const markerPosition = (skorExt / total) * 100;
+
+    const html = `
+        <div class="header">
+            <h1>🎭 Hasil Tes Kepribadian</h1>
+            <p>Saya Termasuk Ekstrovert atau Introvert?</p>
+        </div>
+        <div class="content">
+            <div class="profile-section">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 Informasi Peserta</h3>
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <span class="profile-label">Nama Lengkap</span>
+                        <span class="profile-value">${dataDiri.nama || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Usia</span>
+                        <span class="profile-value">${dataDiri.usia || '-'} Tahun</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Pendidikan</span>
+                        <span class="profile-value">${dataDiri.pendidikan || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Tanggal Tes</span>
+                        <span class="profile-value">${data.x_05 || '-'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card" style="border-color: ${personality.color};">
+                <h2 style="color: ${personality.color};">${personality.icon} ${personality.name}</h2>
+                <div class="result-tagline" style="color: ${personality.color};">${personality.tagline}</div>
+                <p style="font-size: 1.1em; color: #555;">${personality.description}</p>
+            </div>
+
+            <div class="spectrum">
+                <div class="spectrum-side">
+                    <div class="spectrum-icon">🎉</div>
+                    <div class="spectrum-name" style="color: #e74c3c;">Ekstrovert</div>
+                    <div class="spectrum-score" style="color: #e74c3c;">${persenExt}%</div>
+                    <div style="color: #666;">${skorExt}/${total}</div>
+                </div>
+                
+                <div class="spectrum-bar">
+                    <div class="bar-marker" style="left: ${markerPosition}%;">👤</div>
+                    <div class="bar-container">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; font-size: 0.9em;">
+                            Spektrum Kepribadian
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; color: #666; font-size: 0.9em;">
+                        <span>Ekstrovert</span>
+                        <span>Seimbang</span>
+                        <span>Introvert</span>
+                    </div>
+                </div>
+                
+                <div class="spectrum-side">
+                    <div class="spectrum-icon">📚</div>
+                    <div class="spectrum-name" style="color: #34495e;">Introvert</div>
+                    <div class="spectrum-score" style="color: #34495e;">${persenInt}%</div>
+                    <div style="color: #666;">${skorInt}/${total}</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
+
+            <div class="info-section">
+                <h3>🎯 Karakteristik Anda</h3>
+                <ul>
+                    ${personality.characteristics.map(char => `<li>${char}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>💪 Kekuatan Anda</h3>
+                <ul>
+                    ${personality.strengths.map(strength => `<li>${strength}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>💼 Karir yang Cocok</h3>
+                <p style="color: #555; line-height: 1.8; font-size: 1.1em;">
+                    ${personality.careers.join(' • ')}
+                </p>
+            </div>
+
+            <div class="info-section">
+                <h3>💡 Saran Pengembangan Diri</h3>
+                <ul>
+                    ${personality.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="myth-buster">
+                <h3>🔍 Mitos yang Perlu Diluruskan</h3>
+                <p><strong>Mitos:</strong> "Introvert itu pemalu dan ekstrovert selalu percaya diri."</p>
+                <p><strong>Fakta:</strong> Introvert vs Ekstrovert adalah tentang sumber energi, bukan tentang rasa percaya diri atau kemampuan sosial. Introvert bisa sangat percaya diri dan pandai berbicara di depan umum, begitu juga ekstrovert bisa mengalami kecemasan sosial.</p>
+                <br>
+                <p><strong>Mitos:</strong> "Ekstrovert lebih sukses daripada introvert."</p>
+                <p><strong>Fakta:</strong> Kesuksesan tidak ditentukan oleh tipe kepribadian. Baik introvert maupun ekstrovert memiliki kekuatan unik yang dapat mengarah pada kesuksesan di bidang masing-masing.</p>
+            </div>
+
+            <div class="info-section">
+                <h3>⚖️ Perbandingan Ekstrovert vs Introvert</h3>
+                <div class="comparison-table">
+                    <div class="table-column">
+                        <h4 style="color: #e74c3c; border-color: #e74c3c;">🎉 Ekstrovert</h4>
+                        <ul>
+                            <li style="color: #e74c3c;">Energi dari luar</li>
+                            <li style="color: #e74c3c;">Think out loud</li>
+                            <li style="color: #e74c3c;">Banyak teman</li>
+                            <li style="color: #e74c3c;">Suka keramaian</li>
+                            <li style="color: #e74c3c;">Ekspresif</li>
+                            <li style="color: #e74c3c;">Action-oriented</li>
+                        </ul>
+                    </div>
+                    <div class="table-column">
+                        <h4 style="color: #34495e; border-color: #34495e;">📚 Introvert</h4>
+                        <ul>
+                            <li style="color: #34495e;">Energi dari dalam</li>
+                            <li style="color: #34495e;">Think before speak</li>
+                            <li style="color: #34495e;">Teman dekat</li>
+                            <li style="color: #34495e;">Suka ketenangan</li>
+                            <li style="color: #34495e;">Reflektif</li>
+                            <li style="color: #34495e;">Thought-oriented</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-download" onclick="downloadAsImage()">📥 Download JPG</button>
+                <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('mainContainer').innerHTML = html;
+    createChart(skorExt, skorInt);
+}
+
+function createChart(skorExt, skorInt) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Ekstrovert', 'Introvert'],
+            datasets: [{
+                label: 'Skor',
+                data: [skorExt, skorInt],
+                backgroundColor: [
+                    'rgba(231, 76, 60, 0.7)',
+                    'rgba(52, 73, 94, 0.7)'
+                ],
+                borderColor: [
+                    '#e74c3c',
+                    '#34495e'
+                ],
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const percentage = Math.round((context.parsed.y / 17) * 100);
+                            return `Skor: ${context.parsed.y}/17 (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 17,
+                    ticks: {
+                        stepSize: 2
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function downloadAsImage() {
+    const button = event.target;
+    button.disabled = true;
+    button.textContent = '⏳ Memproses...';
+    
+    try {
+        const container = document.getElementById('mainContainer');
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false
+        });
+        
+        const link = document.createElement('a');
+        link.download = `Hasil-Ekstrovert-Introvert-${Date.now()}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+        
+        button.disabled = false;
+        button.textContent = '✅ Download Berhasil!';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    } catch (error) {
+        button.disabled = false;
+        button.textContent = '❌ Gagal';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>

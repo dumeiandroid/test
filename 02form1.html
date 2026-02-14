@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Dominasi Otak Interaktif</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #2980b9;
+            --bg-color: #f0f2f5;
+            --red-yt: #ff0000;
+            --blue-fb: #1877f2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Container Video */
+        .video-box {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .video-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Tombol Social Media */
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-social {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-subscribe { background-color: var(--red-yt); }
+        .btn-like { background-color: var(--blue-fb); }
+
+        /* Quiz Card */
+        .quiz-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .section-indicator {
+            font-size: 0.9rem;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .question-number {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button.option-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: 2px solid var(--accent-color);
+            background: white;
+            color: var(--accent-color);
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        button.option-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Modal / Popup Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .input-group { margin: 15px 0; text-align: left; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #555; }
+        .input-group input, .input-group select { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; 
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <div class="video-box">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/bs-NtSzt_Tw?si=Pk5QENI38yfRL_gj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        <!-- <iframe src="https://www.youtube.com/embed/hqzBQ-QlzIg?si=zmh6lZjrV0hdU5jY" 
+                title="YouTube video player" allowfullscreen>
+        </iframe> -->
+    </div>
+
+    <div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">
+            🔔 Subscribe
+        </a>
+        <a href="https://www.youtube.com/watch?v=hqzBQ-QlzIg" target="_blank" class="btn-social btn-like">
+            👍 Like Video
+        </a>
+    </div>
+
+    <div id="quiz-section" class="quiz-card">
+        <span class="section-indicator" id="group-name">GOLONGAN A (OTAK KIRI)</span>
+        <span class="question-number" id="q-number">Pernyataan Nomor 1</span>
+        
+        <div class="options">
+            <button class="option-btn" onclick="handleAnswer('1')">✅ SESUAI DENGAN SAYA</button>
+            <button class="option-btn" onclick="handleAnswer('0')" style="border-color: #ccc; color: #777;">❌ TIDAK SESUAI</button>
+        </div>
+        <p style="font-size: 0.8rem; color: #777; margin-top: 15px;">Pilih sesuai dengan kepribadian Anda</p>
+    </div>
+</div>
+
+<div id="data-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="section-title">Tes Selesai! Isi Data Diri</div>
+        <div class="input-group">
+            <label>Nama Lengkap</label>
+            <input type="text" id="nama" placeholder="Masukkan nama...">
+        </div>
+        <div class="input-group">
+            <label>Usia</label>
+            <input type="number" id="usia" placeholder="Contoh: 20">
+        </div>
+        <div class="input-group">
+            <label>Pendidikan Terakhir</label>
+            <select id="pendidikan">
+                <option value="">Pilih Pendidikan...</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA/SMK">SMA/SMK</option>
+                <option value="Diploma/S1">Diploma/S1</option>
+                <option value="S2/S3">S2/S3</option>
+            </select>
+        </div>
+        <button class="btn-submit" id="btn-submit" onclick="submitFinalData()">Simpan & Analisis</button>
+        <div id="loading-text" class="hidden" style="text-align: center; margin-top: 10px;">Menganalisis hasil...</div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes";
+    let currentStep = 1;
+    const questionsPerGroup = 11;
+    const totalSteps = 22; // 11 Golongan A + 11 Golongan B
+    let jawabanData = {};
+
+    function handleAnswer(value) {
+        let prefix = currentStep <= questionsPerGroup ? 'A' : 'B';
+        let num = currentStep <= questionsPerGroup ? currentStep : (currentStep - questionsPerGroup);
+        
+        // Simpan hanya jika "Sesuai" (value '1'), sesuai logika checkbox lama
+        if (value === '1') {
+            jawabanData[`${prefix}${num}`] = "1";
+        }
+
+        if (currentStep < totalSteps) {
+            currentStep++;
+            updateUI();
+        } else {
+            // Tampilkan Popup
+            document.getElementById('data-modal').style.display = 'flex';
+        }
+    }
+
+    function updateUI() {
+        const groupName = document.getElementById('group-name');
+        const qNumber = document.getElementById('q-number');
+
+        if (currentStep <= questionsPerGroup) {
+            groupName.innerText = "GOLONGAN A (OTAK KIRI)";
+            qNumber.innerText = "Pernyataan Nomor " + currentStep;
+        } else {
+            groupName.innerText = "GOLONGAN B (OTAK KANAN)";
+            groupName.style.color = "#e67e22";
+            qNumber.innerText = "Pernyataan Nomor " + (currentStep - questionsPerGroup);
+        }
+    }
+
+    async function submitFinalData() {
+        const nama = document.getElementById('nama').value;
+        const usia = document.getElementById('usia').value;
+        const pendidikan = document.getElementById('pendidikan').value;
+
+        if (!nama || !usia || !pendidikan) {
+            return alert("Mohon lengkapi data diri!");
+        }
+
+        // Cek jika tidak ada satupun yang dijawab "Sesuai"
+        if (Object.keys(jawabanData).length === 0) {
+            return alert("Anda harus memilih minimal satu pernyataan yang sesuai!");
+        }
+
+        document.getElementById('btn-submit').classList.add('hidden');
+        document.getElementById('loading-text').classList.remove('hidden');
+
+        const dataDiri = { nama, usia, pendidikan };
+        const token = "BRAIN-" + Math.random().toString(36).substring(2, 10);
+        const tgl = new Date().toLocaleDateString('id-ID');
+
+        const payload = {
+            x_01: "dominasi otak",
+            x_02: JSON.stringify(dataDiri),
+            x_03: JSON.stringify(jawabanData),
+            x_04: token,
+            x_05: tgl
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Custom-Auth': 'admin' 
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // BUKA DI TAB BARU
+                window.open(`02view.html?token=${token}`, '_blank');
+                alert("Berhasil! Hasil analisis otak Anda telah dibuka di tab baru.");
+                location.reload();
+            } else {
+                alert("Gagal menyimpan data.");
+                resetModal();
+            }
+        } catch (e) {
+            alert("Kesalahan koneksi.");
+            resetModal();
+        }
+    }
+
+    function resetModal() {
+        document.getElementById('btn-submit').classList.remove('hidden');
+        document.getElementById('loading-text').classList.add('hidden');
+    }
+</script>
+
+</body>
+</html>

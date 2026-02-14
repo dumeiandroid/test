@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Temperamen Interaktif</title>
+    <style>
+        :root {
+            --primary: #2f3640;
+            --accent: #353b48;
+            --bg-body: #f5f6fa;
+            --card-bg: #ffffff;
+            --text-main: #2f3640;
+            --text-muted: #7f8c8d;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; }
+
+        /* Welcome Screen */
+        #welcome-screen { position: fixed; inset: 0; z-index: 1000; background: linear-gradient(135deg, #2f3640 0%, #353b48 100%); display: flex; align-items: center; justify-content: center; padding: 15px; overflow-y: auto; }
+        .welcome-card { background: white; width: 100%; max-width: 650px; padding: 35px; border-radius: var(--radius); text-align: center; margin: auto; }
+        .welcome-text { text-align: justify; line-height: 1.6; margin-bottom: 25px; font-size: 0.95rem; }
+        
+        .token-form { background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .input-token { width: 100%; padding: 14px; border: 2px solid #cbd5e1; border-radius: 8px; text-align: center; margin-bottom: 10px; font-size: 1.1rem; }
+        .contact-info { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4; }
+        .contact-info a { color: #25d366; text-decoration: none; font-weight: bold; }
+        .btn-start { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+
+        /* Main App */
+        .app-container { display: none; width: 100%; max-width: 750px; padding: 20px; flex-direction: column; gap: 20px; }
+        .video-box { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: var(--radius); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .video-box iframe { width: 100%; height: 100%; border: none; }
+
+        .quiz-card { background: white; padding: 20px; border-radius: var(--radius); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .q-number { display: block; font-size: 1.3rem; font-weight: 800; color: var(--primary); margin-bottom: 15px; }
+        
+        /* Opsi Lebih Ringkas */
+        .options { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .opt-btn { width: 60px; height: 60px; border: 2px solid #e2e8f0; background: #f8fafc; border-radius: 10px; font-size: 1.4rem; font-weight: 800; cursor: pointer; color: var(--text-main); transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .opt-btn:hover { border-color: var(--primary); background: #f1f2f6; color: var(--primary); }
+
+        /* Modal */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-box { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: var(--radius); }
+        .modal-box input, .modal-box select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .hidden { display: none; }
+        /* Container utama untuk tombol */
+.social-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+    max-width: 700px; /* Menyesuaikan lebar maksimal seperti di kode asal */
+    margin: 10px 0;
+}
+
+/* Gaya dasar tombol */
+.btn-social {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: opacity 0.2s;
+}
+
+/* Efek saat tombol diarahkan kursor */
+.btn-social:hover {
+    opacity: 0.9;
+}
+
+/* Warna khusus Tombol Subscribe (Merah YouTube) */
+.btn-subscribe { 
+    background-color: #ff0000; 
+}
+
+/* Warna khusus Tombol Like (Biru Facebook/Standard) */
+.btn-like { 
+    background-color: #1877f2; 
+}
+    </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+    <div class="welcome-card">
+        <h1 style="color:var(--primary); margin-bottom:20px;">Apa Temperamen yang Kita Miliki?</h1>
+        <div class="welcome-text">
+            <p>Halo semuanya!</p>
+            <p>Pernahkah kamu bertanya-tanya mengapa kamu bereaksi dengan cara tertentu dalam situasi tertentu? Mengapa ada orang yang selalu ceria dan mudah bergaul, sementara yang lain lebih tenang dan pendiam? Atau ada yang tegas dan suka memimpin, tapi ada juga yang perfeksionis dan sangat detail?</p>
+            <p>Jawabannya terletak pada temperamen—sebuah pola alami perilaku dan emosi yang sudah ada sejak kita lahir. Temperamen mempengaruhi cara kita berinteraksi dengan dunia, mengambil keputusan, dan bahkan memilih karir!</p>
+            <p>Ada empat tipe temperamen utama: Sanguinis si populer yang ceria, Kolerik si pemimpin yang tegas, Melankolis si perfeksionis yang mendalam, dan Phlegmatis si pendamai yang tenang.</p>
+            <p>Kenali temperamenmu untuk lebih mengenal diri sendiri, mengoptimalkan kelebihan, dan bahkan memahami orang lain dengan lebih baik!</p>
+            <p>Sebelum kita mulai, siapkan dulu kertas dan pulpen untuk mencatat jawaban kamu ya!</p>
+            <p><b>Yuk, kita mulai tesnya sekarang!</b></p>
+        </div>
+        <div class="token-form">
+            <input type="text" id="token-input" class="input-token" placeholder="Masukkan Token Akses">
+            <div class="contact-info">
+                Jika tidak memiliki token, hubungi:<br>
+                <a href="https://wa.me/6285159601400" target="_blank">Lidan Psikologi (+62 851 5960 1400)</a>
+            </div>
+            <button class="btn-start" onclick="verifikasiToken()">MULAI TES SEKARANG</button>
+        </div>
+    </div>
+</div>
+
+<div class="app-container" id="main-content">
+    <div class="video-box">
+        <iframe src="https://www.youtube.com/embed/XsKQRI9nhYg" allowfullscreen></iframe>
+    </div>
+<div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">
+            🔔 Subscribe
+        </a>
+        <a href="https://youtu.be/XsKQRI9nhYg?si=8_OStYyRFbNXGByU" target="_blank" class="btn-social btn-like">
+            👍 Like Video
+        </a>
+    </div>
+    <div class="quiz-card">
+        <span class="q-number" id="q-text">Soal Nomor 1</span>
+        <div class="options">
+            <button class="opt-btn" onclick="pilih('A')">A</button>
+            <button class="opt-btn" onclick="pilih('B')">B</button>
+            <button class="opt-btn" onclick="pilih('C')">C</button>
+            <button class="opt-btn" onclick="pilih('D')">D</button>
+        </div>
+        <p style="margin-top:15px; font-size:0.8rem; color:var(--text-muted);">Pilih jawaban yang paling sesuai</p>
+    </div>
+</div>
+
+<div id="modal-data" class="modal">
+    <div class="modal-box">
+        <h3 style="margin-bottom:20px; text-align:center;">Lengkapi Data Diri</h3>
+        <input type="text" id="inp-nama" placeholder="Nama Lengkap">
+        <input type="number" id="inp-usia" placeholder="Usia">
+        <select id="inp-edu">
+            <option value="" disabled selected>Pendidikan Terakhir</option>
+            <option value="SD">SD</option>
+            <option value="SMP">SMP</option>
+            <option value="SMA/SMK">SMA/SMK</option>
+            <option value="Diploma/S1">Diploma/S1</option>
+            <option value="S2/S3">S2/S3</option>
+        </select>
+        <button class="btn-start" id="btn-final" onclick="kirimData()">LIHAT HASIL ANALISIS</button>
+        <p id="loading" class="hidden" style="text-align:center; margin-top:10px;">Sedang memproses...</p>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes";
+    let currentTotalQ = 1;
+    let skor = { A: 0, B: 0, C: 0, D: 0 };
+
+    function verifikasiToken() {
+        if (document.getElementById('token-input').value.toLowerCase().trim() === "123abc") {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'flex';
+        } else { alert("Token salah!"); }
+    }
+
+    function pilih(huruf) {
+        skor[huruf]++;
+        if (currentTotalQ < 26) {
+            currentTotalQ++;
+            document.getElementById('q-text').innerText = `Soal Nomor ${currentTotalQ}`;
+        } else {
+            document.getElementById('modal-data').style.display = 'flex';
+        }
+    }
+
+    async function kirimData() {
+        const nama = document.getElementById('inp-nama').value;
+        const usia = document.getElementById('inp-usia').value;
+        const edu = document.getElementById('inp-edu').value;
+
+        if (!nama || !usia || !edu) return alert("Mohon lengkapi semua data!");
+
+        document.getElementById('btn-final').classList.add('hidden');
+        document.getElementById('loading').classList.remove('hidden');
+
+        const tokenHasil = "TEMP-" + Math.random().toString(36).substr(2, 9);
+        const payload = {
+            x_01: "temperamen",
+            x_02: JSON.stringify({ nama, usia, pendidikan: edu }),
+            x_03: JSON.stringify(skor),
+            x_04: tokenHasil,
+            x_05: new Date().toLocaleDateString('id-ID')
+        };
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': 'admin' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                window.open(`04view.html?token=${tokenHasil}`, '_blank');
+                alert("Data berhasil disimpan!");
+                document.getElementById('modal-data').style.display = 'none';
+                document.getElementById('btn-final').classList.remove('hidden');
+                document.getElementById('loading').classList.add('hidden');
+                
+                // Form bersih, nomor soal bertahan di 26
+                document.getElementById('inp-nama').value = "";
+                document.getElementById('inp-usia').value = "";
+                document.getElementById('inp-edu').value = "";
+            }
+        } catch (e) {
+            alert("Gagal mengirim data.");
+            document.getElementById('btn-final').classList.remove('hidden');
+            document.getElementById('loading').classList.add('hidden');
+        }
+    }
+</script>
+</body>
+</html>

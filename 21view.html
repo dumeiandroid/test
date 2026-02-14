@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apakah Saya Memiliki Jiwa Kepemimpinan?</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --strong: #27ae60;
+            --good: #2980b9;
+            --avg: #f1c40f;
+            --low: #e74c3c;
+            --bg: #f0f2f5;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 850px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .profile-section {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .profile-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-item strong {
+            color: var(--text-dark);
+            font-size: 13px;
+        }
+
+        .profile-item span {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .score-display {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+        }
+
+        .score-number {
+            font-size: 56px;
+            font-weight: bold;
+        }
+
+        .score-label {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .score-interpretation {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .chart-section {
+            margin: 30px 0;
+        }
+
+        .chart-wrapper {
+            max-width: 350px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .chart-center-text {
+            position: absolute;
+            top: 65%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .chart-center-text .big-number {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .chart-center-text .small-text {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 6px solid;
+            margin: 25px 0;
+        }
+
+        .result-card h2 {
+            font-size: 26px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-card .description {
+            color: var(--text-dark);
+            line-height: 1.8;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        .characteristics {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .characteristics h3 {
+            color: var(--text-dark);
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .characteristics ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .characteristics li {
+            padding: 10px 0;
+            padding-left: 25px;
+            position: relative;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .characteristics li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .suggestions {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .suggestions h3 {
+            color: #2e7d32;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggestions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .suggestions li {
+            padding: 10px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #2e7d32;
+            line-height: 1.6;
+        }
+
+        .suggestions li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #27ae60;
+            border: 2px solid #27ae60;
+        }
+
+        .btn-secondary:hover {
+            background: #27ae60;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: var(--text-light);
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .action-buttons {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .score-number {
+                font-size: 42px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="loading">
+            <h2>⏳ Menganalisis jiwa kepemimpinan Anda...</h2>
+            <p>Mohon tunggu sebentar</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (!token) {
+                showError('Token tidak ditemukan. Silakan kembali dan isi form terlebih dahulu.');
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`,
+                    { headers: { 'X-Custom-Auth': 'admin' } }
+                );
+                
+                const res = await response.json();
+                
+                if (res.success && res.count > 0) {
+                    renderUI(res.data[0]);
+                } else {
+                    showError('Data tidak ditemukan. Pastikan Anda telah mengisi form dengan benar.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Terjadi kesalahan sistem. Silakan coba lagi nanti.');
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('app').innerHTML = `
+                <div class="error">
+                    <h2>❌ Oops!</h2>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function renderUI(data) {
+            const dataDiri = JSON.parse(data.x_02);
+            const jawaban = JSON.parse(data.x_03);
+            
+            let totalSkor = 0;
+            Object.values(jawaban).forEach(v => totalSkor += parseInt(v));
+
+            const result = getResult(totalSkor);
+            const visualValue = 42 - totalSkor;
+            
+            document.getElementById('app').innerHTML = `
+                <div class="header">
+                    <h1>👑 Apakah Saya Memiliki Jiwa Kepemimpinan?</h1>
+                    <p>Evaluasi Potensi dan Kualitas Kepemimpinan</p>
+                </div>
+
+                <div class="content" id="downloadContent">
+                    <div class="profile-section">
+                        <div class="profile-item">
+                            <strong>👤 Nama:</strong>
+                            <span>${dataDiri.nama}</span>
+                        </div>
+                        <div class="profile-item">
+                            <strong>🎂 Usia:</strong>
+                            <span>${dataDiri.usia} Tahun</span>
+                        </div>
+                        <div class="profile-item">
+                            <strong>🎓 Pendidikan:</strong>
+                            <span>${dataDiri.pendidikan}</span>
+                        </div>
+                        <div class="profile-item">
+                            <strong>📅 Tanggal Tes:</strong>
+                            <span>${data.x_05}</span>
+                        </div>
+                    </div>
+
+                    <div class="score-display">
+                        <div class="score-number" style="color: ${result.color}">${totalSkor}</div>
+                        <div class="score-label">Total Skor Kepemimpinan</div>
+                        <div class="score-interpretation">
+                            Skor rendah = Kepemimpinan kuat | Skor tinggi = Perlu pengembangan
+                        </div>
+                    </div>
+
+                    <div class="chart-section">
+                        <div class="chart-wrapper">
+                            <canvas id="gaugeChart"></canvas>
+                            <div class="chart-center-text">
+                                <div class="big-number" style="color: ${result.color}">${totalSkor}</div>
+                                <div class="small-text">dari 42</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card" style="border-color: ${result.color}">
+                        <h2 style="color: ${result.color}">
+                            ${result.icon} ${result.title}
+                        </h2>
+                        <div class="description">
+                            ${result.description}
+                        </div>
+
+                        <div class="characteristics">
+                            <h3>💫 Karakteristik Kepemimpinan Anda</h3>
+                            <ul>
+                                ${result.characteristics.map(char => `<li>${char}</li>`).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="suggestions">
+                            <h3>🎯 Saran Pengembangan</h3>
+                            <ul>
+                                ${result.suggestions.map(sug => `<li>${sug}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="downloadAsImage()">
+                            📥 Download Hasil (JPG)
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.print()">
+                            🖨️ Cetak Laporan
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            drawGauge(visualValue, result.color);
+        }
+
+        function getResult(skor) {
+            if (skor <= 9) {
+                return {
+                    title: 'Pemimpin yang Kuat',
+                    color: '#27ae60',
+                    icon: '⭐',
+                    description: 'Luar biasa! Anda memiliki jiwa kepemimpinan yang sangat kuat. Anda adalah komunikator yang tegas, dapat diandalkan, dan mampu memberikan dampak positif bagi lingkungan sekitar. Orang-orang mempercayai dan mengikuti arahan Anda.',
+                    characteristics: [
+                        'Komunikasi yang jelas, tegas, dan efektif dalam menyampaikan visi',
+                        'Kemampuan pengambilan keputusan yang cepat dan tepat',
+                        'Karisma natural yang membuat orang lain tertarik mengikuti',
+                        'Integritas tinggi dan konsisten antara perkataan dan tindakan',
+                        'Kemampuan memotivasi dan menginspirasi tim',
+                        'Berani mengambil tanggung jawab dan risiko yang terukur',
+                        'Visioner dengan kemampuan melihat gambaran besar',
+                        'Empati dan kepedulian terhadap anggota tim'
+                    ],
+                    suggestions: [
+                        'Terus kembangkan skill kepemimpinan dengan membaca buku, mengikuti training, dan belajar dari pemimpin hebat lainnya',
+                        'Jadilah mentor bagi orang lain - bagikan pengetahuan dan pengalaman kepemimpinan Anda',
+                        'Ambil tanggung jawab kepemimpinan yang lebih besar dalam organisasi Anda',
+                        'Jaga kerendahan hati - pemimpin hebat tetap humble dan terus belajar',
+                        'Kembangkan emotional intelligence untuk memahami dan memimpin dengan lebih baik',
+                        'Bangun networking dengan pemimpin lain untuk saling belajar dan berkembang',
+                        'Fokus pada pemberdayaan tim, bukan hanya mengambil kendali semua hal',
+                        'Evaluasi diri secara berkala untuk terus meningkatkan efektivitas kepemimpinan'
+                    ]
+                };
+            } else if (skor <= 19) {
+                return {
+                    title: 'Pemimpin yang Baik',
+                    color: '#2980b9',
+                    icon: '👍',
+                    description: 'Bagus! Anda memiliki kualitas kepemimpinan yang baik. Anda mampu mendengarkan orang lain dan memimpin mereka menuju satu tujuan bersama. Dengan sedikit pengembangan, Anda bisa menjadi pemimpin yang sangat efektif.',
+                    characteristics: [
+                        'Kemampuan komunikasi yang baik, meskipun kadang perlu lebih tegas',
+                        'Mampu mendengarkan dan mempertimbangkan input dari tim',
+                        'Cukup percaya diri dalam mengambil keputusan',
+                        'Memiliki visi yang jelas meski kadang perlu lebih detail',
+                        'Dapat membangun hubungan baik dengan anggota tim',
+                        'Berani mengambil inisiatif dalam situasi tertentu',
+                        'Cukup konsisten dalam tindakan dan keputusan'
+                    ],
+                    suggestions: [
+                        'Tingkatkan ketegasan dalam komunikasi - jelas, langsung, namun tetap respektful',
+                        'Latih kemampuan public speaking dan presentasi untuk meningkatkan pengaruh',
+                        'Kembangkan decision-making skills dengan mempelajari framework pengambilan keputusan',
+                        'Perluas wawasan dengan membaca buku tentang leadership dan management',
+                        'Cari mentor yang bisa membimbing pengembangan kepemimpinan Anda',
+                        'Ambil project atau posisi yang menantang untuk mengasah kemampuan memimpin',
+                        'Praktikkan delegasi yang efektif - percaya pada kemampuan tim Anda',
+                        'Kembangkan strategic thinking untuk melihat long-term impact dari keputusan',
+                        'Ikut training kepemimpinan untuk memperdalam skill tertentu',
+                        'Minta feedback dari tim untuk mengetahui area yang perlu ditingkatkan'
+                    ]
+                };
+            } else if (skor <= 31) {
+                return {
+                    title: 'Potensi Kepemimpinan (Perlu Belajar)',
+                    color: '#f1c40f',
+                    icon: '📚',
+                    description: 'Anda memiliki potensi kepemimpinan yang bisa dikembangkan. Saat ini kemampuan kepemimpinan Anda belum cukup kuat untuk memimpin kelompok besar, namun dengan pembelajaran dan latihan yang tepat, Anda bisa berkembang menjadi pemimpin yang baik.',
+                    characteristics: [
+                        'Ada keinginan untuk memimpin namun masih kurang percaya diri',
+                        'Komunikasi cenderung pasif atau kurang jelas',
+                        'Ragu dalam mengambil keputusan penting',
+                        'Memiliki ide bagus tapi kesulitan mengeksekusi',
+                        'Kurang berani mengambil inisiatif atau tanggung jawab besar',
+                        'Masih perlu belajar cara mempengaruhi dan memotivasi orang lain',
+                        'Kadang kesulitan dalam conflict resolution'
+                    ],
+                    suggestions: [
+                        'Mulai dari yang kecil - pimpin project kecil atau team kecil untuk membangun kepercayaan diri',
+                        'Ikuti training atau workshop tentang leadership fundamentals',
+                        'Pelajari komunikasi efektif - bagaimana menyampaikan ide dengan jelas dan persuasif',
+                        'Baca buku-buku kepemimpinan klasik seperti "The 7 Habits", "Leaders Eat Last", dll',
+                        'Amati dan pelajari dari pemimpin yang Anda kagumi - apa yang mereka lakukan berbeda?',
+                        'Latih public speaking dengan bergabung di komunitas seperti Toastmasters',
+                        'Kembangkan growth mindset - percaya bahwa kepemimpinan bisa dipelajari',
+                        'Praktikkan assertiveness - belajar menyatakan pendapat dengan sopan tapi tegas',
+                        'Cari mentor yang bisa membimbing perjalanan pengembangan kepemimpinan Anda',
+                        'Keluar dari comfort zone - ambil kesempatan untuk memimpin meski terasa menakutkan',
+                        'Fokus pada self-improvement berkelanjutan dalam aspek komunikasi dan decision-making'
+                    ]
+                };
+            } else {
+                return {
+                    title: 'Perlu Peningkatan Signifikan',
+                    color: '#e74c3c',
+                    icon: '🚀',
+                    description: 'Kepemimpinan bukanlah bakat alami Anda saat ini. Anda cenderung pasif, kurang percaya diri, atau merasa cemas dalam situasi kepemimpinan. Namun jangan khawatir - kepemimpinan adalah skill yang bisa dipelajari! Dengan komitmen dan usaha yang tepat, Anda bisa berkembang.',
+                    characteristics: [
+                        'Sangat pasif dalam kelompok atau organisasi',
+                        'Kesulitan berkomunikasi dengan jelas dan tegas',
+                        'Kurang percaya diri dalam mengambil keputusan',
+                        'Cenderung menghindari tanggung jawab kepemimpinan',
+                        'Merasa cemas atau tidak nyaman saat harus memimpin',
+                        'Lebih suka mengikuti daripada memimpin',
+                        'Kesulitan dalam mempengaruhi atau memotivasi orang lain'
+                    ],
+                    suggestions: [
+                        'Mulai dengan membangun kepercayaan diri - kenali kekuatan dan nilai diri Anda',
+                        'Ambil langkah kecil - volunteer untuk tugas kecil yang melibatkan koordinasi dengan orang lain',
+                        'Ikuti kursus atau training komunikasi dasar untuk membangun foundation',
+                        'Bergabung dengan komunitas atau klub yang mendukung pengembangan diri',
+                        'Praktikkan berbicara di depan cermin atau rekam diri sendiri untuk evaluasi',
+                        'Baca buku self-help dan leadership untuk mindset development',
+                        'Cari support system - teman, mentor, atau coach yang bisa mendukung perjalanan Anda',
+                        'Identifikasi fear atau limiting beliefs yang menghambat - atasi satu per satu',
+                        'Mulai dengan memimpin diri sendiri - disiplin, goal-setting, time management',
+                        'Jangan bandingkan dengan orang lain - fokus pada progress pribadi Anda',
+                        'Pertimbangkan konseling atau coaching profesional jika diperlukan',
+                        'Ingat: setiap pemimpin hebat pernah memulai dari nol - yang penting adalah komitmen untuk berkembang',
+                        'Rayakan setiap kemajuan kecil untuk membangun momentum positif'
+                    ]
+                };
+            }
+        }
+
+        function drawGauge(visualValue, color) {
+            const ctx = document.getElementById('gaugeChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [visualValue, 42 - visualValue],
+                        backgroundColor: [color, '#eee'],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270,
+                        cutout: '85%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+        }
+
+        async function downloadAsImage() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '⏳ Memproses...';
+
+            try {
+                const content = document.getElementById('downloadContent');
+                const canvas = await html2canvas(content, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    windowWidth: content.scrollWidth,
+                    windowHeight: content.scrollHeight
+                });
+
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    const date = new Date().toISOString().split('T')[0];
+                    link.download = `Hasil-Tes-Kepemimpinan-${date}.jpg`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+
+                    button.disabled = false;
+                    button.textContent = '✅ Berhasil! Download Lagi?';
+                    setTimeout(() => {
+                        button.innerHTML = '📥 Download Hasil (JPG)';
+                    }, 3000);
+                }, 'image/jpeg', 0.95);
+
+            } catch (error) {
+                console.error('Error:', error);
+                button.disabled = false;
+                button.textContent = '❌ Gagal. Coba Lagi';
+                setTimeout(() => {
+                    button.innerHTML = '📥 Download Hasil (JPG)';
+                }, 3000);
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Gaya Belajar Interaktif</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; justify-content: center; min-height: 100vh; }
+
+        /* Layar Pembuka */
+        #welcome-screen { position: fixed; inset: 0; z-index: 1000; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); display: flex; align-items: center; justify-content: center; padding: 15px; overflow-y: auto; }
+        .welcome-card { background: var(--card-bg); width: 100%; max-width: 600px; padding: 35px; border-radius: var(--radius); text-align: center; margin: auto; }
+        .welcome-text { text-align: justify; line-height: 1.6; margin-bottom: 25px; }
+        
+        /* Token Form */
+        .token-form { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 10px; }
+        .input-token { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; text-align: center; margin-bottom: 10px; font-size: 1.1rem; }
+        .contact-info { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; }
+        .contact-info a { color: #25d366; text-decoration: none; font-weight: bold; }
+
+        /* Main App */
+        .app-container { display: none; width: 100%; max-width: 700px; padding: 20px; flex-direction: column; gap: 20px; }
+        .video-box { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: var(--radius); overflow: hidden; }
+        .video-box iframe { width: 100%; height: 100%; border: none; }
+        .quiz-card { background: white; padding: 30px; border-radius: var(--radius); text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .opt-btn { padding: 20px; border: 2px solid #3b82f6; background: white; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; color: #3b82f6; }
+        .opt-btn:hover { background: #3b82f6; color: white; }
+
+        .btn-main { width: 100%; padding: 15px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-box { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: var(--radius); }
+        .hidden { display: none; }
+        /* Container utama untuk tombol */
+.social-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+    max-width: 700px; /* Menyesuaikan lebar maksimal seperti di kode asal */
+    margin: 10px 0;
+}
+
+/* Gaya dasar tombol */
+.btn-social {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: opacity 0.2s;
+}
+
+/* Efek saat tombol diarahkan kursor */
+.btn-social:hover {
+    opacity: 0.9;
+}
+
+/* Warna khusus Tombol Subscribe (Merah YouTube) */
+.btn-subscribe { 
+    background-color: #ff0000; 
+}
+
+/* Warna khusus Tombol Like (Biru Facebook/Standard) */
+.btn-like { 
+    background-color: #1877f2; 
+}
+    </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+    <div class="welcome-card">
+        <h2 style="color:var(--accent); margin-bottom:10px;">Halo semuanya!</h2>
+        <h1 style="margin-bottom:20px; font-size:1.5rem;">Gaya Belajar yang Cocok dan Pas Buat Saya Adalah</h1>
+        <div class="welcome-text">
+            <p>Pernahkah kamu merasa sudah belajar keras, tapi materinya kayak nggak nyangkut di kepala? Atau ada teman yang belajarnya santai tapi nilainya malah lebih bagus? Jangan khawatir, kamu nggak sendirian!</p><br>
+            <p>Ternyata, setiap orang punya cara belajar yang berbeda-beda. Ada yang lebih mudah paham kalau lihat gambar, ada yang harus dengar penjelasan, dan ada juga yang harus langsung praktik. Ini semua disebut gaya belajar.</p><br>
+            <p>Apakah kamu tipe <b>Visual, Auditory, atau Kinestetik?</b> Dengan mengetahui gaya belajarmu, proses belajar akan jadi lebih mudah, menyenangkan, dan tentunya lebih efektif!</p>
+        </div>
+        <div class="token-form">
+            <input type="text" id="token-input" class="input-token" placeholder="Masukkan Token Akses">
+            <div class="contact-info">
+                Jika tidak memiliki token, hubungi:<br>
+                <a href="https://wa.me/6285159601400" target="_blank">Lidan Psikologi (+62 851 5960 1400)</a>
+            </div>
+            <button class="btn-main" onclick="verifikasiToken()">MULAI TES SEKARANG</button>
+        </div>
+    </div>
+</div>
+
+<div class="app-container" id="main-content">
+    <div class="video-box">
+        <iframe src="https://www.youtube.com/embed/hqzBQ-QlzIg" allowfullscreen></iframe>
+    </div>
+    <div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">
+            🔔 Subscribe
+        </a>
+        <a href="https://www.youtube.com/watch?v=hqzBQ-QlzIg" target="_blank" class="btn-social btn-like">
+            👍 Like Video
+        </a>
+    </div>
+    <div class="quiz-card">
+        <span id="q-text" style="display:block; font-size:1.2rem; font-weight:bold; margin-bottom:15px; color:#3b82f6;">Soal Nomor 1</span>
+        <div class="options">
+            <button class="opt-btn" onclick="pilih('A')">A</button>
+            <button class="opt-btn" onclick="pilih('B')">B</button>
+            <button class="opt-btn" onclick="pilih('C')">C</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-data" class="modal">
+    <div class="modal-box">
+        <h3 style="text-align:center; margin-bottom:20px;">Lengkapi Data Diri</h3>
+        <input type="text" id="inp-nama" placeholder="Nama Lengkap" style="width:100%; padding:10px; margin-bottom:10px;">
+        <input type="number" id="inp-usia" placeholder="Usia" style="width:100%; padding:10px; margin-bottom:10px;">
+        <select id="inp-edu" style="width:100%; padding:10px; margin-bottom:20px;">
+            <option value="SD">SD</option>
+            <option value="SMP">SMP</option>
+            <option value="SMA/SMK">SMA/SMK</option>
+            <option value="Diploma/S1">Diploma/S1</option>
+        </select>
+        <button class="btn-main" id="btn-final" onclick="kirimData()">SIMPAN & LIHAT HASIL</button>
+        <p id="loading" class="hidden" style="text-align:center;">Mengirim...</p>
+    </div>
+</div>
+
+<script>
+    const API = "https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes";
+    let nSoal = 1, jawabanData = {};
+
+    function verifikasiToken() {
+        if(document.getElementById('token-input').value.toLowerCase() === "123abc") {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'flex';
+        } else { alert("Token salah!"); }
+    }
+
+    function pilih(val) {
+        jawabanData[`r${nSoal}`] = val;
+        if(nSoal < 15) { 
+            nSoal++; 
+            document.getElementById('q-text').innerText = "Soal Nomor " + nSoal; 
+        } else { 
+            document.getElementById('modal-data').style.display = 'flex'; 
+        }
+    }
+
+    async function kirimData() {
+        const name = document.getElementById('inp-nama').value;
+        const age = document.getElementById('inp-usia').value;
+        if(!name || !age) return alert("Isi data!");
+
+        document.getElementById('btn-final').classList.add('hidden');
+        document.getElementById('loading').classList.remove('hidden');
+
+        const token = Math.random().toString(36).substr(2, 9);
+        const payload = { 
+            x_01: "gaya belajar", 
+            x_02: JSON.stringify({ nama: name, usia: age, edu: document.getElementById('inp-edu').value }), 
+            x_03: JSON.stringify(jawabanData), 
+            x_04: token, 
+            x_05: new Date().toLocaleDateString('id-ID') 
+        };
+
+        try {
+            const res = await fetch(API, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': 'admin' }, 
+                body: JSON.stringify(payload) 
+            });
+            if(res.ok) {
+                window.open(`01view.html?token=${token}`, '_blank');
+                alert("Berhasil! Hasil tes dibuka di tab baru.");
+                
+                // PERBAIKAN: Reset nomor soal dan UI kembali ke awal tanpa reload
+                document.getElementById('modal-data').style.display = 'none';
+                document.getElementById('btn-final').classList.remove('hidden');
+                document.getElementById('loading').classList.add('hidden');
+                
+                nSoal = 1; 
+                jawabanData = {}; 
+                document.getElementById('q-text').innerText = "Soal Nomor 1";
+                document.getElementById('inp-nama').value = "";
+                document.getElementById('inp-usia').value = "";
+            }
+        } catch (e) { alert("Error koneksi!"); }
+    }
+</script>
+</body>
+</html>

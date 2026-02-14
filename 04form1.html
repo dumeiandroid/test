@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Temperamen Interaktif</title>
+    <style>
+        :root {
+            --primary-color: #2f3640;
+            --accent-color: #353b48;
+            --bg-color: #f5f6fa;
+            --red-yt: #ff0000;
+            --blue-fb: #1877f2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Container Video */
+        .video-box {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .video-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Tombol Social Media */
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-social {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-subscribe { background-color: var(--red-yt); }
+        .btn-like { background-color: var(--blue-fb); }
+
+        /* Quiz Card */
+        .quiz-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .question-number {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        button.option-btn {
+            padding: 18px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        button.option-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Modal / Popup Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .input-group { margin: 15px 0; text-align: left; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #555; }
+        .input-group input, .input-group select { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; 
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 480px) {
+            .options { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <div class="video-box">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/XsKQRI9nhYg?si=aK4-ygI0nTLu4t6m" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
+
+    <div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">
+            🔔 Subscribe
+        </a>
+        <a href="https://www.youtube.com/watch?v=hqzBQ-QlzIg" target="_blank" class="btn-social btn-like">
+            👍 Like Video
+        </a>
+    </div>
+
+    <div id="quiz-section" class="quiz-card">
+        <span class="question-number" id="q-number">Soal Nomor 1</span>
+        <div class="options">
+            <button class="option-btn" onclick="handleAnswer('A')">A</button>
+            <button class="option-btn" onclick="handleAnswer('B')">B</button>
+            <button class="option-btn" onclick="handleAnswer('C')">C</button>
+            <button class="option-btn" onclick="handleAnswer('D')">D</button>
+        </div>
+        <p style="font-size: 0.8rem; color: #777; margin-top: 15px;">Klik jawaban yang paling menggambarkan diri Anda</p>
+    </div>
+</div>
+
+<div id="data-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="section-title">Tes Selesai! Isi Data Diri</div>
+        <div class="input-group">
+            <label>Nama Lengkap</label>
+            <input type="text" id="nama" placeholder="Nama Anda...">
+        </div>
+        <div class="input-group">
+            <label>Usia</label>
+            <input type="number" id="usia" placeholder="Usia...">
+        </div>
+        <div class="input-group">
+            <label>Pendidikan Terakhir</label>
+            <select id="pendidikan">
+                <option value="">Pilih Pendidikan...</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA/SMK">SMA/SMK</option>
+                <option value="Diploma/S1">Diploma/S1</option>
+            </select>
+        </div>
+        <button class="btn-submit" id="btn-submit" onclick="submitFinalData()">Simpan & Lihat Hasil</button>
+        <div id="loading-text" class="hidden" style="text-align: center; margin-top: 10px;">Menganalisis temperamen...</div>
+    </div>
+</div>
+
+<script>
+    let currentQuestion = 1;
+    const totalQuestions = 26;
+    let skor = { A: 0, B: 0, C: 0, D: 0 };
+
+    function handleAnswer(choice) {
+        skor[choice]++;
+        
+        if (currentQuestion < totalQuestions) {
+            currentQuestion++;
+            document.getElementById('q-number').innerText = "Soal Nomor " + currentQuestion;
+        } else {
+            // Tampilkan Popup setelah soal ke-26
+            document.getElementById('data-modal').style.display = 'flex';
+        }
+    }
+
+    async function submitFinalData() {
+        const nama = document.getElementById('nama').value;
+        const usia = document.getElementById('usia').value;
+        const pendidikan = document.getElementById('pendidikan').value;
+
+        if (!nama || !usia || !pendidikan) {
+            return alert("Harap lengkapi data diri Anda!");
+        }
+
+        document.getElementById('btn-submit').classList.add('hidden');
+        document.getElementById('loading-text').classList.remove('hidden');
+
+        const dataDiri = { nama, usia, pendidikan };
+        const token = "TEMP-" + Math.random().toString(36).substring(2, 10);
+        const tgl = new Date().toLocaleDateString('id-ID');
+
+        const payload = {
+            x_01: "temperamen",
+            x_02: JSON.stringify(dataDiri),
+            x_03: JSON.stringify(skor),
+            x_04: token,
+            x_05: tgl
+        };
+
+        try {
+            const res = await fetch("https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes", {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-Custom-Auth': 'admin' 
+                },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.success) {
+                // BUKA DI TAB BARU
+                window.open(`04view.html?token=${token}`, '_blank');
+                alert("Berhasil! Hasil analisis temperamen Anda telah dibuka di tab baru.");
+                location.reload();
+            } else {
+                alert("Gagal menyimpan data.");
+                resetModal();
+            }
+        } catch (e) {
+            alert("Gagal menyambung ke server.");
+            resetModal();
+        }
+    }
+
+    function resetModal() {
+        document.getElementById('btn-submit').classList.remove('hidden');
+        document.getElementById('loading-text').classList.add('hidden');
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Gaya Belajar Interaktif</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --yt-red: #ff0000;
+            --bg-color: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 650px; 
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Container Video */
+        .video-box {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .video-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Tombol Like & Subscribe */
+        .yt-interaction {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-yt {
+            flex: 1;
+            text-decoration: none;
+            text-align: center;
+            padding: 8px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-sub { background-color: var(--yt-red); color: white; }
+        .btn-like { background-color: white; color: black; border: 1px solid #ccc; }
+        .btn-yt:hover { opacity: 0.8; transform: scale(1.02); }
+
+        /* Area Quiz */
+        .quiz-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .question-number {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button.option-btn {
+            flex: 1;
+            padding: 12px 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: 2px solid var(--accent-color);
+            background: white;
+            color: var(--accent-color);
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        button.option-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Hasil Akhir */
+        #result {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            animation: fadeIn 0.5s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .result-box { padding: 15px; border-radius: 8px; margin-top: 10px; line-height: 1.4; }
+        .visual { background: #e3f2fd; border-left: 5px solid #2196f3; }
+        .auditory { background: #f1f8e9; border-left: 5px solid #8bc34a; }
+        .kinestetik { background: #fff3e0; border-left: 5px solid #ff9800; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="video-box">
+            <iframe src="https://www.youtube.com/embed/hqzBQ-QlzIg?si=zmh6lZjrV0hdU5jY" 
+                    title="YouTube video player" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+            </iframe>
+        </div>
+
+        <div class="yt-interaction">
+            <a href="https://www.youtube.com/channel/UC_3zhbpiYzscqVB_uZDHDvA?sub_confirmation=1" target="_blank" class="btn-yt btn-sub">
+                🔴 SUBSCRIBE
+            </a>
+            <a href="https://www.youtube.com/watch?v=hqzBQ-QlzIg" target="_blank" class="btn-yt btn-like">
+                👍 LIKE VIDEO
+            </a>
+        </div>
+
+        <div id="quiz-section" class="quiz-card">
+            <span class="question-number" id="q-number">Pertanyaan Nomor 1</span>
+            <div class="options">
+                <button class="option-btn" onclick="nextQuestion('A')">PILIHAN A</button>
+                <button class="option-btn" onclick="nextQuestion('B')">PILIHAN B</button>
+                <button class="option-btn" onclick="nextQuestion('C')">PILIHAN C</button>
+            </div>
+        </div>
+
+        <div id="result">
+            <h2 style="text-align: center; margin-top:0;">Hasil Gaya Belajar</h2>
+            <div id="result-content"></div>
+            <button class="option-btn" style="margin-top: 15px; width: 100%;" onclick="location.reload()">Ulangi Tes</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        let score = { A: 0, B: 0, C: 0 };
+        const totalQuestions = 15;
+
+        function nextQuestion(choice) {
+            score[choice]++;
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                document.getElementById('q-number').innerText = "Pertanyaan Nomor " + currentQuestion;
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            // Hanya menyembunyikan area tombol pilihan
+            document.getElementById('quiz-section').style.display = 'none';
+            
+            // Tampilkan hasil
+            const resultDiv = document.getElementById('result');
+            const content = document.getElementById('result-content');
+            resultDiv.style.display = 'block';
+
+            let maxScore = Math.max(score.A, score.B, score.C);
+            let resultHTML = "";
+
+            if (score.A === maxScore) {
+                resultHTML = `<div class="result-box visual">
+                    <h3>TIPE VISUAL (Dominan A)</h3>
+                    <p>Menerima informasi paling efektif menggunakan indera pengelihatan.</p>
+                    <strong>Strategi Belajar:</strong><br>
+                    1. Gunakan variasi warna saat mencatat.<br>
+                    2. Pilih buku dengan banyak ilustrasi gambar.<br>
+                    3. Perhatikan penerangan saat belajar.<br>
+                    4. Bayangkan tulisan saat mengingat sesuatu.
+                </div>`;
+            } else if (score.B === maxScore) {
+                resultHTML = `<div class="result-box auditory">
+                    <h3>TIPE AUDITORY (Dominan B)</h3>
+                    <p>Menerima informasi paling efektif menggunakan indera pendengaran.</p>
+                    <strong>Strategi Belajar:</strong><br>
+                    1. Gunakan perekam suara saat mendengarkan penjelasan.<br>
+                    2. Perbanyak presentasi dan tanya jawab.<br>
+                    3. Gunakan irama/lagu untuk menghafal.<br>
+                    4. Hindari kebisingan saat belajar.
+                </div>`;
+            } else {
+                resultHTML = `<div class="result-box kinestetik">
+                    <h3>TIPE KINESTETIK (Dominan C)</h3>
+                    <p>Menerima informasi paling efektif dengan gerakan tubuh dan praktik.</p>
+                    <strong>Strategi Belajar:</strong><br>
+                    1. Belajar melalui aktivitas atau uji coba langsung.<br>
+                    2. Perbanyak praktik di laboratorium.<br>
+                    3. Hindari metode belajar yang terlalu banyak duduk diam.<br>
+                    4. Gunakan gerakan tubuh saat menghafal.
+                </div>`;
+            }
+            content.innerHTML = resultHTML;
+
+            // Scroll otomatis ke bagian hasil agar user tahu hasil sudah muncul
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

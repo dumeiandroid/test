@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Stres Kerja</title>
+    <style>
+        :root { --primary: #2c3e50; --bg: #f9fbff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; width: 100%; max-width: 500px; padding: 25px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #333; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #7f8c8d; font-size: 13px; margin-bottom: 20px; }
+        
+        .section-title { font-weight: bold; margin-top: 20px; border-bottom: 2px solid #eee; padding-bottom: 5px; color: var(--primary); }
+        .input-group { margin: 15px 0; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #555; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+
+        .table-input { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .table-input th { font-size: 11px; padding: 10px; background: #f4f7f6; color: #95a5a6; text-transform: uppercase; }
+        .table-input td { padding: 12px 5px; border-bottom: 1px solid #f1f1f1; text-align: center; }
+        .q-num { font-weight: bold; width: 40px; color: #34495e; }
+        .radio-box { cursor: pointer; transform: scale(1.4); }
+        
+        button { width: 100%; padding: 16px; background: #2c3e50; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 25px; font-size: 16px; }
+        button:hover { background: #000; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Tes Stres Kerja</h2>
+    <p class="subtitle">Isi data diri dan jawaban sesuai dengan soal yang Anda miliki</p>
+    
+    <form id="stressForm">
+        <div class="section-title">Data Diri</div>
+        <div class="input-group">
+            <label>Nama Lengkap</label>
+            <input type="text" name="nama" required placeholder="Masukkan nama...">
+        </div>
+        <div class="input-group">
+            <label>Usia</label>
+            <input type="number" name="usia" required placeholder="Contoh: 17">
+        </div>
+        <div class="input-group">
+            <label>Pendidikan Terakhir</label>
+            <select name="pendidikan" required>
+                <option value="">Pilih Pendidikan...</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA/SMK">SMA/SMK</option>
+                <option value="Diploma/S1">Diploma/S1</option>
+                <option value="S2/S3">S2/S3</option>
+            </select>
+        </div>
+
+        <div class="section-title">Lembar Jawaban</div>
+        <small style="color: #7f8c8d; font-size: 0.85em;">Pindahkan jawaban Anda (Ya/Tidak) sesuai urutan soal 1-12</small>
+        <table class="table-input">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Ya</th>
+                    <th>Tidak</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        
+        <button type="button" onclick="submitData()">Simpan & Lihat Hasil</button>
+    </form>
+</div>
+
+<script>
+    const API_URL = "https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes";
+    
+    const tbody = document.getElementById('tableBody');
+    for (let i = 1; i <= 12; i++) {
+        tbody.innerHTML += `
+            <tr>
+                <td class="q-num">${i}</td>
+                <td><input type="radio" name="q${i}" value="Y" class="radio-box" required></td>
+                <td><input type="radio" name="q${i}" value="T" class="radio-box"></td>
+            </tr>`;
+    }
+
+    async function submitData() {
+        const form = document.getElementById('stressForm');
+        if (!form.checkValidity()) return alert("Mohon lengkapi data diri dan semua jawaban!");
+
+        const formData = new FormData(form);
+        const dataDiri = {
+            nama: formData.get('nama'),
+            usia: formData.get('usia'),
+            pendidikan: formData.get('pendidikan')
+        };
+
+        const jawaban = {};
+        for (let i = 1; i <= 12; i++) { 
+            jawaban[`q${i}`] = formData.get(`q${i}`); 
+        }
+
+        const token = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+        const tgl = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const payload = {
+            x_01: "stres kerja",
+            x_02: JSON.stringify(dataDiri),
+            x_03: JSON.stringify(jawaban),
+            x_04: token,
+            x_05: tgl
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Custom-Auth': 'admin' 
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            console.log('Response:', result);
+            
+            if (result.success) {
+                window.location.href = `25view.html?token=${token}`;
+            } else {
+                alert("Gagal menyimpan: " + (result.message || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error('Error:', e);
+            alert("Gagal menyimpan data: " + e.message);
+        }
+    }
+</script>
+</body>
+</html>

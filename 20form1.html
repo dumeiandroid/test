@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Karier RIASEC</title>
+    <style>
+        :root { --primary: #2980b9; --accent: #3498db; --bg: #f0f2f5; --red-yt: #ff0000; --blue-fb: #1877f2; --text: #2c3e50; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; background: var(--bg); display: flex; flex-direction: column; align-items: center; color: var(--text); }
+        .main-wrapper { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Video & Social Header */
+        .video-box { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .social-buttons { display: flex; gap: 10px; justify-content: center; }
+        .btn-social { flex: 1; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
+        .btn-subscribe { background: var(--red-yt); } .btn-like { background: var(--blue-fb); }
+
+        /* Quiz UI */
+        .quiz-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; border-top: 5px solid var(--primary); position: relative; }
+        .progress-bar { position: absolute; top: 0; left: 0; height: 5px; background: var(--accent); transition: width 0.3s; border-radius: 5px 5px 0 0; }
+        .question-number { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-bottom: 10px; display: block; }
+        .category-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #95a5a6; margin-bottom: 20px; display: block; }
+        .question-text { font-size: 1.15rem; color: #34495e; margin-bottom: 30px; min-height: 3em; line-height: 1.5; }
+        
+        .options { display: flex; justify-content: center; gap: 15px; }
+        .opt-btn { flex: 1; padding: 15px; font-size: 1rem; cursor: pointer; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 10px; font-weight: bold; transition: 0.2s; }
+        .opt-btn:hover { background: var(--primary); color: white; }
+        .opt-btn.dislike { border-color: #e74c3c; color: #e74c3c; }
+        .opt-btn.dislike:hover { background: #e74c3c; color: white; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .input-group { margin: 15px 0; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .btn-submit { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: background 0.3s; }
+        .btn-submit:hover { background: #1f6391; }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <!-- Video Referensi Karier -->
+    <div class="video-box"><iframe src="https://www.youtube.com/embed/hqzBQ-QlzIg?si=zmh6lZjrV0hdU5jY" allowfullscreen></iframe></div>
+    
+    <!-- Social Actions -->
+    <div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">🔔 SUBSCRIBE</a>
+        <a href="https://www.youtube.com/watch?v=nU0lQ-39klo" target="_blank" class="btn-social btn-like">👍 LIKE VIDEO</a>
+    </div>
+
+    <!-- Container Tes -->
+    <div id="quiz-container" class="quiz-card">
+        <div id="progress" class="progress-bar" style="width: 0%;"></div>
+        <span class="category-label" id="category-name">Realistic</span>
+        <span class="question-number" id="q-number">Soal 1 dari 42</span>
+        <p class="question-text" id="q-text">Membangun sesuatu dengan tangan atau alat mekanik.</p>
+        
+        <div class="options">
+            <button class="opt-btn dislike" onclick="answer(0)">TIDAK SUKA</button>
+            <button class="opt-btn" onclick="answer(1)">SUKA</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Form -->
+<div id="form-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="text-align:center; color: var(--primary); margin-top:0;">Analisis Karier</h3>
+        <p style="text-align:center; font-size: 0.9rem; color: #666; margin-bottom: 20px;">Lengkapi data diri untuk melihat hasil kecenderungan karier Anda.</p>
+        <div class="input-group">
+            <input type="text" id="nama" placeholder="Nama Lengkap" required>
+        </div>
+        <div class="input-group">
+            <input type="number" id="usia" placeholder="Usia" required>
+        </div>
+        <div class="input-group">
+            <select id="pendidikan">
+                <option value="">Pendidikan Terakhir</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA/K">SMA/K</option>
+                <option value="D3/S1">D3/S1</option>
+                <option value="S2/S3">S2/S3</option>
+            </select>
+        </div>
+        <button class="btn-submit" onclick="submitFinal()">LIHAT HASIL RIASEC</button>
+    </div>
+</div>
+
+<script>
+    // Data RIASEC (7 soal per kategori x 6 kategori = 42 soal)
+    const questions = [
+        { c: "Realistic", t: "Membangun sesuatu dengan tangan atau alat mekanik." },
+        { c: "Realistic", t: "Memperbaiki peralatan listrik atau elektronik." },
+        { c: "Realistic", t: "Bekerja di luar ruangan seperti berkebun atau bertani." },
+        { c: "Realistic", t: "Mengoperasikan mesin berat atau kendaraan besar." },
+        { c: "Realistic", t: "Membuat barang dari kayu, logam, atau plastik." },
+        { c: "Realistic", t: "Mengikuti instruksi teknis untuk merakit perangkat." },
+        { c: "Realistic", t: "Melakukan aktivitas fisik yang membutuhkan kekuatan." },
+        
+        { c: "Investigative", t: "Mempelajari cara kerja alam semesta atau sains." },
+        { c: "Investigative", t: "Memecahkan masalah matematika atau logika yang rumit." },
+        { c: "Investigative", t: "Melakukan penelitian laboratorium atau eksperimen." },
+        { c: "Investigative", t: "Menganalisis data untuk menemukan pola tertentu." },
+        { c: "Investigative", t: "Membaca jurnal ilmiah atau artikel teknologi terbaru." },
+        { c: "Investigative", t: "Mencari tahu penyebab mendalam dari suatu masalah." },
+        { c: "Investigative", t: "Bekerja secara mandiri dalam tugas intelektual." },
+
+        { c: "Artistic", t: "Menulis cerita pendek, puisi, atau naskah." },
+        { c: "Artistic", t: "Melukis, menggambar, atau membuat desain grafis." },
+        { c: "Artistic", t: "Memainkan alat musik atau bernyanyi." },
+        { c: "Artistic", t: "Berakting di panggung atau membuat konten kreatif." },
+        { c: "Artistic", t: "Merancang dekorasi ruangan atau gaya pakaian." },
+        { c: "Artistic", t: "Mengekspresikan diri melalui karya seni orisinal." },
+        { c: "Artistic", t: "Bekerja di lingkungan yang fleksibel dan tidak kaku." },
+
+        { c: "Social", t: "Mengajar atau memberikan pelatihan kepada orang lain." },
+        { c: "Social", t: "Membantu orang lain menyelesaikan masalah pribadi." },
+        { c: "Social", t: "Melakukan kegiatan sukarela untuk masyarakat." },
+        { c: "Social", t: "Bekerja dalam tim untuk mencapai tujuan bersama." },
+        { c: "Social", t: "Memberikan layanan kesehatan atau perawatan." },
+        { c: "Social", t: "Mendengarkan keluh kesah orang dan memberi saran." },
+        { c: "Social", t: "Menjelaskan informasi rumit agar mudah dipahami." },
+
+        { c: "Enterprising", t: "Memimpin sebuah tim atau organisasi besar." },
+        { c: "Enterprising", t: "Menjual produk atau meyakinkan orang lain." },
+        { c: "Enterprising", t: "Memulai bisnis baru atau mencari peluang usaha." },
+        { c: "Enterprising", t: "Berbicara di depan publik untuk mempengaruhi massa." },
+        { c: "Enterprising", t: "Mengambil risiko untuk mendapatkan keuntungan besar." },
+        { c: "Enterprising", t: "Bernegosiasi untuk mendapatkan kesepakatan terbaik." },
+        { c: "Enterprising", t: "Mengelola proyek dengan target yang ambisius." },
+
+        { c: "Conventional", t: "Mengatur data dalam tabel atau sistem arsip." },
+        { c: "Conventional", t: "Melakukan pembukuan keuangan dengan teliti." },
+        { c: "Conventional", t: "Bekerja dengan aturan dan prosedur yang jelas." },
+        { c: "Conventional", t: "Memeriksa detail dokumen agar tidak ada kesalahan." },
+        { c: "Conventional", t: "Mengelola inventaris atau stok barang secara rutin." },
+        { c: "Conventional", t: "Mengikuti jadwal kerja yang sudah ditentukan pasti." },
+        { c: "Conventional", t: "Mengetik laporan atau menginput data ke sistem." }
+    ];
+
+    let currentIndex = 0;
+    let scores = { Realistic: 0, Investigative: 0, Artistic: 0, Social: 0, Enterprising: 0, Conventional: 0 };
+
+    function answer(point) {
+        const cat = questions[currentIndex].c;
+        scores[cat] += point;
+
+        currentIndex++;
+        if (currentIndex < questions.length) {
+            updateUI();
+        } else {
+            document.getElementById('form-modal').style.display = 'flex';
+        }
+    }
+
+    function updateUI() {
+        const q = questions[currentIndex];
+        document.getElementById('category-name').innerText = q.c;
+        document.getElementById('q-number').innerText = `Soal ${currentIndex + 1} dari ${questions.length}`;
+        document.getElementById('q-text').innerText = q.t;
+        document.getElementById('progress').style.width = `${((currentIndex) / questions.length) * 100}%`;
+    }
+
+    async function submitFinal() {
+        const nama = document.getElementById('nama').value;
+        const usia = document.getElementById('usia').value;
+        const pend = document.getElementById('pendidikan').value;
+
+        if (!nama || !usia || !pend) {
+            alert("Harap lengkapi semua data diri.");
+            return;
+        }
+
+        const token = "CAREER-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+        const payload = {
+            x_01: "tes karir",
+            x_02: JSON.stringify({ nama, usia, pendidikan: pend }),
+            x_03: JSON.stringify(scores),
+            x_04: token,
+            x_05: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        };
+
+        try {
+            const res = await fetch("https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': 'admin' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                window.open(`20view.html?token=${token}`, '_blank');
+                location.reload();
+            } else {
+                alert("Gagal menyimpan. Silakan coba lagi.");
+            }
+        } catch (e) {
+            alert("Terjadi kesalahan koneksi.");
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apakah Saya Benar-benar Mengenal Pasangan Saya?</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); 
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 1.8em; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 0.95em; }
+        .content { padding: 30px; }
+        .profile-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 5px solid #6c5ce7;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .profile-item { display: flex; flex-direction: column; }
+        .profile-label { 
+            font-size: 0.85em; 
+            color: #666; 
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .profile-value { 
+            font-size: 1.05em; 
+            color: #2d3436;
+            font-weight: 500;
+        }
+        .score-hero {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border-radius: 15px;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .score-hero:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(108, 92, 231, 0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+        .score-main {
+            font-size: 5em;
+            font-weight: 800;
+            margin: 20px 0;
+            position: relative;
+            z-index: 1;
+        }
+        .score-main.excellent { color: #00b894; }
+        .score-main.good { color: #fdcb6e; }
+        .score-main.needs-work { color: #d63031; }
+        .score-subtitle {
+            font-size: 1.2em;
+            color: #666;
+            position: relative;
+            z-index: 1;
+        }
+        .chart-section {
+            margin: 30px 0;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .gauge-container { 
+            max-width: 350px; 
+            margin: 0 auto;
+            position: relative;
+        }
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 0 20px;
+        }
+        .gauge-label {
+            font-size: 0.85em;
+            color: #666;
+            text-align: center;
+        }
+        .gauge-label.start { color: #d63031; }
+        .gauge-label.middle { color: #fdcb6e; }
+        .gauge-label.end { color: #00b894; }
+        .result-section {
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-left: 8px solid;
+        }
+        .result-section.excellent {
+            background: linear-gradient(135deg, #f0fff4 0%, #e6f7ed 100%);
+            border-color: #00b894;
+        }
+        .result-section.good {
+            background: linear-gradient(135deg, #fffbea 0%, #fff3cd 100%);
+            border-color: #fdcb6e;
+        }
+        .result-section.needs-work {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe9e9 100%);
+            border-color: #d63031;
+        }
+        .result-type {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .result-section.excellent .result-type { color: #00b894; }
+        .result-section.good .result-type { color: #d68910; }
+        .result-section.needs-work .result-type { color: #d63031; }
+        .result-description {
+            font-size: 1.05em;
+            line-height: 1.8;
+            color: #2d3436;
+            margin-bottom: 20px;
+        }
+        .info-section {
+            background: #f1f3f5;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+        .info-title {
+            font-size: 1.3em;
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+        .info-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #dee2e6;
+            line-height: 1.6;
+        }
+        .info-list li:last-child { border-bottom: none; }
+        .info-list strong { color: #6c5ce7; }
+        .love-map-section {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffedd5 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-left: 5px solid #f59e0b;
+        }
+        .love-map-title {
+            font-size: 1.3em;
+            color: #d68910;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .advice-section {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-left: 5px solid #27ae60;
+        }
+        .advice-title {
+            font-size: 1.3em;
+            color: #27ae60;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .advice-list {
+            list-style: none;
+            padding: 0;
+        }
+        .advice-list li {
+            padding: 10px 0 10px 25px;
+            position: relative;
+            line-height: 1.7;
+            color: #2d3436;
+        }
+        .advice-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .strength-weakness {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        .strength-box, .weakness-box {
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid;
+        }
+        .strength-box {
+            background: linear-gradient(135deg, #f0fff4 0%, #dcfce7 100%);
+            border-color: #22c55e;
+        }
+        .weakness-box {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #ef4444;
+        }
+        .strength-box h4 { color: #22c55e; margin-bottom: 10px; }
+        .weakness-box h4 { color: #ef4444; margin-bottom: 10px; }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+        }
+        .btn-secondary {
+            background: white;
+            color: #6c5ce7;
+            border: 2px solid #6c5ce7;
+        }
+        .btn-secondary:hover {
+            background: #6c5ce7;
+            color: white;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        .error {
+            background: #fff5f5;
+            color: #e74c3c;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 5px solid #e74c3c;
+        }
+        @media print {
+            .buttons { display: none; }
+            body { background: white; }
+            .container { box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.4em; }
+            .result-type { font-size: 1.4em; }
+            .score-main { font-size: 3.5em; }
+            .buttons { grid-template-columns: 1fr; }
+            .strength-weakness { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div class="loading">Memuat hasil analisis...</div>
+</div>
+
+<script>
+    const AUTH_KEY = "admin";
+    
+    const knowledgeLevels = {
+        excellent: {
+            title: "Hubungan Sangat Kuat! 💑",
+            minScore: 16,
+            color: "excellent",
+            description: "Luar biasa! Anda memiliki 'Love Map' (Peta Cinta) yang sangat detail tentang pasangan Anda. Anda bukan hanya pasangan romantis, tetapi juga sahabat terbaik yang saling memahami dalam dan luar. Ini adalah fondasi yang sangat kuat untuk hubungan jangka panjang yang bahagia.",
+            characteristics: [
+                "Memiliki pemahaman mendalam tentang kehidupan inner pasangan",
+                "Mengetahui mimpi, harapan, dan ketakutan pasangan",
+                "Sadar akan stres, kekhawatiran, dan kebahagiaan pasangan",
+                "Memahami nilai-nilai hidup dan prioritas pasangan",
+                "Mengenal sejarah hidup dan pengalaman penting pasangan",
+                "Tahu tentang teman, keluarga, dan relasi sosial pasangan"
+            ],
+            strengths: [
+                "Komunikasi yang sangat baik dan terbuka",
+                "Empati dan pemahaman emosional yang tinggi",
+                "Fondasi kepercayaan yang kuat",
+                "Kemampuan untuk saling mendukung dengan efektif"
+            ],
+            advice: [
+                "Pertahankan kebiasaan komunikasi yang sudah sangat baik ini",
+                "Terus update pengetahuan Anda karena orang terus berkembang",
+                "Jangan pernah berhenti untuk bertanya dan mendengarkan",
+                "Gunakan pemahaman ini untuk terus memperkuat hubungan",
+                "Rayakan keberhasilan Anda dalam membangun intimacy yang mendalam",
+                "Jadilah role model bagi pasangan lain",
+                "Tetap curious tentang perubahan dan perkembangan pasangan"
+            ]
+        },
+        good: {
+            title: "Hubungan Cukup Baik ⭐",
+            minScore: 9,
+            color: "good",
+            description: "Anda mengenal pasangan dengan cukup baik, namun masih ada beberapa aspek yang perlu diperkuat. Anda berada di jalur yang tepat, tetapi ada ruang untuk mengembangkan keintiman emosional yang lebih dalam lagi.",
+            characteristics: [
+                "Memahami aspek-aspek dasar tentang pasangan",
+                "Mengetahui beberapa hal penting tentang kehidupan pasangan",
+                "Komunikasi sudah berjalan namun belum optimal",
+                "Ada area-area yang masih belum tergali dengan baik",
+                "Pemahaman lebih ke permukaan daripada mendalam"
+            ],
+            strengths: [
+                "Sudah memiliki fondasi yang solid untuk berkembang",
+                "Ada kemauan untuk mengenal pasangan lebih baik",
+                "Komunikasi dasar sudah terjalin"
+            ],
+            weaknesses: [
+                "Kurang pengetahuan tentang kehidupan inner pasangan",
+                "Belum memahami sepenuhnya mimpi dan ketakutan pasangan",
+                "Perlu lebih banyak percakapan yang bermakna",
+                "Mungkin terlalu fokus pada rutinitas sehari-hari"
+            ],
+            advice: [
+                "Luangkan lebih banyak waktu untuk quality conversation",
+                "Tanyakan pertanyaan yang lebih dalam tentang perasaan dan pemikiran",
+                "Dengarkan dengan aktif tanpa menginterupsi",
+                "Bicarakan tentang masa lalu, impian masa depan, dan ketakutan",
+                "Buat ritual untuk check-in emosional secara rutin",
+                "Kurangi distraksi (HP, TV) saat mengobrol",
+                "Tunjukkan ketertarikan genuine terhadap dunia pasangan",
+                "Catat hal-hal penting yang dibagikan pasangan"
+            ]
+        },
+        needsWork: {
+            title: "Perlu Lebih Banyak Perhatian ⚠️",
+            minScore: 0,
+            color: "needs-work",
+            description: "Skor Anda menunjukkan adanya jarak komunikasi yang signifikan dalam hubungan. Mungkin sudah waktunya untuk meluangkan lebih banyak quality time dan mulai benar-benar saling mengenal dengan lebih mendalam. Hubungan yang sehat memerlukan upaya aktif untuk memahami pasangan.",
+            characteristics: [
+                "Kurangnya komunikasi yang mendalam",
+                "Tidak tahu banyak tentang kehidupan inner pasangan",
+                "Fokus lebih ke hal-hal permukaan atau eksternal",
+                "Jarang berbicara tentang perasaan dan pikiran pribadi",
+                "Mungkin ada emotional distance dalam hubungan"
+            ],
+            weaknesses: [
+                "Komunikasi yang sangat terbatas atau superficial",
+                "Tidak memahami kebutuhan emosional pasangan",
+                "Kurangnya empati dan pemahaman mendalam",
+                "Mungkin hidup parallel lives tanpa truly connect",
+                "Risiko tinggi untuk growing apart"
+            ],
+            advice: [
+                "PRIORITASKAN quality time berdua tanpa distraksi",
+                "Mulai dengan percakapan ringan, lalu dalami secara bertahap",
+                "Tanyakan 'Bagaimana perasaanmu?' dan benar-benar dengarkan",
+                "Buat jadwal date night mingguan untuk reconnect",
+                "Matikan gadget dan benar-benar hadir saat bersama",
+                "Bicarakan tentang hari masing-masing dengan detail",
+                "Tanyakan tentang mimpi, harapan, dan ketakutan",
+                "Pertimbangkan konseling pasangan jika diperlukan",
+                "Baca buku tentang komunikasi dalam hubungan bersama",
+                "Mulai habit untuk sharing highs and lows setiap hari",
+                "Jangan anggap sepele pentingnya emotional intimacy",
+                "Ingat: hubungan butuh investasi waktu dan energi"
+            ]
+        }
+    };
+
+    async function loadData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        
+        if (!token) {
+            showError("Token tidak ditemukan di URL");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`, 
+                { headers: { 'X-Custom-Auth': AUTH_KEY } }
+            );
+            
+            const res = await response.json();
+            
+            if (res.success && res.count > 0) {
+                renderResults(res.data[0]);
+            } else {
+                showError("Data tidak ditemukan");
+            }
+        } catch (error) {
+            showError("Gagal memuat data: " + error.message);
+        }
+    }
+
+    function renderResults(data) {
+        const profile = JSON.parse(data.x_02);
+        const answers = JSON.parse(data.x_03);
+        
+        let score = 0;
+        Object.values(answers).forEach(value => {
+            score += parseInt(value);
+        });
+
+        let level;
+        if (score >= 16) level = knowledgeLevels.excellent;
+        else if (score >= 9) level = knowledgeLevels.good;
+        else level = knowledgeLevels.needsWork;
+
+        const html = `
+            <div class="header">
+                <h1>Apakah Saya Benar-benar Mengenal Pasangan Saya?</h1>
+                <p>Mengukur Kedalaman Love Map dalam Hubungan Anda</p>
+            </div>
+            
+            <div class="content" id="printable-area">
+                <div class="profile-section">
+                    <h3 style="margin-bottom: 15px; color: #2d3436;">Informasi Peserta</h3>
+                    <div class="profile-grid">
+                        <div class="profile-item">
+                            <span class="profile-label">Nama</span>
+                            <span class="profile-value">${profile.nama}</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Usia</span>
+                            <span class="profile-value">${profile.usia} Tahun</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Pendidikan</span>
+                            <span class="profile-value">${profile.pendidikan}</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Tanggal Tes</span>
+                            <span class="profile-value">${data.x_05}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score-hero">
+                    <div class="score-main ${level.color}">${score}</div>
+                    <div class="score-subtitle">dari 22 poin maksimal</div>
+                </div>
+
+                <div class="chart-section">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: #2d3436;">Level Pengenalan Anda</h3>
+                    <div class="gauge-container">
+                        <canvas id="gaugeChart"></canvas>
+                    </div>
+                    <div class="gauge-labels">
+                        <div class="gauge-label start">Perlu<br>Kerja</div>
+                        <div class="gauge-label middle">Cukup<br>Baik</div>
+                        <div class="gauge-label end">Sangat<br>Kuat</div>
+                    </div>
+                </div>
+
+                <div class="result-section ${level.color}">
+                    <div class="result-type">${level.title}</div>
+                    <div class="result-description">${level.description}</div>
+                </div>
+
+                ${level.characteristics ? `
+                    <div class="info-section">
+                        <div class="info-title">
+                            📋 Profil Hubungan Anda
+                        </div>
+                        <ul class="info-list">
+                            ${level.characteristics.map(char => `<li><strong>•</strong> ${char}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                ${level.strengths || level.weaknesses ? `
+                    <div class="strength-weakness">
+                        ${level.strengths ? `
+                            <div class="strength-box">
+                                <h4>✅ Kekuatan Anda</h4>
+                                <ul class="info-list">
+                                    ${level.strengths.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${level.weaknesses ? `
+                            <div class="weakness-box">
+                                <h4>⚠️ Area yang Perlu Diperbaiki</h4>
+                                <ul class="info-list">
+                                    ${level.weaknesses.map(w => `<li>${w}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+
+                <div class="advice-section">
+                    <div class="advice-title">💡 Saran untuk Anda</div>
+                    <ul class="advice-list">
+                        ${level.advice.map(adv => `<li>${adv}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="love-map-section">
+                    <div class="love-map-title">❤️ Tentang Love Map (Peta Cinta)</div>
+                    <p style="line-height: 1.8; margin-bottom: 15px;">
+                        <strong>Love Map</strong> adalah istilah yang dipopulerkan oleh Dr. John Gottman, peneliti hubungan terkemuka. 
+                        Love Map adalah ruang di otak Anda yang menyimpan semua informasi relevan tentang dunia pasangan Anda.
+                    </p>
+                    <p style="line-height: 1.8; margin-bottom: 15px;">
+                        Pasangan dengan Love Map yang kuat tahu tentang:
+                    </p>
+                    <ul class="info-list">
+                        <li>Stres terbesar dan kekhawatiran pasangan saat ini</li>
+                        <li>Mimpi, aspirasi, dan tujuan hidup pasangan</li>
+                        <li>Teman-teman penting dan dinamika hubungan sosial</li>
+                        <li>Filosofi hidup, nilai-nilai, dan prioritas</li>
+                        <li>Pengalaman masa lalu yang membentuk siapa mereka</li>
+                        <li>Hobi, minat, dan hal-hal yang membuat mereka bahagia</li>
+                    </ul>
+                    <p style="line-height: 1.8; margin-top: 15px;">
+                        <strong>Penelitian menunjukkan:</strong> Pasangan dengan Love Map yang detail memiliki hubungan yang lebih kuat, 
+                        lebih tahan terhadap konflik, dan lebih bahagia dalam jangka panjang.
+                    </p>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">🎯 Cara Memperkuat Love Map Anda</div>
+                    <ul class="info-list">
+                        <li><strong>Ask Open-Ended Questions:</strong> Tanyakan "Bagaimana perasaanmu tentang...?" bukan "Apakah kamu...?"</li>
+                        <li><strong>Daily Check-ins:</strong> Luangkan 15-20 menit setiap hari untuk benar-benar ngobrol</li>
+                        <li><strong>Stay Curious:</strong> Orang terus berubah, jadi terus update informasi Anda</li>
+                        <li><strong>Listen Actively:</strong> Fokus sepenuhnya saat pasangan berbicara</li>
+                        <li><strong>Remember Details:</strong> Catat atau ingat hal-hal penting yang dibagikan</li>
+                        <li><strong>Date Nights:</strong> Buat waktu khusus untuk mengenal lebih dalam</li>
+                    </ul>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn-primary" onclick="window.print()">🖨️ Cetak Laporan</button>
+                    <button class="btn-secondary" onclick="downloadAsImage()">📥 Download Gambar</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('app').innerHTML = html;
+        drawGaugeChart(score);
+    }
+
+    function drawGaugeChart(score) {
+        const ctx = document.getElementById('gaugeChart').getContext('2d');
+        
+        // Determine color based on score
+        let color;
+        if (score >= 16) color = '#00b894';
+        else if (score >= 9) color = '#fdcb6e';
+        else color = '#d63031';
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [score, 22 - score],
+                    backgroundColor: [color, '#e9ecef'],
+                    borderWidth: 0,
+                    circumference: 180,
+                    rotation: 270
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '75%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
+            },
+            plugins: [{
+                id: 'gaugeText',
+                afterDatasetDraw(chart) {
+                    const { ctx, chartArea: { width, height } } = chart;
+                    ctx.save();
+                    ctx.font = 'bold 2.5em "Segoe UI"';
+                    ctx.fillStyle = color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(score, width / 2, height / 2 + 10);
+                    ctx.restore();
+                }
+            }]
+        });
+    }
+
+    function downloadAsImage() {
+        const element = document.getElementById('printable-area');
+        const buttons = document.querySelector('.buttons');
+        buttons.style.display = 'none';
+        
+        html2canvas(element, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false,
+            windowWidth: 1200
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Hasil-Mengenal-Pasangan-${new Date().getTime()}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+            buttons.style.display = 'grid';
+        });
+    }
+
+    function showError(message) {
+        document.getElementById('app').innerHTML = `
+            <div class="header">
+                <h1>Apakah Saya Benar-benar Mengenal Pasangan Saya?</h1>
+            </div>
+            <div class="content">
+                <div class="error">
+                    <h3>Terjadi Kesalahan</h3>
+                    <p>${message}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    loadData();
+</script>
+
+</body>
+</html>

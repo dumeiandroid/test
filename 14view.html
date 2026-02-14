@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kecanduan Hubungan</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 1.8em; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 0.95em; }
+        .content { padding: 30px; }
+        .profile-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .profile-item { display: flex; flex-direction: column; }
+        .profile-label { 
+            font-size: 0.85em; 
+            color: #666; 
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .profile-value { 
+            font-size: 1.05em; 
+            color: #2d3436;
+            font-weight: 500;
+        }
+        .chart-section {
+            margin: 30px 0;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .chart-container { 
+            max-width: 400px; 
+            margin: 0 auto;
+            position: relative;
+        }
+        .result-section {
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-left: 8px solid;
+        }
+        .result-section.type-A {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe9e9 100%);
+            border-color: #d63031;
+        }
+        .result-section.type-B {
+            background: linear-gradient(135deg, #fffbea 0%, #fff3cd 100%);
+            border-color: #fdcb6e;
+        }
+        .result-section.type-C {
+            background: linear-gradient(135deg, #f0fff4 0%, #e6f7ed 100%);
+            border-color: #00b894;
+        }
+        .result-type {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .type-A .result-type { color: #d63031; }
+        .type-B .result-type { color: #d68910; }
+        .type-C .result-type { color: #00b894; }
+        .result-description {
+            font-size: 1.05em;
+            line-height: 1.8;
+            color: #2d3436;
+            margin-bottom: 20px;
+        }
+        .score-display {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        .score-item {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            min-width: 100px;
+        }
+        .score-item.active {
+            border: 3px solid;
+        }
+        .score-item.type-A.active { border-color: #d63031; }
+        .score-item.type-B.active { border-color: #fdcb6e; }
+        .score-item.type-C.active { border-color: #00b894; }
+        .score-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .score-value {
+            font-size: 1.6em;
+            font-weight: 700;
+        }
+        .score-item.type-A .score-value { color: #d63031; }
+        .score-item.type-B .score-value { color: #d68910; }
+        .score-item.type-C .score-value { color: #00b894; }
+        .info-section {
+            background: #f1f3f5;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+        .info-title {
+            font-size: 1.3em;
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+        .info-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #dee2e6;
+            line-height: 1.6;
+        }
+        .info-list li:last-child { border-bottom: none; }
+        .info-list strong { color: #667eea; }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .warning-box h4 {
+            color: #d68910;
+            margin-bottom: 10px;
+        }
+        .advice-section {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-left: 5px solid #27ae60;
+        }
+        .advice-title {
+            font-size: 1.3em;
+            color: #27ae60;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .advice-list {
+            list-style: none;
+            padding: 0;
+        }
+        .advice-list li {
+            padding: 10px 0 10px 25px;
+            position: relative;
+            line-height: 1.7;
+            color: #2d3436;
+        }
+        .advice-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        .error {
+            background: #fff5f5;
+            color: #e74c3c;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 5px solid #e74c3c;
+        }
+        @media print {
+            .buttons { display: none; }
+            body { background: white; }
+            .container { box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.4em; }
+            .result-type { font-size: 1.4em; }
+            .buttons { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div class="loading">Memuat hasil analisis...</div>
+</div>
+
+<script>
+    const AUTH_KEY = "admin";
+    
+    const addictionTypes = {
+        A: {
+            title: "Kecanduan Hubungan (Adiktif)",
+            color: "#d63031",
+            description: "Anda memiliki ketergantungan emosional yang tinggi terhadap pasangan. Identitas dan kebahagiaan Anda sangat bergantung pada keberadaan hubungan ini, yang bisa menjadi tidak sehat jika tidak dikelola dengan baik.",
+            characteristics: [
+                "Merasa tidak lengkap atau kehilangan identitas tanpa pasangan",
+                "Kebahagiaan dan harga diri sangat bergantung pada hubungan",
+                "Sulit membayangkan hidup tanpa pasangan",
+                "Cenderung mengabaikan kebutuhan pribadi demi hubungan",
+                "Takut berlebihan akan kehilangan pasangan",
+                "Kesulitan membuat keputusan tanpa persetujuan pasangan"
+            ],
+            warnings: [
+                "Risiko kehilangan jati diri dan kemandirian",
+                "Rentan terhadap hubungan yang tidak sehat atau toxic",
+                "Dapat menerima perlakuan buruk demi mempertahankan hubungan",
+                "Stres berlebihan jika hubungan bermasalah",
+                "Kesulitan untuk move on jika hubungan berakhir"
+            ],
+            advice: [
+                "Kembangkan identitas diri yang kuat di luar hubungan romantis",
+                "Bangun kemandirian emosional dan finansial",
+                "Pertahankan hobi, minat, dan tujuan pribadi Anda",
+                "Jaga hubungan dengan keluarga dan teman-teman",
+                "Pertimbangkan konseling atau terapi jika diperlukan",
+                "Belajar untuk nyaman dengan kesendirian",
+                "Tetapkan batasan yang sehat dalam hubungan",
+                "Fokus pada pertumbuhan pribadi, bukan hanya hubungan"
+            ]
+        },
+        B: {
+            title: "Hubungan Sehat (Seimbang)",
+            color: "#fdcb6e",
+            description: "Anda memiliki pandangan yang sehat tentang hubungan. Anda menghargai pasangan sebagai bagian penting hidup Anda, namun tetap mempertahankan identitas dan kemandirian pribadi. Ini adalah pola hubungan yang ideal.",
+            characteristics: [
+                "Memandang hubungan sebagai partnership yang setara",
+                "Tetap memiliki identitas dan kehidupan pribadi",
+                "Dapat memberikan ruang untuk pasangan berkembang",
+                "Komunikasi yang terbuka dan jujur",
+                "Saling mendukung tanpa kehilangan diri sendiri",
+                "Mampu mengatasi konflik dengan cara yang konstruktif"
+            ],
+            warnings: [
+                "Tetap waspada agar tidak terlalu nyaman hingga mengabaikan hubungan",
+                "Jangan anggap remeh usaha untuk menjaga kualitas hubungan",
+                "Pastikan komunikasi tetap terbuka meski sudah nyaman"
+            ],
+            advice: [
+                "Terus pertahankan keseimbangan antara 'aku', 'kamu', dan 'kita'",
+                "Jaga komunikasi yang berkualitas dengan pasangan",
+                "Luangkan waktu untuk date night dan quality time",
+                "Dukung pertumbuhan pribadi masing-masing",
+                "Rayakan pencapaian bersama maupun individual",
+                "Tetap terbuka untuk belajar dan berkembang bersama",
+                "Jaga kepercayaan dengan konsistensi dan kejujuran",
+                "Hormati perbedaan dan ruang pribadi masing-masing"
+            ]
+        },
+        C: {
+            title: "Independen (Kurang Terikat)",
+            color: "#00b894",
+            description: "Anda sangat mandiri dan cenderung menjaga jarak emosional dalam hubungan. Anda mungkin melihat hubungan sebagai pelengkap hidup, bukan prioritas utama. Ini bisa positif atau negatif tergantung konteksnya.",
+            characteristics: [
+                "Sangat menghargai kebebasan dan ruang pribadi",
+                "Tidak mudah bergantung pada pasangan",
+                "Mampu bahagia dan mandiri tanpa hubungan romantis",
+                "Prioritas hidup tidak didominasi oleh hubungan",
+                "Mungkin kesulitan untuk deeply connect secara emosional",
+                "Cenderung protective terhadap waktu dan ruang pribadi"
+            ],
+            warnings: [
+                "Risiko pasangan merasa diabaikan atau tidak diprioritaskan",
+                "Kesulitan membangun keintiman emosional yang mendalam",
+                "Mungkin dianggap terlalu dingin atau distant",
+                "Potensi konflik jika pasangan membutuhkan lebih banyak perhatian",
+                "Hubungan mungkin terasa superficial atau kurang mendalam"
+            ],
+            advice: [
+                "Evaluasi apakah kemandirian Anda adalah mekanisme pertahanan dari fear of intimacy",
+                "Belajar untuk lebih terbuka dan vulnerable dengan pasangan",
+                "Komunikasikan kebutuhan Anda akan ruang pribadi dengan jelas",
+                "Luangkan waktu berkualitas dengan pasangan secara konsisten",
+                "Tunjukkan apresiasi dan afeksi meski itu tidak natural bagi Anda",
+                "Pertimbangkan apakah Anda siap untuk komitmen hubungan serius",
+                "Jangan takut untuk bergantung pada pasangan sesekali - itu wajar",
+                "Balance antara kemandirian dan kebersamaan"
+            ]
+        }
+    };
+
+    async function loadData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        
+        if (!token) {
+            showError("Token tidak ditemukan di URL");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`, 
+                { headers: { 'X-Custom-Auth': AUTH_KEY } }
+            );
+            
+            const res = await response.json();
+            
+            if (res.success && res.count > 0) {
+                renderResults(res.data[0]);
+            } else {
+                showError("Data tidak ditemukan");
+            }
+        } catch (error) {
+            showError("Gagal memuat data: " + error.message);
+        }
+    }
+
+    function renderResults(data) {
+        const profile = JSON.parse(data.x_02);
+        const answers = JSON.parse(data.x_03);
+        
+        const scores = { A: 0, B: 0, C: 0 };
+        Object.values(answers).forEach(value => {
+            if (scores[value] !== undefined) scores[value]++;
+        });
+
+        const dominant = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+        const typeInfo = addictionTypes[dominant];
+
+        const html = `
+            <div class="header">
+                <h1>Kecanduan Hubungan</h1>
+                <p>Analisis Pola Ketergantungan dalam Hubungan Romantis</p>
+            </div>
+            
+            <div class="content" id="printable-area">
+                <div class="profile-section">
+                    <h3 style="margin-bottom: 15px; color: #2d3436;">Informasi Peserta</h3>
+                    <div class="profile-grid">
+                        <div class="profile-item">
+                            <span class="profile-label">Nama</span>
+                            <span class="profile-value">${profile.nama}</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Usia</span>
+                            <span class="profile-value">${profile.usia} Tahun</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Pendidikan</span>
+                            <span class="profile-value">${profile.pendidikan}</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Tanggal Tes</span>
+                            <span class="profile-value">${data.x_05}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: #2d3436;">Distribusi Pola Hubungan</h3>
+                    <div class="chart-container">
+                        <canvas id="addictionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="score-display">
+                    <div class="score-item type-A ${dominant === 'A' ? 'active' : ''}">
+                        <div class="score-label">Adiktif (A)</div>
+                        <div class="score-value">${scores.A}</div>
+                    </div>
+                    <div class="score-item type-B ${dominant === 'B' ? 'active' : ''}">
+                        <div class="score-label">Sehat (B)</div>
+                        <div class="score-value">${scores.B}</div>
+                    </div>
+                    <div class="score-item type-C ${dominant === 'C' ? 'active' : ''}">
+                        <div class="score-label">Independen (C)</div>
+                        <div class="score-value">${scores.C}</div>
+                    </div>
+                </div>
+
+                <div class="result-section type-${dominant}">
+                    <div class="result-type">${typeInfo.title}</div>
+                    <div class="result-description">${typeInfo.description}</div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">Karakteristik Anda</div>
+                    <ul class="info-list">
+                        ${typeInfo.characteristics.map(char => `<li><strong>•</strong> ${char}</li>`).join('')}
+                    </ul>
+                </div>
+
+                ${typeInfo.warnings ? `
+                    <div class="warning-box">
+                        <h4>⚠️ Hal yang Perlu Diwaspadai</h4>
+                        <ul class="info-list" style="margin-top: 10px;">
+                            ${typeInfo.warnings.map(warn => `<li><strong>•</strong> ${warn}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                <div class="advice-section">
+                    <div class="advice-title">Saran untuk Anda</div>
+                    <ul class="advice-list">
+                        ${typeInfo.advice.map(adv => `<li>${adv}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">Tentang Pola Ketergantungan Hubungan</div>
+                    <ul class="info-list">
+                        <li><strong>Kecanduan Hubungan (A):</strong> Ketergantungan emosional berlebihan pada pasangan, identitas dan kebahagiaan sangat bergantung pada hubungan</li>
+                        <li><strong>Hubungan Sehat (B):</strong> Keseimbangan antara kebersamaan dan kemandirian, saling mendukung tanpa kehilangan identitas diri</li>
+                        <li><strong>Independen (C):</strong> Sangat mandiri, menjaga jarak emosional, melihat hubungan sebagai pelengkap bukan prioritas utama</li>
+                    </ul>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn-primary" onclick="window.print()">🖨️ Cetak Laporan</button>
+                    <button class="btn-secondary" onclick="downloadAsImage()">📥 Download Gambar</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('app').innerHTML = html;
+        drawChart(scores);
+    }
+
+    function drawChart(scores) {
+        const ctx = document.getElementById('addictionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Adiktif (A)', 'Sehat (B)', 'Independen (C)'],
+                datasets: [{
+                    data: [scores.A, scores.B, scores.C],
+                    backgroundColor: ['#d63031', '#fdcb6e', '#00b894'],
+                    borderWidth: 3,
+                    borderColor: '#fff',
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 13, weight: '600' },
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value} jawaban (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function downloadAsImage() {
+        const element = document.getElementById('printable-area');
+        const buttons = document.querySelector('.buttons');
+        buttons.style.display = 'none';
+        
+        html2canvas(element, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false,
+            windowWidth: 1200
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Hasil-Kecanduan-Hubungan-${new Date().getTime()}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+            buttons.style.display = 'grid';
+        });
+    }
+
+    function showError(message) {
+        document.getElementById('app').innerHTML = `
+            <div class="header">
+                <h1>Kecanduan Hubungan</h1>
+            </div>
+            <div class="content">
+                <div class="error">
+                    <h3>Terjadi Kesalahan</h3>
+                    <p>${message}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    loadData();
+</script>
+
+</body>
+</html>

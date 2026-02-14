@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Tes Pola Asuh Orangtua</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2em; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 1.1em; }
+        .content { padding: 40px; }
+        .profile-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .profile-item { display: flex; flex-direction: column; }
+        .profile-label {
+            font-size: 0.85em;
+            color: #667eea;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .profile-value { font-size: 1.1em; color: #2c3e50; }
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 8px solid;
+        }
+        .result-card h2 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .chart-container { position: relative; height: 320px; margin: 30px 0; }
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .score-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 3px solid;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .score-card.dominant {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .score-icon { font-size: 3em; margin-bottom: 10px; }
+        .score-name { font-size: 1.3em; font-weight: bold; margin-bottom: 10px; }
+        .score-value { font-size: 2em; font-weight: bold; margin: 10px 0; }
+        .info-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-section ul { list-style: none; padding-left: 0; }
+        .info-section li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+            color: #555;
+        }
+        .info-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .comparison-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .comparison-section h4 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #e9ecef;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-download { background: #667eea; color: white; }
+        .btn-download:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-print { background: #2c3e50; color: white; }
+        .btn-print:hover { background: #1a252f; transform: translateY(-2px); }
+        .error-msg { text-align: center; padding: 60px 40px; color: #e74c3c; }
+        .loading { text-align: center; padding: 60px 40px; color: #7f8c8d; }
+        @media print {
+            body { background: white; padding: 0; }
+            .button-group { display: none; }
+            .container { box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.5em; }
+            .result-card h2 { font-size: 1.8em; }
+            .button-group { grid-template-columns: 1fr; }
+            .score-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+    <div class="loading">
+        <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
+        <h3>Memuat Hasil Analisis...</h3>
+    </div>
+</div>
+
+<script>
+const PARENTING_STYLES = {
+    A: {
+        name: 'OTORITER (Authoritarian)',
+        color: '#c0392b',
+        icon: '👮',
+        description: 'Pola asuh dengan aturan yang ketat dan kepatuhan tinggi. Orangtua sangat menuntut tetapi kurang responsif terhadap kebutuhan anak.',
+        characteristics: [
+            'Aturan yang sangat ketat dan tidak fleksibel',
+            'Hukuman sebagai metode disiplin utama',
+            'Komunikasi satu arah (orangtua ke anak)',
+            'Ekspektasi yang tinggi tanpa penjelasan',
+            'Sedikit kehangatan atau dukungan emosional',
+            'Anak harus patuh tanpa pertanyaan'
+        ],
+        impact: [
+            '✅ Anak cenderung disiplin dan patuh aturan',
+            '✅ Mampu mengikuti instruksi dengan baik',
+            '❌ Kurang percaya diri dan takut mengambil keputusan',
+            '❌ Cenderung memberontak atau sangat submisif',
+            '❌ Kesulitan mengekspresikan emosi',
+            '❌ Hubungan dengan orangtua kurang hangat'
+        ],
+        advice: [
+            'Dengarkan pendapat dan perasaan anak',
+            'Jelaskan alasan di balik aturan',
+            'Berikan pujian, bukan hanya kritik',
+            'Tunjukkan kasih sayang dan kehangatan',
+            'Beri ruang untuk anak membuat keputusan kecil'
+        ]
+    },
+    B: {
+        name: 'DEMOKRATIS (Authoritative)',
+        color: '#27ae60',
+        icon: '🤝',
+        description: 'Pola asuh yang seimbang dengan batasan yang jelas namun penuh kehangatan. Ini dianggap sebagai gaya pengasuhan yang paling ideal.',
+        characteristics: [
+            'Aturan yang jelas dengan penjelasan',
+            'Komunikasi dua arah yang terbuka',
+            'Disiplin dengan konsekuensi logis',
+            'Ekspektasi tinggi dengan dukungan',
+            'Kehangatan dan responsif terhadap kebutuhan anak',
+            'Mendorong kemandirian dengan bimbingan'
+        ],
+        impact: [
+            '✅ Anak percaya diri dan mandiri',
+            '✅ Kemampuan sosial yang baik',
+            '✅ Prestasi akademik tinggi',
+            '✅ Regulasi emosi yang sehat',
+            '✅ Mampu mengambil keputusan',
+            '✅ Hubungan keluarga yang hangat'
+        ],
+        advice: [
+            'Pertahankan pola asuh ini!',
+            'Konsisten dengan aturan yang ditetapkan',
+            'Terus buka komunikasi dengan anak',
+            'Sesuaikan batasan seiring usia anak',
+            'Jadi role model yang baik'
+        ]
+    },
+    C: {
+        name: 'PERMISIF (Permissive)',
+        color: '#f39c12',
+        icon: '🎈',
+        description: 'Pola asuh dengan sedikit batasan dan aturan. Orangtua sangat responsif tetapi kurang menuntut, memberikan kebebasan tinggi pada anak.',
+        characteristics: [
+            'Aturan yang sangat sedikit atau tidak ada',
+            'Orangtua lebih seperti teman',
+            'Tidak konsisten dalam disiplin',
+            'Menghindari konfrontasi',
+            'Sangat hangat dan menerima',
+            'Anak membuat keputusan sendiri sejak dini'
+        ],
+        impact: [
+            '✅ Anak kreatif dan ekspresif',
+            '✅ Percaya diri dalam mengekspresikan diri',
+            '❌ Kesulitan mengikuti aturan',
+            '❌ Kurang disiplin diri',
+            '❌ Impulsif dan sulit menunda gratifikasi',
+            '❌ Masalah dalam hubungan sosial'
+        ],
+        advice: [
+            'Tetapkan batasan yang jelas',
+            'Konsisten dengan konsekuensi',
+            'Ajarkan tanggung jawab',
+            'Beri struktur dan rutinitas',
+            'Seimbangkan kebebasan dengan guidance'
+        ]
+    }
+};
+
+async function loadData() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const container = document.getElementById('mainContainer');
+
+    if (!token) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Error</h2><p>Token tidak ditemukan di URL</p></div>`;
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`, {
+            headers: { 'X-Custom-Auth': 'admin' }
+        });
+        const res = await response.json();
+
+        if (res.success && res.count > 0) {
+            renderResult(res.data[0]);
+        } else {
+            container.innerHTML = `<div class="error-msg"><h2>❌ Data Tidak Ditemukan</h2><p>Token tidak valid atau sudah kadaluarsa</p></div>`;
+        }
+    } catch (e) {
+        container.innerHTML = `<div class="error-msg"><h2>❌ Kesalahan Koneksi</h2><p>Tidak dapat terhubung ke server</p></div>`;
+    }
+}
+
+function renderResult(data) {
+    const dataDiri = JSON.parse(data.x_02 || "{}");
+    const scores = JSON.parse(data.x_03 || "{}");
+    
+    const total = 10;
+    const skorOtoriter = scores.A || 0;
+    const skorDemokratis = scores.B || 0;
+    const skorPermisif = scores.C || 0;
+    
+    let dominantKey = 'B';
+    if (skorOtoriter > scores[dominantKey]) dominantKey = 'A';
+    if (skorPermisif > scores[dominantKey]) dominantKey = 'C';
+    
+    const dominant = PARENTING_STYLES[dominantKey];
+
+    const html = `
+        <div class="header">
+            <h1>👨‍👩‍👧‍👦 Hasil Tes Pola Asuh Orangtua</h1>
+            <p>Seperti Apa Pola Asuh Orangtua ketika Mendidik Saya?</p>
+        </div>
+        <div class="content">
+            <div class="profile-section">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📋 Informasi Peserta</h3>
+                <div class="profile-grid">
+                    <div class="profile-item">
+                        <span class="profile-label">Nama Lengkap</span>
+                        <span class="profile-value">${dataDiri.nama || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Usia</span>
+                        <span class="profile-value">${dataDiri.usia || '-'} Tahun</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Pendidikan</span>
+                        <span class="profile-value">${dataDiri.pendidikan || '-'}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Tanggal Tes</span>
+                        <span class="profile-value">${data.x_05 || '-'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card" style="border-color: ${dominant.color};">
+                <h2 style="color: ${dominant.color};">${dominant.icon} ${dominant.name}</h2>
+                <p style="font-size: 1.1em; color: #555; margin-bottom: 20px;">${dominant.description}</p>
+            </div>
+
+            <div class="score-grid">
+                <div class="score-card ${dominantKey === 'A' ? 'dominant' : ''}" style="border-color: #c0392b;">
+                    <div class="score-icon">👮</div>
+                    <div class="score-name" style="color: #c0392b;">Otoriter</div>
+                    <div class="score-value" style="color: #c0392b;">${skorOtoriter}/${total}</div>
+                    <div style="color: #666;">${Math.round((skorOtoriter/total)*100)}%</div>
+                </div>
+                <div class="score-card ${dominantKey === 'B' ? 'dominant' : ''}" style="border-color: #27ae60;">
+                    <div class="score-icon">🤝</div>
+                    <div class="score-name" style="color: #27ae60;">Demokratis</div>
+                    <div class="score-value" style="color: #27ae60;">${skorDemokratis}/${total}</div>
+                    <div style="color: #666;">${Math.round((skorDemokratis/total)*100)}%</div>
+                </div>
+                <div class="score-card ${dominantKey === 'C' ? 'dominant' : ''}" style="border-color: #f39c12;">
+                    <div class="score-icon">🎈</div>
+                    <div class="score-name" style="color: #f39c12;">Permisif</div>
+                    <div class="score-value" style="color: #f39c12;">${skorPermisif}/${total}</div>
+                    <div style="color: #666;">${Math.round((skorPermisif/total)*100)}%</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
+
+            <div class="info-section">
+                <h3>🎯 Karakteristik Pola Asuh ${dominant.name.split('(')[0]}</h3>
+                <ul>
+                    ${dominant.characteristics.map(char => `<li>${char}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>📊 Dampak pada Perkembangan Anak</h3>
+                <ul>
+                    ${dominant.impact.map(impact => `<li>${impact}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>💡 Saran untuk Orangtua</h3>
+                <ul>
+                    ${dominant.advice.map(adv => `<li>${adv}</li>`).join('')}
+                </ul>
+            </div>
+
+            <div class="info-section" style="background: #e8f5e9; border-color: #27ae60;">
+                <h3 style="color: #27ae60;">✨ Pola Asuh yang Ideal</h3>
+                <p style="color: #555; line-height: 1.8;">
+                    Penelitian menunjukkan bahwa <strong>pola asuh demokratis (authoritative)</strong> adalah yang paling efektif untuk perkembangan anak yang sehat. 
+                    Pola asuh ini menggabungkan kehangatan dengan batasan yang jelas, komunikasi terbuka dengan ekspektasi yang tinggi. 
+                    Anak yang dibesarkan dengan pola asuh demokratis cenderung lebih percaya diri, mandiri, dan memiliki prestasi yang baik.
+                </p>
+            </div>
+
+            <div class="info-section">
+                <h3>📚 Tentang Pola Asuh</h3>
+                <p style="color: #555; line-height: 1.8;">
+                    Teori pola asuh dikembangkan oleh Diana Baumrind pada tahun 1960-an. 
+                    Pola asuh yang Anda alami dapat mempengaruhi perkembangan kepribadian, kemampuan sosial, dan prestasi akademik. 
+                    Memahami pola asuh yang Anda terima membantu Anda mengenali pengaruhnya dalam hidup Anda dan memilih pola asuh yang lebih baik untuk anak-anak Anda kelak.
+                </p>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-download" onclick="downloadAsImage()">📥 Download JPG</button>
+                <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('mainContainer').innerHTML = html;
+    createChart(skorOtoriter, skorDemokratis, skorPermisif);
+}
+
+function createChart(skorOtoriter, skorDemokratis, skorPermisif) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: ['Otoriter', 'Demokratis', 'Permisif'],
+            datasets: [{
+                data: [skorOtoriter, skorDemokratis, skorPermisif],
+                backgroundColor: [
+                    'rgba(192, 57, 43, 0.7)',
+                    'rgba(39, 174, 96, 0.7)',
+                    'rgba(243, 156, 18, 0.7)'
+                ],
+                borderColor: [
+                    '#c0392b',
+                    '#27ae60',
+                    '#f39c12'
+                ],
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: { size: 14, weight: 'bold' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed.r}/10`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: {
+                        stepSize: 2
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function downloadAsImage() {
+    const button = event.target;
+    button.disabled = true;
+    button.textContent = '⏳ Memproses...';
+    
+    try {
+        const container = document.getElementById('mainContainer');
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false
+        });
+        
+        const link = document.createElement('a');
+        link.download = `Hasil-Pola-Asuh-${Date.now()}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+        
+        button.disabled = false;
+        button.textContent = '✅ Download Berhasil!';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    } catch (error) {
+        button.disabled = false;
+        button.textContent = '❌ Gagal';
+        setTimeout(() => {
+            button.textContent = '📥 Download JPG';
+        }, 2000);
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>

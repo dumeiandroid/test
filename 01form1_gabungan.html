@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Gaya Belajar Interaktif VAK</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f0f2f5;
+            --red-yt: #ff0000;
+            --blue-fb: #1877f2;
+            --grad-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- STYLES DARI 01FORM --- */
+        .main-wrapper {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .video-box {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .video-box iframe {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%; border: none;
+        }
+
+        .social-buttons { display: flex; gap: 10px; justify-content: center; }
+        .btn-social {
+            flex: 1; padding: 10px; border: none; border-radius: 8px;
+            color: white; font-weight: bold; cursor: pointer;
+            text-decoration: none; display: flex; align-items: center;
+            justify-content: center; gap: 8px; font-size: 0.9rem;
+        }
+        .btn-subscribe { background-color: var(--red-yt); }
+        .btn-like { background-color: var(--blue-fb); }
+
+        .quiz-card {
+            background: white; padding: 20px; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;
+        }
+
+        .options { display: flex; justify-content: center; gap: 10px; }
+        button.option-btn {
+            flex: 1; padding: 20px; font-size: 1.2rem; cursor: pointer;
+            border: 2px solid var(--accent-color); background: white;
+            color: var(--accent-color); border-radius: 12px; transition: all 0.2s;
+        }
+        button.option-btn:hover { background: var(--accent-color); color: white; }
+
+        /* --- STYLES DARI 01VIEW (MODIFIKASI) --- */
+        .container-result { 
+            display: none; /* Sembunyi di awal */
+            max-width: 800px; width: 100%; background: white;
+            border-radius: 20px; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin-top: 20px;
+        }
+        .header-res { background: var(--grad-bg); color: white; padding: 40px; text-align: center; }
+        .content-res { padding: 30px; }
+        .profile-section { background: #f8f9fa; padding: 20px; border-radius: 15px; border-left: 5px solid #667eea; margin-bottom: 20px; }
+        .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .result-card { padding: 25px; border-radius: 15px; border-left: 8px solid; background: #f8f9fa; margin: 20px 0; }
+        .chart-container { position: relative; height: 300px; margin: 20px 0; }
+        
+        /* Bar Style */
+        .bar-item { margin-bottom: 15px; }
+        .bar-bg { background: #e0e0e0; height: 25px; border-radius: 12px; overflow: hidden; }
+        .bar-fill { height: 100%; display: flex; align-items: center; padding-left: 10px; color: white; font-weight: bold; transition: width 1s; }
+
+        /* Modal / Utility */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; }
+        .input-group { margin: 15px 0; text-align: left; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .hidden { display: none; }
+        .btn-submit, .btn-download, .btn-print { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-submit { background: var(--accent-color); color: white; }
+        .btn-download { background: #667eea; color: white; }
+        .btn-print { background: #2c3e50; color: white; }
+        
+        @media print { .btn-group-res { display: none; } }
+    </style>
+</head>
+<body>
+
+<div id="setup-container" class="main-wrapper">
+    <div class="video-box">
+        <iframe id="video-player" src="https://www.youtube.com/embed/hqzBQ-QlzIg?si=zmh6lZjrV0hdU5jY" title="YouTube" allowfullscreen></iframe>
+    </div>
+
+    <div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">🔔 Subscribe</a>
+        <a href="https://www.youtube.com/watch?v=hqzBQ-QlzIg" target="_blank" class="btn-social btn-like">👍 Like Video</a>
+    </div>
+
+    <div id="quiz-section" class="quiz-card">
+        <span id="q-number" style="font-weight: bold; color: var(--accent-color); font-size: 1.2rem;">Soal Nomor 1</span>
+        <div class="options" style="margin-top: 15px;">
+            <button class="option-btn" onclick="handleAnswer('A')">A</button>
+            <button class="option-btn" onclick="handleAnswer('B')">B</button>
+            <button class="option-btn" onclick="handleAnswer('C')">C</button>
+        </div>
+        <p style="font-size: 0.8rem; color: #777; margin-top: 15px;">Klik tombol saat instruksi muncul di video</p>
+    </div>
+</div>
+
+<div id="data-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="text-align: center;">Tes Selesai! Isi Data Diri</h3>
+        <div class="input-group">
+            <label>Nama Lengkap</label>
+            <input type="text" id="nama" placeholder="Masukkan nama...">
+        </div>
+        <div class="input-group">
+            <label>Usia</label>
+            <input type="number" id="usia" placeholder="Contoh: 17">
+        </div>
+        <div class="input-group">
+            <label>Pendidikan</label>
+            <select id="pendidikan">
+                <option value="">Pilih Pendidikan...</option>
+                <option value="SD">SD</option><option value="SMP">SMP</option>
+                <option value="SMA/SMK">SMA/SMK</option><option value="Diploma/S1">Diploma/S1</option>
+                <option value="S2/S3">S2/S3</option>
+            </select>
+        </div>
+        <button class="btn-submit" id="btn-submit" onclick="processResult()">Simpan & Lihat Hasil</button>
+        <div id="loading-text" class="hidden" style="text-align: center;">Mengolah data...</div>
+    </div>
+</div>
+
+<div id="result-container" class="container-result">
+    <div id="capture-area">
+        <div class="header-res">
+            <h1>📚 Hasil Tes Gaya Belajar</h1>
+            <p>Gaya Belajar yang Cocok Untuk Saya</p>
+        </div>
+        <div class="content-res">
+            <div class="profile-section">
+                <div class="profile-grid" id="res-profile"></div>
+            </div>
+            <div id="res-card-box"></div>
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
+            <div id="res-info-details"></div>
+        </div>
+    </div>
+    <div class="content-res" style="padding-top: 0;">
+        <div class="btn-group-res">
+            <button class="btn-download" onclick="downloadAsImage()">📥 Download Hasil (JPG)</button>
+            <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF</button>
+            <button class="btn-submit" style="background:#888" onclick="location.reload()">🔄 Ulangi Tes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes";
+    const totalQuestions = 15;
+    const LEARNING_STYLES = {
+        A: { name: 'VISUAL', color: '#4a90e2', icon: '👁️', description: 'Anda belajar paling efektif dengan melihat dan mengamati', characteristics: ['Lebih mudah mengingat apa yang dilihat','Suka menggunakan diagram/grafik','Mengingat wajah lebih baik daripada nama'], tips: ['Gunakan highlighter warna-warni','Buat mind mapping','Tonton video visual'] },
+        B: { name: 'AUDITORY', color: '#f39c12', icon: '👂', description: 'Anda belajar paling efektif dengan mendengar dan berbicara', characteristics: ['Mudah mengingat informasi yang didengar','Suka berdiskusi','Senang mendengar podcast'], tips: ['Rekam materi pelajaran','Bacakan materi dengan suara keras','Diskusi kelompok'] },
+        C: { name: 'KINESTETIK', color: '#2ecc71', icon: '🤸', description: 'Anda belajar paling efektif dengan praktik dan gerakan', characteristics: ['Suka belajar sambil melakukan','Sulit duduk diam lama','Belajar melalui eksperimen'], tips: ['Praktikkan langsung materi','Gunakan alat peraga','Ambil jeda untuk bergerak'] }
+    };
+
+    let currentQuestion = 1;
+    let jawabanData = {};
+
+    function handleAnswer(choice) {
+        jawabanData[`r${currentQuestion}`] = choice;
+        if (currentQuestion < totalQuestions) {
+            currentQuestion++;
+            document.getElementById('q-number').innerText = "Soal Nomor " + currentQuestion;
+        } else {
+            document.getElementById('data-modal').style.display = 'flex';
+        }
+    }
+
+    async function processResult() {
+        const nama = document.getElementById('nama').value;
+        const usia = document.getElementById('usia').value;
+        const pendidikan = document.getElementById('pendidikan').value;
+
+        if (!nama || !usia || !pendidikan) return alert("Lengkapi data!");
+
+        document.getElementById('btn-submit').classList.add('hidden');
+        document.getElementById('loading-text').classList.remove('hidden');
+
+        // Simulasi hitung skor
+        let skor = { A: 0, B: 0, C: 0 };
+        Object.values(jawabanData).forEach(v => { if(skor[v] !== undefined) skor[v]++; });
+        
+        const dominan = Object.keys(skor).reduce((a, b) => skor[a] > skor[b] ? a : b);
+        const style = LEARNING_STYLES[dominan];
+        const persentase = {
+            A: Math.round((skor.A/15)*100), B: Math.round((skor.B/15)*100), C: Math.round((skor.C/15)*100)
+        };
+
+        // Kirim ke API (Opsional, tetap dilakukan agar data tersimpan)
+        try {
+            const token = Math.random().toString(36).substring(7);
+            const tgl = new Date().toLocaleDateString('id-ID');
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': 'admin' },
+                body: JSON.stringify({ x_01: "gaya belajar", x_02: JSON.stringify({nama, usia, pendidikan}), x_03: JSON.stringify(jawabanData), x_04: token, x_05: tgl })
+            });
+        } catch (e) { console.log("Gagal simpan online, tetap menampilkan hasil."); }
+
+        // Tampilkan Hasil & Sembunyikan Form
+        document.getElementById('data-modal').style.display = 'none';
+        document.getElementById('setup-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+
+        renderUIPadaHalaman(nama, usia, pendidikan, style, skor, persentase);
+    }
+
+    function renderUIPadaHalaman(nama, usia, pdd, style, skor, persentase) {
+        // Render Profile
+        document.getElementById('res-profile').innerHTML = `
+            <div><small>Nama</small><br><b>${nama}</b></div>
+            <div><small>Usia</small><br><b>${usia} Thn</b></div>
+            <div><small>Pendidikan</small><br><b>${pdd}</b></div>
+        `;
+
+        // Render Card
+        document.getElementById('res-card-box').innerHTML = `
+            <div class="result-card" style="border-color: ${style.color}">
+                <h2 style="color: ${style.color}">${style.icon} ${style.name}</h2>
+                <p>${style.description}</p>
+                <div style="margin-top:15px">
+                    ${['A','B','C'].map(k => `
+                        <div class="bar-item">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem">
+                                <span>${LEARNING_STYLES[k].name}</span><span>${persentase[k]}%</span>
+                            </div>
+                            <div class="bar-bg"><div class="bar-fill" style="width:${persentase[k]}%; background:${LEARNING_STYLES[k].color}">${skor[k]}/15</div></div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        // Render Tips
+        document.getElementById('res-info-details').innerHTML = `
+            <h4>🎯 Karakteristik</h4><ul>${style.characteristics.map(c => `<li>${c}</li>`).join('')}</ul>
+            <h4 style="margin-top:15px">💡 Tips Belajar</h4><ul>${style.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+        `;
+
+        // Create Chart
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Visual', 'Auditory', 'Kinestetik'],
+                datasets: [{ data: [skor.A, skor.B, skor.C], backgroundColor: ['#4a90e2', '#f39c12', '#2ecc71'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    async function downloadAsImage() {
+        const area = document.getElementById('capture-area');
+        const canvas = await html2canvas(area, { scale: 2 });
+        const link = document.createElement('a');
+        link.download = `Hasil-Tes-${Date.now()}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg');
+        link.click();
+    }
+</script>
+</body>
+</html>

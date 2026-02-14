@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Tes Jenis Cinta</title>
+    <style>
+        :root { --primary: #d63031; --bg: #fdf2f2; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; width: 100%; max-width: 600px; padding: 25px; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        .section-title { background: #2c3e50; color: white; padding: 10px; border-radius: 8px; margin-top: 20px; font-weight: bold; }
+        .input-group { margin: 15px 0; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #555; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8em; }
+        th { background: #f8f9fa; padding: 8px; color: #636e72; }
+        td { padding: 8px 0; border-bottom: 1px solid #eee; text-align: center; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 25px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Tes Jenis Cinta ❤️</h2>
+    <form id="loveForm">
+        <div class="section-title">Data Diri</div>
+        <div class="input-group">
+            <label>Nama Lengkap</label>
+            <input type="text" name="nama" required>
+        </div>
+        <div class="input-group">
+            <label>Usia</label>
+            <input type="number" name="usia" required>
+        </div>
+        <div class="input-group">
+            <label>Pendidikan Terakhir</label>
+            <select name="pendidikan" required>
+                <option value="">Pilih Pendidikan...</option>
+                <option value="SD">SD</option>
+                <option value="SMP">SMP</option>
+                <option value="SMA/SMK">SMA/SMK</option>
+                <option value="Diploma/S1">Diploma/S1</option>
+                <option value="S2/S3">S2/S3</option>
+            </select>
+        </div>
+
+        <div id="dynamicQuestions"></div>
+        <button type="button" onclick="submitData()">Simpan & Lihat Hasil</button>
+    </form>
+</div>
+
+<script>
+    const API_URL = "https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes";
+    const AUTH_KEY = "admin"; // Key sesuai instruksi Anda
+    const tipeCinta = ['Eros', 'Ludus', 'Storge', 'Pragma', 'Mania', 'Agape'];
+    
+    // Generate Pertanyaan (7 per tipe)
+    const container = document.getElementById('dynamicQuestions');
+    tipeCinta.forEach(tipe => {
+        let html = `<div class="section-title">Kategori: ${tipe}</div>
+            <table><thead><tr><th>No</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead><tbody>`;
+        for (let i = 1; i <= 7; i++) {
+            html += `<tr><td>${i}</td>
+                ${[1,2,3,4,5].map(v => `<td><input type="radio" name="${tipe}_${i}" value="${v}" required></td>`).join('')}
+            </tr>`;
+        }
+        html += `</tbody></table>`;
+        container.innerHTML += html;
+    });
+
+    async function submitData() {
+        const form = document.getElementById('loveForm');
+        if (!form.checkValidity()) return alert("Mohon lengkapi data diri dan semua jawaban!");
+
+        const formData = new FormData(form);
+        const dataDiri = { 
+            nama: formData.get('nama'), 
+            usia: formData.get('usia'),
+            pendidikan: formData.get('pendidikan') 
+        };
+        
+        const jawaban = {};
+        tipeCinta.forEach(t => {
+            for(let i=1; i<=7; i++) { jawaban[`${t}_${i}`] = formData.get(`${t}_${i}`); }
+        });
+
+        const token = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+        const payload = {
+            x_01: "jenis cinta",
+            x_02: JSON.stringify(dataDiri),
+            x_03: JSON.stringify(jawaban),
+            x_04: token,
+            x_05: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-Custom-Auth': AUTH_KEY 
+                },
+                body: JSON.stringify(payload)
+            });
+            const res = await response.json();
+            if (res.success) {
+                window.location.href = `13view.html?token=${token}`;
+            } else {
+                alert("Gagal menyimpan: " + (res.message || "Unknown error"));
+            }
+        } catch (e) { 
+            alert("Koneksi Error: Pastikan URL API benar."); 
+            console.error(e);
+        }
+    }
+</script>
+</body>
+</html>

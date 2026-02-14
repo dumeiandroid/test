@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Sahabat Sejati</title>
+    <style>
+        :root { --primary: #6c5ce7; --accent: #a29bfe; --bg: #f9f9fb; --red-yt: #ff0000; --blue-fb: #1877f2; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; background: var(--bg); display: flex; flex-direction: column; align-items: center; }
+        .main-wrapper { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 15px; }
+        .video-box { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .social-buttons { display: flex; gap: 10px; justify-content: center; }
+        .btn-social { flex: 1; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
+        .btn-subscribe { background: var(--red-yt); } .btn-like { background: var(--blue-fb); }
+        .quiz-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
+        .question-number { font-size: 1.4rem; font-weight: bold; color: var(--primary); margin-bottom: 15px; display: block; }
+        .options { display: flex; justify-content: center; gap: 10px; width: 100%; margin-top: 25px; }
+        button.option-btn { flex: 1; padding: 20px; font-size: 1.2rem; cursor: pointer; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 12px; font-weight: bold; transition: 0.2s; }
+        button.option-btn:hover { background: var(--primary); color: white; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
+        .input-group { margin: 15px 0; text-align: left; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        .btn-submit { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div class="main-wrapper">
+    <!-- Video Referensi -->
+    <div class="video-box"><iframe src="https://www.youtube.com/embed/hqzBQ-QlzIg?si=zmh6lZjrV0hdU5jY" allowfullscreen></iframe></div>
+    
+    <!-- Tombol Social -->
+    <div class="social-buttons">
+        <a href="https://www.youtube.com/@LidanPsikologi?sub_confirmation=1" target="_blank" class="btn-social btn-subscribe">🔔 SUBSCRIBE</a>
+        <a href="https://www.youtube.com/watch?v=nU0lQ-39klo" target="_blank" class="btn-social btn-like">👍 LIKE VIDEO</a>
+    </div>
+
+    <!-- Area Soal -->
+    <div id="quiz-section" class="quiz-card">
+        <span class="question-number" id="q-number">Soal Nomor 1</span>
+        <p id="q-text" style="margin-bottom: 25px; color: #555; font-size: 1.1rem; min-height: 3em;">Pilih jawaban yang paling menggambarkan hubungan persahabatan Anda.</p>
+        <div class="options">
+            <button class="option-btn" onclick="handleAnswer('A')">A</button>
+            <button class="option-btn" onclick="handleAnswer('B')">B</button>
+            <button class="option-btn" onclick="handleAnswer('C')">C</button>
+        </div>
+        <p style="font-size: 0.8rem; color: #999; margin-top: 30px;">Ketuk salah satu tombol di atas untuk melanjutkan ke soal berikutnya.</p>
+    </div>
+</div>
+
+<!-- Modal Data Diri -->
+<div id="data-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="text-align:center; margin-top:0; color: var(--primary);">Hasil Persahabatan</h3>
+        <p style="text-align: center; font-size: 0.9rem; color: #666;">Data Anda diperlukan untuk memberikan analisis tingkat loyalitas dalam persahabatan Anda.</p>
+        <div class="input-group">
+            <input type="text" id="nama" placeholder="Nama Lengkap" required>
+        </div>
+        <div class="input-group">
+            <input type="number" id="usia" placeholder="Usia Anda" required>
+        </div>
+        <button class="btn-submit" onclick="submitData()">KIRIM & LIHAT ANALISIS</button>
+    </div>
+</div>
+
+<script>
+    let q = 1;
+    const totalSoal = 10;
+    let answers = {};
+
+    function handleAnswer(choice) {
+        answers[`q${q}`] = choice;
+        
+        if (q < totalSoal) {
+            q++;
+            document.getElementById('q-number').innerText = "Soal Nomor " + q;
+            // Smooth focus scroll
+            document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth' });
+        } else {
+            document.getElementById('data-modal').style.display = 'flex';
+        }
+    }
+
+    async function submitData() {
+        const nama = document.getElementById('nama').value;
+        const usia = document.getElementById('usia').value;
+
+        if (!nama || !usia) {
+            alert("Harap lengkapi Nama dan Usia.");
+            return;
+        }
+
+        const token = "FRIEND-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+        
+        const payload = {
+            x_01: "tes sahabat",
+            x_02: JSON.stringify({ nama, usia }),
+            x_03: JSON.stringify(answers),
+            x_04: token,
+            x_05: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        };
+
+        try {
+            const response = await fetch("https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Custom-Auth': 'admin'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                window.open(`17view.html?token=${token}`, '_blank');
+                location.reload();
+            } else {
+                alert("Gagal memproses data.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Terjadi kesalahan jaringan.");
+        }
+    }
+</script>
+</body>
+</html>

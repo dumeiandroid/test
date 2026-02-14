@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Dominasi Otak Interaktif</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #2980b9;
+            --success: #27ae60;
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-body); display: flex; justify-content: center; min-height: 100vh; }
+
+        #welcome-screen { position: fixed; inset: 0; z-index: 1000; background: linear-gradient(135deg, #1e293b 0%, #2980b9 100%); display: flex; align-items: center; justify-content: center; padding: 15px; overflow-y: auto; }
+        .welcome-card { background: white; width: 100%; max-width: 650px; padding: 35px; border-radius: var(--radius); text-align: center; }
+        .welcome-text { text-align: justify; line-height: 1.6; margin-bottom: 25px; }
+
+        .token-form { background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .input-token { width: 100%; padding: 14px; border: 2px solid #cbd5e1; border-radius: 8px; text-align: center; margin-bottom: 10px; font-size: 1.1rem; }
+        .contact-info { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+        .contact-info a { color: #25d366; text-decoration: none; font-weight: bold; }
+
+        .app-container { display: none; width: 100%; max-width: 750px; padding: 20px; flex-direction: column; gap: 20px; }
+        .video-box { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: var(--radius); overflow: hidden; }
+        .video-box iframe { width: 100%; height: 100%; border: none; }
+        .quiz-card { background: white; padding: 30px; border-radius: var(--radius); text-align: center; }
+        
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .opt-btn { padding: 25px; border: 2px solid #2980b9; background: #f8fafc; border-radius: 12px; font-size: 2.2rem; font-weight: 800; cursor: pointer; color: #1e293b; }
+        .opt-btn:hover { background: #eff6ff; color: #2980b9; }
+
+        .btn-start { width: 100%; padding: 15px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-start:disabled { background: #94a3b8; cursor: not-allowed; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-box { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: var(--radius); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+    <div class="welcome-card">
+        <h1 style="margin-bottom:20px;">Saya Termasuk Golongan Otak Kiri atau Kanan, Yah?</h1>
+        <div class="welcome-text">
+            <p>Halo semuanya! Pernah nggak sih kamu dengar ada yang bilang, "Aku orangnya logis, kayaknya otak kiri nih," atau "Aku kreatif banget, pasti otak kanan deh"? Nah, ternyata ini bukan cuma asumsi lho!</p><br>
+            <p>Dengan mengenali dominasi otakmu, kamu bisa lebih memahami cara berpikir alami yang kamu miliki dan mengoptimalkan potensi dirimu! Yuk, kita mulai tesnya sekarang!</p>
+        </div>
+        <div class="token-form">
+            <input type="text" id="token-input" class="input-token" placeholder="Masukkan Token Akses">
+            <div class="contact-info">
+                Jika tidak memiliki token, hubungi:<br>
+                <a href="https://wa.me/6285159601400" target="_blank">Lidan Psikologi (+62 851 5960 1400)</a>
+            </div>
+            <button id="btn-start" class="btn-start" onclick="verifikasiToken()">MULAI TES SEKARANG</button>
+        </div>
+    </div>
+</div>
+
+<div class="app-container" id="main-content">
+    <div class="video-box">
+        <iframe src="https://www.youtube.com/embed/bs-NtSzt_Tw" allowfullscreen></iframe>
+    </div>
+    <div class="quiz-card">
+        <span id="q-text" style="display:block; font-size:1.5rem; font-weight:800; color:#2980b9; margin-bottom:20px;">Pernyataan Nomor 1</span>
+        <div class="options">
+            <button class="opt-btn" onclick="pilih('A')">A</button>
+            <button class="opt-btn" onclick="pilih('B')">B</button>
+        </div>
+        <p style="margin-top:15px; font-size:0.8rem; color:#64748b;">A: SESUAI | B: TIDAK SESUAI</p>
+    </div>
+</div>
+
+<div id="modal-data" class="modal">
+    <div class="modal-box">
+        <h3 style="text-align:center; margin-bottom:20px;">Isi Data Diri</h3>
+        <input type="text" id="inp-nama" placeholder="Nama Lengkap" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+        <input type="number" id="inp-usia" placeholder="Usia" style="width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+        <select id="inp-edu" style="width:100%; padding:12px; margin-bottom:20px; border-radius:8px; border:1px solid #ddd;">
+            <option value="SD">SD</option>
+            <option value="SMP">SMP</option>
+            <option value="SMA/SMK">SMA/SMK</option>
+            <option value="Diploma/S1">Diploma/S1+</option>
+        </select>
+        <button class="btn-start" id="btn-final" onclick="kirimData()">LIHAT HASIL ANALISIS</button>
+        <p id="loading" class="hidden" style="text-align:center;">Menganalisis...</p>
+    </div>
+</div>
+
+<script>
+    // Konfigurasi API sesuai file contacts_filter_dinamis7.js
+    const API_BASE = "https://lidan-co-id.pages.dev/api/contacts_filter_dinamis7";
+    const AUTH_TABLE = "users";
+    const DATA_TABLE = "tes";
+    
+    let nSoalBrain = 1, jawabanBrain = {};
+
+    // Fungsi verifikasi token dinamis ke tabel users kolom x_01
+    async function verifikasiToken() {
+        const tokenInput = document.getElementById('token-input').value.trim();
+        const btnStart = document.getElementById('btn-start');
+        
+        if (!tokenInput) {
+            alert("Silakan masukkan token!");
+            return;
+        }
+
+        btnStart.innerText = "Memverifikasi...";
+        btnStart.disabled = true;
+
+        // Mencari token menggunakan filter x_01_eq
+        const verifyURL = `${API_BASE}?table=${AUTH_TABLE}&x_01_eq=${encodeURIComponent(tokenInput)}`;
+
+        try {
+            const response = await fetch(verifyURL, {
+                method: 'GET',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Custom-Auth': 'admin' // Key autentikasi di Worker
+                }
+            });
+
+            const result = await response.json();
+
+            // Jika success dan ditemukan record (count > 0)
+            if (result.success && result.count > 0) {
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'flex';
+            } else {
+                alert("Token tidak valid atau tidak terdaftar!");
+            }
+        } catch (e) {
+            alert("Gagal terhubung ke server verifikasi.");
+        } finally {
+            btnStart.innerText = "MULAI TES SEKARANG";
+            btnStart.disabled = false;
+        }
+    }
+
+    function pilih(huruf) {
+        if (huruf === 'A') {
+            if (nSoalBrain <= 11) { jawabanBrain[`A${nSoalBrain}`] = "1"; } 
+            else { jawabanBrain[`B${nSoalBrain - 11}`] = "1"; } 
+        }
+        if (nSoalBrain < 22) { 
+            nSoalBrain++; 
+            document.getElementById('q-text').innerText = "Pernyataan Nomor " + nSoalBrain; 
+        } else { 
+            document.getElementById('modal-data').style.display = 'flex'; 
+        }
+    }
+
+    async function kirimData() {
+        const name = document.getElementById('inp-nama').value;
+        const age = document.getElementById('inp-usia').value;
+        if(!name || !age) return alert("Lengkapi data!");
+        
+        document.getElementById('btn-final').classList.add('hidden');
+        document.getElementById('loading').classList.remove('hidden');
+
+        const resultToken = "BRAIN-" + Math.random().toString(36).substr(2, 9);
+        const payload = { 
+            x_01: "dominasi otak", 
+            x_02: JSON.stringify({ nama: name, usia: age, edu: document.getElementById('inp-edu').value }), 
+            x_03: JSON.stringify(jawabanBrain), 
+            x_04: resultToken, 
+            x_05: new Date().toLocaleDateString('id-ID') 
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}?table=${DATA_TABLE}`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': 'admin' }, 
+                body: JSON.stringify(payload) 
+            });
+            if(res.ok) {
+                window.open(`02view.html?token=${resultToken}`, '_blank');
+                alert("Berhasil!");
+                
+                document.getElementById('modal-data').style.display = 'none';
+                document.getElementById('btn-final').classList.remove('hidden');
+                document.getElementById('loading').classList.add('hidden');
+                
+                nSoalBrain = 1; 
+                jawabanBrain = {}; 
+                document.getElementById('q-text').innerText = "Pernyataan Nomor 1";
+                document.getElementById('inp-nama').value = "";
+                document.getElementById('inp-usia').value = "";
+            }
+        } catch (e) { alert("Gagal menyimpan data!"); }
+        finally {
+            document.getElementById('btn-final').classList.remove('hidden');
+            document.getElementById('loading').classList.add('hidden');
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apakah Pasangan Kamu Siap Menjadi Pendamping Hidup?</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --ideal: #27ae60;
+            --kurang: #f39c12;
+            --dini: #e74c3c;
+            --bg: #fdfaf6;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 850px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .profile-section {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .profile-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-item strong {
+            color: var(--text-dark);
+            font-size: 13px;
+        }
+
+        .profile-item span {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .score-display {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+        }
+
+        .score-number {
+            font-size: 56px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-label {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .score-range {
+            margin-top: 15px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .chart-section {
+            margin: 30px 0;
+        }
+
+        .chart-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 6px solid;
+            margin: 25px 0;
+        }
+
+        .result-card h2 {
+            font-size: 26px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-card .description {
+            color: var(--text-dark);
+            line-height: 1.8;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        .indicators {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .indicators h3 {
+            color: var(--text-dark);
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .indicator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .indicator-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid;
+        }
+
+        .indicator-item.positive {
+            border-color: #27ae60;
+        }
+
+        .indicator-item.negative {
+            border-color: #e74c3c;
+        }
+
+        .indicator-item .icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .indicator-item .text {
+            font-size: 14px;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .suggestions {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .suggestions h3 {
+            color: #856404;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggestions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .suggestions li {
+            padding: 10px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        .suggestions li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+
+        .warning-box {
+            background: #f8d7da;
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .warning-box h4 {
+            color: #721c24;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .warning-box p {
+            color: #721c24;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #ff6b6b;
+            border: 2px solid #ff6b6b;
+        }
+
+        .btn-secondary:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: var(--text-light);
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .action-buttons {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .score-number {
+                font-size: 42px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .indicator-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div class="loading">
+            <h2>⏳ Menganalisis kesiapan hubungan Anda...</h2>
+            <p>Mohon tunggu sebentar</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (!token) {
+                showError('Token tidak ditemukan. Silakan kembali dan isi form terlebih dahulu.');
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`,
+                    { headers: { 'X-Custom-Auth': 'admin' } }
+                );
+                
+                const res = await response.json();
+                
+                if (res.success && res.count > 0) {
+                    renderUI(res.data[0]);
+                } else {
+                    showError('Data tidak ditemukan. Pastikan Anda telah mengisi form dengan benar.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Terjadi kesalahan sistem. Silakan coba lagi nanti.');
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('app').innerHTML = `
+                <div class="error">
+                    <h2>❌ Oops!</h2>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function renderUI(data) {
+            const dataDiri = JSON.parse(data.x_02);
+            const jawaban = JSON.parse(data.x_03);
+            
+            let total = 0;
+            Object.values(jawaban).forEach(v => total += parseInt(v));
+
+            const result = getResult(total);
+            
+            document.getElementById('app').innerHTML = `
+                <div class="header">
+                    <h1>💑 Apakah Pasangan Kamu Siap Menjadi Pendamping Hidup?</h1>
+                    <p>Analisis Kesiapan dan Kematangan Hubungan</p>
+                </div>
+
+                <div class="content" id="downloadContent">
+                    <div class="profile-section">
+                        <div class="profile-item">
+                            <strong>👤 Nama:</strong>
+                            <span>${dataDiri.nama}</span>
+                        </div>
+                        <div class="profile-item">
+                            <strong>🎂 Usia:</strong>
+                            <span>${dataDiri.usia} Tahun</span>
+                        </div>
+                        <div class="profile-item">
+                            <strong>🎓 Pendidikan:</strong>
+                            <span>${dataDiri.pendidikan}</span>
+                        </div>
+                        <div class="profile-item">
+                            <strong>📅 Tanggal Tes:</strong>
+                            <span>${data.x_05}</span>
+                        </div>
+                    </div>
+
+                    <div class="score-display">
+                        <div class="score-number">${total}</div>
+                        <div class="score-label">Skor Kesiapan Hubungan</div>
+                        <div class="score-range">Rentang: 12 - 36 poin</div>
+                    </div>
+
+                    <div class="chart-section">
+                        <div class="chart-wrapper">
+                            <canvas id="relationshipChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="result-card" style="border-color: ${result.color}">
+                        <h2 style="color: ${result.color}">
+                            ${result.icon} ${result.title}
+                        </h2>
+                        <div class="description">
+                            ${result.description}
+                        </div>
+
+                        <div class="indicators">
+                            <h3>📊 Indikator Kesiapan</h3>
+                            <div class="indicator-grid">
+                                ${result.indicators.map(ind => `
+                                    <div class="indicator-item ${ind.type}">
+                                        <div class="icon">${ind.icon}</div>
+                                        <div class="text">${ind.text}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        ${result.warning ? `
+                            <div class="warning-box">
+                                <h4>⚠️ Perhatian Penting</h4>
+                                <p>${result.warning}</p>
+                            </div>
+                        ` : ''}
+
+                        <div class="suggestions">
+                            <h3>💡 Saran untuk Hubungan Anda</h3>
+                            <ul>
+                                ${result.suggestions.map(sug => `<li>${sug}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="downloadAsImage()">
+                            📥 Download Hasil (JPG)
+                        </button>
+                        <button class="btn btn-secondary" onclick="window.print()">
+                            🖨️ Cetak Laporan
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            drawChart(total, result.color);
+        }
+
+        function getResult(total) {
+            if (total >= 29) {
+                return {
+                    title: 'Terlalu Dini / Kurang Mengenal',
+                    color: '#e74c3c',
+                    icon: '⏰',
+                    description: 'Hubungan kalian masih dalam tahap awal dan belum cukup matang untuk melangkah ke komitmen yang lebih serius. Kalian perlu lebih banyak waktu untuk saling mengenal lebih dalam.',
+                    warning: 'Hasil ini mengindikasikan bahwa mungkin ada ketidakjujuran dalam hubungan atau kalian belum benar-benar terbuka satu sama lain. Kejujuran adalah fondasi dari hubungan yang sehat.',
+                    indicators: [
+                        { icon: '❌', text: 'Komunikasi masih kurang terbuka dan dalam', type: 'negative' },
+                        { icon: '❌', text: 'Belum cukup saling mengenal secara mendalam', type: 'negative' },
+                        { icon: '❌', text: 'Kepercayaan masih perlu dibangun lebih kuat', type: 'negative' },
+                        { icon: '❌', text: 'Belum siap menghadapi tantangan bersama', type: 'negative' },
+                        { icon: '⚠️', text: 'Kemungkinan ada ketidakjujuran dalam jawaban', type: 'negative' },
+                        { icon: '⚠️', text: 'Perlu lebih banyak waktu quality time bersama', type: 'negative' }
+                    ],
+                    suggestions: [
+                        'Luangkan lebih banyak waktu untuk berkomunikasi secara mendalam tentang nilai-nilai hidup, tujuan masa depan, dan harapan dalam hubungan',
+                        'Bangun fondasi kepercayaan dengan konsisten menepati janji dan berkata jujur dalam segala hal',
+                        'Kenali keluarga dan teman dekat pasangan untuk memahami latar belakang dan lingkungan sosialnya',
+                        'Diskusikan topik-topik penting seperti keuangan, rencana karir, anak, dan gaya hidup sebelum mengambil keputusan serius',
+                        'Hadapi konflik kecil bersama untuk melihat bagaimana kalian menyelesaikan masalah sebagai tim',
+                        'Jangan terburu-buru, berikan waktu yang cukup (minimal 1-2 tahun) untuk benar-benar saling mengenal',
+                        'Jika ada masalah kejujuran, selesaikan terlebih dahulu sebelum melanjutkan ke tahap yang lebih serius',
+                        'Pertimbangkan konseling pra-nikah untuk mempersiapkan diri dengan lebih baik'
+                    ]
+                };
+            } else if (total >= 20) {
+                return {
+                    title: 'Pasangan Ideal',
+                    color: '#27ae60',
+                    icon: '💚',
+                    description: 'Selamat! Kalian adalah pasangan yang cukup ideal dan memiliki fondasi yang kuat untuk melangkah ke tahap yang lebih serius. Hubungan kalian didasari oleh kemandirian, saling percaya, dan orientasi yang baik.',
+                    warning: null,
+                    indicators: [
+                        { icon: '✅', text: 'Komunikasi terbuka dan jujur', type: 'positive' },
+                        { icon: '✅', text: 'Saling percaya dan menghormati', type: 'positive' },
+                        { icon: '✅', text: 'Memiliki visi dan tujuan yang selaras', type: 'positive' },
+                        { icon: '✅', text: 'Saling mendukung pertumbuhan pribadi', type: 'positive' },
+                        { icon: '✅', text: 'Mampu menyelesaikan konflik dengan sehat', type: 'positive' },
+                        { icon: '✅', text: 'Kemandirian emosional yang baik', type: 'positive' }
+                    ],
+                    suggestions: [
+                        'Pertahankan komunikasi terbuka yang sudah terbangun dengan baik. Jadwalkan waktu rutin untuk check-in emosional',
+                        'Terus kembangkan hubungan dengan mengeksplorasi minat dan hobi baru bersama',
+                        'Diskusikan rencana masa depan secara konkret, termasuk aspek finansial dan tempat tinggal',
+                        'Libatkan keluarga dari kedua belah pihak untuk membangun hubungan yang lebih luas',
+                        'Hadapi tantangan hidup bersama untuk memperkuat ikatan dan kepercayaan',
+                        'Tetap jaga kemandirian masing-masing sambil membangun kehidupan bersama',
+                        'Pertimbangkan untuk mengikuti kursus pra-nikah atau konseling hubungan untuk persiapan yang lebih matang',
+                        'Jangan berhenti berinvestasi dalam hubungan - terus tumbuh dan berkembang bersama'
+                    ]
+                };
+            } else {
+                return {
+                    title: 'Kurang Kedekatan',
+                    color: '#f39c12',
+                    icon: '⚠️',
+                    description: 'Hubungan kalian masih kekurangan beberapa elemen penting yang diperlukan untuk sebuah komitmen jangka panjang. Ada aspek-aspek krusial yang perlu diperbaiki dan dikembangkan.',
+                    warning: 'Beberapa fondasi penting dalam hubungan masih lemah. Penting untuk memperbaiki ini sebelum melangkah lebih jauh.',
+                    indicators: [
+                        { icon: '⚠️', text: 'Kepercayaan masih perlu dibangun lebih kuat', type: 'negative' },
+                        { icon: '⚠️', text: 'Komunikasi belum cukup efektif', type: 'negative' },
+                        { icon: '⚠️', text: 'Kejujuran perlu ditingkatkan', type: 'negative' },
+                        { icon: '❌', text: 'Kurang keselarasan dalam nilai hidup', type: 'negative' },
+                        { icon: '✅', text: 'Ada niat baik untuk membangun hubungan', type: 'positive' },
+                        { icon: '✅', text: 'Masih ada kesempatan untuk berkembang', type: 'positive' }
+                    ],
+                    suggestions: [
+                        'Prioritaskan membangun komunikasi yang lebih terbuka. Mulai dengan berbagi perasaan dan pikiran secara jujur setiap hari',
+                        'Identifikasi area di mana kepercayaan kurang, lalu buat komitmen konkret untuk membangunnya',
+                        'Luangkan waktu quality time yang berkualitas - fokus pada percakapan mendalam tanpa distraksi',
+                        'Diskusikan nilai-nilai hidup masing-masing: apa yang penting bagi kalian dalam hidup dan hubungan',
+                        'Belajar mendengarkan aktif - benar-benar memahami, bukan hanya menunggu giliran bicara',
+                        'Hadapi dan selesaikan konflik secara konstruktif, jangan dihindari atau dibiarkan menggantung',
+                        'Pertimbangkan untuk berkonsultasi dengan konselor hubungan untuk mendapatkan panduan profesional',
+                        'Evaluasi apakah kalian berdua benar-benar kompatibel dalam jangka panjang - kadang kejujuran pada diri sendiri diperlukan',
+                        'Tingkatkan transparansi dalam aspek-aspek penting seperti keuangan, masa lalu, dan rencana masa depan',
+                        'Jangan terburu-buru mengambil keputusan besar - gunakan waktu untuk memperbaiki fondasi hubungan terlebih dahulu'
+                    ]
+                };
+            }
+        }
+
+        function drawChart(total, color) {
+            const ctx = document.getElementById('relationshipChart').getContext('2d');
+            
+            const ranges = [
+                { min: 12, max: 19, label: 'Kurang Kedekatan', color: '#f39c12' },
+                { min: 20, max: 28, label: 'Pasangan Ideal', color: '#27ae60' },
+                { min: 29, max: 36, label: 'Terlalu Dini', color: '#e74c3c' }
+            ];
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Skor Anda'],
+                    datasets: [{
+                        label: 'Skor Kesiapan',
+                        data: [total],
+                        backgroundColor: color,
+                        borderRadius: 10,
+                        barThickness: 60
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: {
+                            min: 12,
+                            max: 36,
+                            ticks: {
+                                stepSize: 4,
+                                callback: function(value) {
+                                    if (value === 12) return '12 (Min)';
+                                    if (value === 36) return '36 (Max)';
+                                    if (value === 20) return '20 (Ideal)';
+                                    if (value === 28) return '28';
+                                    return value;
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        y: {
+                            display: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = `Skor: ${context.parsed.x}`;
+                                    if (context.parsed.x >= 29) {
+                                        label += ' (Terlalu Dini)';
+                                    } else if (context.parsed.x >= 20) {
+                                        label += ' (Pasangan Ideal)';
+                                    } else {
+                                        label += ' (Kurang Kedekatan)';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function downloadAsImage() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '⏳ Memproses...';
+
+            try {
+                const content = document.getElementById('downloadContent');
+                const canvas = await html2canvas(content, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    windowWidth: content.scrollWidth,
+                    windowHeight: content.scrollHeight
+                });
+
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    const date = new Date().toISOString().split('T')[0];
+                    link.download = `Hasil-Tes-Pasangan-${date}.jpg`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+
+                    button.disabled = false;
+                    button.textContent = '✅ Berhasil! Download Lagi?';
+                    setTimeout(() => {
+                        button.innerHTML = '📥 Download Hasil (JPG)';
+                    }, 3000);
+                }, 'image/jpeg', 0.95);
+
+            } catch (error) {
+                console.error('Error:', error);
+                button.disabled = false;
+                button.textContent = '❌ Gagal. Coba Lagi';
+                setTimeout(() => {
+                    button.innerHTML = '📥 Download Hasil (JPG)';
+                }, 3000);
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

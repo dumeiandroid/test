@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Tes: Sensing vs Intuitif</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --sensing-color: #2980b9;
+            --intuitif-color: #8e44ad;
+            --bg-gradient: linear-gradient(135deg, #f4f7f6 0%, #e8eff1 100%);
+            --card-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            padding: 20px; 
+            color: #2c3e50;
+        }
+
+        .container { 
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 { font-size: 2.2em; margin-bottom: 10px; letter-spacing: 1px; }
+        .header p { opacity: 0.8; font-size: 1.1em; }
+
+        .content { padding: 40px; }
+
+        .profile-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 35px;
+            border-left: 6px solid #2c3e50;
+        }
+
+        .profile-item label { display: block; font-size: 0.75em; text-transform: uppercase; color: #7f8c8d; font-weight: bold; }
+        .profile-item span { font-size: 1.1em; font-weight: 600; }
+
+        .result-main {
+            text-align: center;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            transition: transform 0.3s ease;
+        }
+
+        .result-type { font-size: 3.5em; font-weight: 800; margin-bottom: 10px; display: block; }
+        .result-tagline { font-size: 1.3em; font-weight: 500; margin-bottom: 20px; font-style: italic; }
+
+        .visual-comparison {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .side { flex: 1; text-align: center; }
+        .side-icon { font-size: 3em; margin-bottom: 10px; }
+        .side-label { font-weight: bold; display: block; }
+        .side-score { font-size: 2.5em; font-weight: 800; }
+
+        .progress-container {
+            flex: 2;
+            height: 30px;
+            background: #eee;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+        }
+
+        .progress-bar { height: 100%; transition: width 1s ease-in-out; }
+
+        .description-box {
+            line-height: 1.8;
+            font-size: 1.1em;
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #eee;
+            margin-bottom: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            padding: 20px;
+            border-radius: 15px;
+            background: #fdfdfd;
+            border: 1px solid #eee;
+        }
+
+        .info-card h3 { margin-bottom: 15px; border-bottom: 2px solid; padding-bottom: 8px; }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-download { background: #27ae60; color: white; }
+        .btn-print { background: #2c3e50; color: white; }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .loading, .error { text-align: center; padding: 100px; font-size: 1.2em; }
+
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .visual-comparison { flex-direction: column; }
+            .content { padding: 20px; }
+            .result-type { font-size: 2.5em; }
+        }
+
+        @media print {
+            .btn-group { display: none; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="loading">⌛ Sedang mengambil hasil analisis...</div>
+</div>
+
+<script>
+const TYPE_CONFIG = {
+    A: {
+        title: "SENSING (S)",
+        tagline: "Si Praktis yang Berorientasi Fakta",
+        color: "#2980b9",
+        icon: "🔍",
+        desc: "Sensing (S) artinya Anda cenderung memproses data dengan cara bersandar pada fakta yang nyata dan melihat data apa adanya. Anda adalah tipe yang percaya ketika melihat sesuatu hal atau kejadian secara langsung (melihat adalah percaya). Anda lebih nyaman dengan pengalaman langsung, menyentuh, dan berinteraksi dengan objek secara nyata sebelum mengambil kesimpulan.",
+        traits: ["Fokus pada masa kini", "Menyukai detail & spesifik", "Praktis & Pragmatis", "Belajar dari pengalaman", "Menyukai prosedur jelas"],
+        careers: ["Akuntan", "Teknisi", "Tenaga Medis", "Polisi/Militer", "Manajemen Operasional"]
+    },
+    B: {
+        title: "INTUITIF (N)",
+        tagline: "Si Imajinatif yang Berorientasi Kemungkinan",
+        color: "#8e44ad",
+        icon: "✨",
+        desc: "Intuitive (N) artinya Anda cenderung memproses data dengan melihat pola, impresi, serta berbagai kemungkinan yang bisa terjadi di masa depan. Bagi Anda, fakta hanyalah titik awal; perasaan (feeling), kesan, dan 'vibe' menjadi bahan pertimbangan yang lebih dominan dalam mengambil keputusan. Anda lebih percaya pada intuisi atau 'feel' yang Anda rasakan.",
+        traits: ["Fokus pada masa depan", "Melihat gambaran besar", "Imajinatif & Teoritis", "Menyukai inovasi", "Berpikir abstrak"],
+        careers: ["Penulis/Seniman", "Psikolog", "Strategis Bisnis", "Peneliti", "Desainer Konsptual"]
+    }
+};
+
+async function loadResult() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const display = document.getElementById('app');
+
+    if (!token) {
+        display.innerHTML = `<div class="error">❌ Token tidak valid.</div>`;
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6?table=tes&x_04_eq=${token}`, {
+            headers: { 'X-Custom-Auth': 'admin' }
+        });
+        const res = await response.json();
+
+        if (res.success && res.data.length > 0) {
+            renderView(res.data[0]);
+        } else {
+            display.innerHTML = `<div class="error">❌ Data tidak ditemukan.</div>`;
+        }
+    } catch (e) {
+        display.innerHTML = `<div class="error">❌ Terjadi kesalahan koneksi.</div>`;
+    }
+}
+
+function renderView(data) {
+    const dataDiri = JSON.parse(data.x_02);
+    const skor = JSON.parse(data.x_03);
+    const total = skor.A + skor.B;
+    const dominan = skor.A >= skor.B ? 'A' : 'B';
+    const config = TYPE_CONFIG[dominan];
+    
+    const persenA = Math.round((skor.A / total) * 100);
+    const persenB = Math.round((skor.B / total) * 100);
+
+    const html = `
+        <div class="container" id="captureArea">
+            <div class="header">
+                <h1>TES CARA BERPIKIR</h1>
+                <p>Bagaimana Anda Memproses Informasi & Mempercayai Sesuatu</p>
+            </div>
+
+            <div class="content">
+                <div class="profile-card">
+                    <div class="profile-item"><label>Nama</label><span>${dataDiri.nama}</span></div>
+                    <div class="profile-item"><label>Usia</label><span>${dataDiri.usia} Thn</span></div>
+                    <div class="profile-item"><label>Pendidikan</label><span>${dataDiri.pendidikan}</span></div>
+                    <div class="profile-item"><label>Tanggal</label><span>${data.x_05}</span></div>
+                </div>
+
+                <div class="result-main" style="background: ${config.color}15; border: 2px solid ${config.color}">
+                    <span class="result-type" style="color: ${config.color}">${config.icon} ${config.title}</span>
+                    <div class="result-tagline" style="color: ${config.color}">${config.tagline}</div>
+                </div>
+
+                <div class="visual-comparison">
+                    <div class="side">
+                        <span class="side-label">Sensing (A)</span>
+                        <span class="side-score" style="color: var(--sensing-color)">${persenA}%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${persenA}%; background: var(--sensing-color)"></div>
+                        <div class="progress-bar" style="width: ${persenB}%; background: var(--intuitif-color)"></div>
+                    </div>
+                    <div class="side">
+                        <span class="side-label">Intuitif (B)</span>
+                        <span class="side-score" style="color: var(--intuitif-color)">${persenB}%</span>
+                    </div>
+                </div>
+
+                <div class="description-box">
+                    <strong>Apa artinya bagi Anda?</strong><br>
+                    ${config.desc}
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card" style="border-top: 5px solid ${config.color}">
+                        <h3 style="color: ${config.color}">Karakteristik Utama</h3>
+                        <ul style="padding-left: 20px;">
+                            ${config.traits.map(t => `<li>${t}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="info-card" style="border-top: 5px solid ${config.color}">
+                        <h3 style="color: ${config.color}">Saran Bidang Karir</h3>
+                        <ul style="padding-left: 20px;">
+                            ${config.careers.map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-download" onclick="downloadJPG()">📥 Simpan Gambar</button>
+                    <button class="btn-print" onclick="window.print()">🖨️ Cetak PDF</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('app').innerHTML = html;
+}
+
+async function downloadJPG() {
+    const area = document.getElementById('captureArea');
+    const btn = document.querySelector('.btn-group');
+    btn.style.display = 'none'; // Sembunyikan tombol saat capture
+
+    const canvas = await html2canvas(area, { scale: 2 });
+    const link = document.createElement('a');
+    link.download = `Hasil_Tes_SI_${Date.now()}.jpg`;
+    link.href = canvas.toDataURL("image/jpeg", 0.9);
+    link.click();
+    
+    btn.style.display = 'flex';
+}
+
+loadResult();
+</script>
+</body>
+</html>
