@@ -1,11 +1,755 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tes Pengembangan Kepribadian — Lidan Psikologi Indonesia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #f4f1ec;
+      color: #1a1a2e;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --cream: #f4f1ec;
+      --cream-dark: #ebe6dc;
+      --navy: #1a1a2e;
+      --navy-mid: #16213e;
+      --teal: #0a6c74;
+      --teal-light: #0d8a94;
+      --gold: #c9a84c;
+      --gold-light: #e2c375;
+      --white: #ffffff;
+      --text-muted: #6b7280;
+      --border: rgba(26,26,46,0.1);
+      --shadow-sm: 0 2px 12px rgba(26,26,46,0.07);
+      --shadow-md: 0 8px 32px rgba(26,26,46,0.12);
+      --shadow-lg: 0 20px 60px rgba(26,26,46,0.18);
+      --radius: 16px;
+      --radius-lg: 24px;
+    }
+
+    /* ===== NOISE TEXTURE OVERLAY ===== */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ===== HEADER / HERO ===== */
+    .site-header {
+      position: relative;
+      background: var(--navy);
+      overflow: hidden;
+      padding: 0;
+    }
+    .header-bg-accent {
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(10,108,116,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 10% 90%, rgba(201,168,76,0.2) 0%, transparent 50%);
+    }
+    .header-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 56px 32px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+    }
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 50px;
+      padding: 6px 18px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+    }
+    .brand-badge span { font-size: 1rem; }
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+      max-width: 720px;
+    }
+    .header-title em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+    .header-subtitle {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.7);
+      max-width: 600px;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+    .header-cta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .wa-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-light));
+      color: #fff;
+      text-decoration: none;
+      padding: 13px 26px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(10,108,116,0.4);
+    }
+    .wa-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(10,108,116,0.5); }
+    .wa-icon {
+      width: 20px; height: 20px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .header-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      margin-top: 12px;
+    }
+    .header-stats {
+      display: flex;
+      gap: 36px;
+      padding-top: 4px;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold-light);
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+    .section-intro {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .section-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.25;
+    }
+    .section-title span { color: var(--teal); }
+
+    /* ===== CARD GRID ===== */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 28px;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+    }
+    .card-index {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      width: 32px; height: 32px;
+      background: var(--navy);
+      color: var(--gold-light);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      z-index: 2;
+    }
+    .card-image-wrap {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+    }
+    .card-image-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .card:hover .card-image-wrap img { transform: scale(1.05); }
+    .card-image-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(26,26,46,0.55) 100%);
+    }
+    .card-body {
+      padding: 22px 22px 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card-tag {
+      display: inline-block;
+      background: rgba(10,108,116,0.08);
+      color: var(--teal);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      width: fit-content;
+    }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.3;
+    }
+    .card-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-footer {
+      padding: 0 22px 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      flex: 1;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      letter-spacing: 0.01em;
+      text-align: center;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--navy);
+    }
+    .btn-outline:hover {
+      background: var(--cream);
+      border-color: var(--navy);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--teal), var(--teal-light));
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(10,108,116,0.25);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(10,108,116,0.38);
+    }
+
+    /* ===== MODAL OVERLAY ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,20,0.65);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ===== MODAL BOX ===== */
+    .modal {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      max-width: 620px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.1);
+      transform: translateY(24px) scale(0.97);
+      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+    }
+    .modal-overlay.active .modal {
+      transform: translateY(0) scale(1);
+    }
+    .modal-header {
+      position: relative;
+      height: 240px;
+      overflow: hidden;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+    .modal-header img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .modal-header-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(26,26,46,0.2) 0%, rgba(26,26,46,0.75) 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 24px;
+    }
+    .modal-header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.25;
+    }
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: #fff;
+      font-size: 1.1rem;
+      transition: background 0.2s;
+      z-index: 10;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.3); }
+    .modal-body {
+      padding: 28px 30px 32px;
+    }
+    .modal-tag {
+      display: inline-block;
+      background: rgba(10,108,116,0.08);
+      color: var(--teal);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    .modal-desc {
+      font-size: 0.95rem;
+      color: #374151;
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+    .modal-info-bar {
+      display: flex;
+      gap: 20px;
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .modal-info-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.84rem;
+      color: var(--navy-mid);
+      font-weight: 500;
+    }
+    .modal-info-icon {
+      width: 30px; height: 30px;
+      background: var(--white);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .modal-actions .btn {
+      padding: 14px 20px;
+      font-size: 0.93rem;
+    }
+    .modal-actions .btn-primary { flex: 2; }
+    .modal-actions .btn-outline { flex: 1; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      position: relative;
+      z-index: 1;
+      background: var(--navy);
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      padding: 28px 24px;
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--gold-light); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    .modal::-webkit-scrollbar { width: 5px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--cream-dark); border-radius: 10px; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card {
+      animation: fadeUp 0.5s ease both;
+    }
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.1s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:nth-child(4) { animation-delay: 0.2s; }
+    .card:nth-child(5) { animation-delay: 0.25s; }
+    .card:nth-child(6) { animation-delay: 0.3s; }
+    .card:nth-child(7) { animation-delay: 0.35s; }
+    .card:nth-child(8) { animation-delay: 0.4s; }
+    .card:nth-child(9) { animation-delay: 0.45s; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 640px) {
+      .header-stats { gap: 20px; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .modal-body { padding: 22px 20px 26px; }
+      .modal-info-bar { flex-wrap: wrap; gap: 12px; }
+      .modal-actions { flex-direction: column-reverse; }
+    }
+  </style>
 </head>
 <body>
-	<h1>Selamat Datang</h1>
+
+<!-- ===== SITE HEADER ===== -->
+<header class="site-header">
+  <div class="header-bg-accent"></div>
+  <div class="header-inner">
+    <div class="brand-badge">
+      <span>🧠</span> Lidan Psikologi Indonesia
+    </div>
+    <h1 class="header-title">
+      Temukan <em>Jati Diri</em> Anda<br>Melalui Tes Kepribadian
+    </h1>
+    <p class="header-subtitle">
+      Ikuti seri tes pengembangan kepribadian berikut ini untuk mengenali diri Anda lebih dalam — gaya belajar, kecerdasan, temperamen, dan lebih banyak lagi.
+    </p>
+    <div class="header-cta">
+      <a href="https://wa.me/6285159601400" target="_blank" class="wa-btn">
+        <span class="wa-icon">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="white">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+        </span>
+        Hubungi untuk Tes Lebih Lengkap
+      </a>
+    </div>
+    <div class="header-divider"></div>
+    <div class="header-stats">
+      <div class="stat">
+        <div class="stat-num">8</div>
+        <div class="stat-label">Jenis Tes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Gratis</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">±10</div>
+        <div class="stat-label">Menit / Tes</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main>
+  <div class="section-intro">
+    <p class="section-eyebrow">Program Tes Kepribadian</p>
+    <h2 class="section-title">Pilih Tes yang Ingin <span>Anda Mulai</span></h2>
+  </div>
+
+  <div class="cards-grid" id="cardsGrid">
+    <!-- Cards will be injected by JS -->
+  </div>
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-logo">Lidan Psikologi Indonesia</div>
+  <p>
+    Untuk tes minat dan bakat yang lebih lengkap, hubungi kami di 
+    <a href="https://wa.me/6285159601400">WhatsApp +62 851 5960 1400</a>
+  </p>
+  <p style="margin-top:6px;font-size:0.78rem;opacity:0.5;">© 2025 Lidan Psikologi Indonesia. Hak Cipta Dilindungi.</p>
+</footer>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modal">
+    <div class="modal-header" id="modalHeader">
+      <img id="modalImg" src="" alt="" />
+      <div class="modal-header-overlay">
+        <h3 class="modal-header-title" id="modalTitle"></h3>
+      </div>
+      <button class="modal-close" id="modalClose" aria-label="Tutup">✕</button>
+    </div>
+    <div class="modal-body">
+      <span class="modal-tag" id="modalTag"></span>
+      <p class="modal-desc" id="modalDesc"></p>
+      <div class="modal-info-bar">
+        <div class="modal-info-item">
+          <div class="modal-info-icon">⏱️</div>
+          Estimasi ±10 menit
+        </div>
+        <div class="modal-info-item">
+          <div class="modal-info-icon">📊</div>
+          Hasil instan
+        </div>
+        <div class="modal-info-item">
+          <div class="modal-info-icon">🔓</div>
+          Gratis sepenuhnya
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="modalCloseBtn">Kembali</button>
+        <button class="btn btn-primary" id="modalStartBtn">Mulai Tes Sekarang →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCRIPT ===== -->
+<script>
+  const tests = [
+    {
+      id: 1,
+      filename: 'GayaBelajar',
+      image: 'https://cipta.my.id/gambar/tes/1.jpeg',
+      tag: 'Gaya Belajar',
+      title: 'Gaya Belajar yang Cocok Buat Saya',
+      shortDesc: 'Temukan apakah kamu tipe Visual, Auditory, atau Kinestetik untuk belajar lebih efektif.',
+      fullDesc: 'Pernahkah kamu merasa sudah belajar keras, tapi materinya kayak nggak nyangkut di kepala? Atau ada teman yang belajarnya santai tapi nilainya malah lebih bagus? Ternyata, setiap orang punya cara belajar yang berbeda-beda. Ada yang lebih mudah paham kalau lihat gambar, ada yang harus dengar penjelasan, dan ada juga yang harus langsung praktik. Ini semua disebut gaya belajar.\n\nApakah kamu tipe Visual, Auditory, atau Kinestetik? Dengan mengetahui gaya belajarmu, proses belajar akan jadi lebih mudah, menyenangkan, dan tentunya lebih efektif!'
+    },
+    {
+      id: 2,
+      filename: 'OtakKiriOtakKanan',
+      image: 'https://cipta.my.id/gambar/tes/2.jpeg',
+      tag: 'Dominasi Otak',
+      title: 'Saya Termasuk Otak Kiri atau Otak Kanan?',
+      shortDesc: 'Kenali apakah kamu lebih dominan otak kiri (logis) atau otak kanan (kreatif).',
+      fullDesc: 'Cara kita berpikir, belajar, dan menyelesaikan masalah memang dipengaruhi oleh dominasi salah satu belahan otak kita. Otak kiri dikenal sebagai pusat logika, analisis, dan pemikiran sistematis. Sementara otak kanan adalah pusat kreativitas, imajinasi, dan intuisi.\n\nDengan mengenali dominasi otakmu, kamu bisa lebih memahami cara berpikir alami yang kamu miliki dan mengoptimalkan potensi dirimu!'
+    },
+    {
+      id: 3,
+      filename: 'KecerdasanMajemuk',
+      image: 'https://cipta.my.id/gambar/tes/3.jpeg',
+      tag: 'Kecerdasan',
+      title: 'Tes Kecerdasan Majemuk',
+      shortDesc: 'Temukan dari 8 jenis kecerdasan mana yang paling menonjol dalam dirimu.',
+      fullDesc: 'Siapa bilang kecerdasan hanya diukur dari nilai matematika atau bahasa? Ternyata, setiap orang itu cerdas dengan caranya masing-masing, lho! Ada yang jago musik, ada yang hebat dalam bergaul, ada juga yang punya kemampuan luar biasa dalam memahami alam.\n\nMenurut Howard Gardner, ada 8 jenis kecerdasan: Linguistik, Logika-Matematika, Spasial, Kinestetik, Musikal, Interpersonal, Intrapersonal, dan Naturalis. Temukan kecerdasan majemukmu untuk memahami potensi unik dalam dirimu, menemukan passion, dan bahkan memilih karir yang tepat!'
+    },
+    {
+      id: 4,
+      filename: 'Tempramen',
+      image: 'https://cipta.my.id/gambar/tes/4.jpeg',
+      tag: 'Temperamen',
+      title: 'Apa Temperamen yang Saya Miliki?',
+      shortDesc: 'Kenali apakah kamu Sanguinis, Kolerik, Melankolis, atau Phlegmatis.',
+      fullDesc: 'Pernahkah kamu bertanya-tanya mengapa kamu bereaksi dengan cara tertentu dalam situasi tertentu? Temperamen adalah pola alami perilaku dan emosi yang sudah ada sejak kita lahir. Temperamen mempengaruhi cara kita berinteraksi dengan dunia, mengambil keputusan, dan bahkan memilih karir!\n\nAda empat tipe: Sanguinis si populer yang ceria, Kolerik si pemimpin yang tegas, Melankolis si perfeksionis yang mendalam, dan Phlegmatis si pendamai yang tenang. Kenali temperamenmu untuk lebih mengenal diri sendiri!'
+    },
+    {
+      id: 5,
+      filename: 'EkstrovertIntrovert',
+      image: 'https://cipta.my.id/gambar/tes/5.jpeg',
+      tag: 'Kepribadian',
+      title: 'Saya Termasuk Ekstrovert atau Introvert?',
+      shortDesc: 'Pahami dari mana kamu mendapatkan energi — dari keramaian atau dari kesendirian.',
+      fullDesc: 'Perbedaan utama bukan tentang pemalu atau tidak pemalu, tapi tentang dari mana kita mendapatkan energi. Ekstrovert mendapatkan energi dari berinteraksi dengan orang lain dan lingkungan luar, sementara introvert mendapatkan energi dari waktu sendiri untuk refleksi dan pemikiran dalam.\n\nMemahami ini sangat penting untuk mengenal diri sendiri, memilih karir yang tepat, dan bahkan membangun hubungan yang lebih baik. Siapa tahu, kamu ternyata ambivert — yang berada di tengah-tengah!'
+    },
+    {
+      id: 6,
+      filename: 'PenilaiAtauPengamat',
+      image: 'https://cipta.my.id/gambar/tes/8.jpeg',
+      tag: 'Gaya Hidup',
+      title: 'Saya Termasuk Tipe Penilai atau Pengamat?',
+      shortDesc: 'Temukan apakah kamu si perencana terstruktur atau si spontan yang fleksibel.',
+      fullDesc: 'Apakah kamu tipe orang yang selalu membuat to-do list, merencanakan segala sesuatu dengan detail, dan merasa tidak nyaman dengan ketidakpastian? Atau sebaliknya, kamu lebih suka go with the flow, fleksibel, dan bahkan bekerja paling baik di menit-menit terakhir?\n\nTipe Judging (Penilai) suka keteraturan, deadline, dan rencana yang jelas. Tipe Perceiving (Pengamat) suka kebebasan, adaptabilitas, dan menjaga berbagai opsi tetap terbuka. Mana yang lebih cocok menggambarkan kamu?'
+    },
+    {
+      id: 7,
+      filename: 'PemikiratauPerasa',
+      image: 'https://cipta.my.id/gambar/tes/7.jpeg',
+      tag: 'Pengambilan Keputusan',
+      title: 'Saya Tipe Pemikir (Thinking) atau Perasa (Feeling)?',
+      shortDesc: 'Ketahui cara utama kamu mengambil keputusan — logika atau empati.',
+      fullDesc: 'Perbedaan ini menunjukkan dua cara berbeda dalam mengambil keputusan: Thinking (Pemikir) atau Feeling (Perasa). Ini bukan tentang seberapa pintar atau seberapa emosional seseorang, tapi tentang kriteria utama yang digunakan dalam pengambilan keputusan.\n\nTipe Thinking menggunakan logika, fakta, dan objektivitas — fokus pada apa yang benar dan adil. Tipe Feeling mengutamakan nilai kemanusiaan, perasaan, dan harmoni — fokus pada siapa yang terpengaruh dan bagaimana dampaknya terhadap orang lain.'
+    },
+    {
+      id: 8,
+      filename: 'PolaAsuhOrangtua',
+      image: 'https://cipta.my.id/gambar/tes/9.jpeg',
+      tag: 'Pola Asuh',
+      title: 'Seperti Apa Pola Asuh Orangtua Saya?',
+      shortDesc: 'Kenali pola asuh yang kamu terima — Demokratis, Otoriter, atau Permisif.',
+      fullDesc: 'Siapa kita hari ini adalah hasil dari berbagai faktor, dan salah satu yang paling berpengaruh adalah cara orangtua mendidik kita. Pola asuh yang diterapkan orangtua membentuk kepribadian, cara pandang, dan cara kita berinteraksi dengan dunia.\n\nAda tiga pola asuh utama: Demokratis yang seimbang antara kasih sayang dan aturan, Otoriter yang tegas dan kaku dengan banyak aturan ketat, dan Permisif yang serba boleh dengan sedikit atau tanpa batasan. Kenali pola asuhmu untuk memahami dirimu lebih dalam dan memutus siklus negatif jika ada.'
+    }
+  ];
+
+  // Render cards
+  const grid = document.getElementById('cardsGrid');
+  tests.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-index">${String(i+1).padStart(2,'0')}</div>
+      <div class="card-image-wrap">
+        <img src="${t.image}" alt="${t.title}" loading="lazy" />
+        <div class="card-image-overlay"></div>
+      </div>
+      <div class="card-body">
+        <span class="card-tag">${t.tag}</span>
+        <h3 class="card-title">${t.title}</h3>
+        <p class="card-desc">${t.shortDesc}</p>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-outline" onclick="openModal(${i}, event)">Detail</button>
+        <button class="btn btn-primary" onclick="startTest('${t.filename}', event)">Mulai Tes →</button>
+      </div>
+    `;
+    // Click card body also opens modal
+    card.querySelector('.card-body').addEventListener('click', () => openModal(i));
+    card.querySelector('.card-image-wrap').addEventListener('click', () => openModal(i));
+    grid.appendChild(card);
+  });
+
+  // Modal logic
+  const overlay = document.getElementById('modalOverlay');
+  const modalImg = document.getElementById('modalImg');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalTag = document.getElementById('modalTag');
+  const modalDesc = document.getElementById('modalDesc');
+  const modalStartBtn = document.getElementById('modalStartBtn');
+  let currentTest = null;
+
+  function openModal(index, e) {
+    if (e) e.stopPropagation();
+    currentTest = tests[index];
+    modalImg.src = currentTest.image;
+    modalImg.alt = currentTest.title;
+    modalTitle.textContent = currentTest.title;
+    modalTag.textContent = currentTest.tag;
+    modalDesc.innerHTML = currentTest.fullDesc.replace(/\n\n/g, '<br><br>');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function startTest(filename, e) {
+    if (e) e.stopPropagation();
+    window.open(`${filename}.html`, '_blank');
+  }
+
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  modalStartBtn.addEventListener('click', () => {
+    if (currentTest) window.open(`${currentTest.filename}.html`, '_blank');
+  });
+</script>
 </body>
 </html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tes Thinking vs Feeling - Lidan Psikologi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #2980b9;
+            --thinking-color: #2c3e50;
+            --feeling-color: #e67e22;
+            --bg: #f4f7f6;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 15px; background: var(--bg); display: flex; flex-direction: column; align-items: center; }
+
+        /* --- HALAMAN PEMBUKA --- */
+        #welcome-screen { max-width: 650px; width: 100%; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .hero-header { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; padding: 40px 25px; text-align: center; }
+        .info-text { padding: 30px; color: #444; line-height: 1.7; }
+        
+        .token-box { background: #f8fafc; padding: 25px; border-top: 1px solid #edf2f7; text-align: center; }
+        .token-input { width: 100%; max-width: 300px; padding: 12px; border: 2px solid #cbd5e0; border-radius: 8px; text-align: center; font-size: 1.1rem; margin-bottom: 15px; outline: none; }
+        .wa-link { display: block; margin-top: 15px; color: #e74c3c; font-size: 0.85rem; text-decoration: none; font-weight: bold; line-height: 1.4; }
+
+        /* --- KUIS --- */
+        #quiz-container { display: none; width: 100%; max-width: 700px; flex-direction: column; gap: 15px; }
+        .video-box { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .quiz-card { background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .option-btn { width: 100%; max-width: 200px; padding: 20px; font-size: 1.3rem; cursor: pointer; border: 2px solid var(--primary); background: white; color: var(--primary); border-radius: 12px; font-weight: bold; margin: 10px; transition: 0.2s; }
+        .option-btn:hover { background: var(--primary); color: white; }
+
+        /* --- HASIL --- */
+        #result-container { display: none; width: 100%; max-width: 850px; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; margin-top: 20px; }
+        .res-header { background: var(--primary); color: white; padding: 30px; text-align: center; }
+        .res-content { padding: 30px; }
+        .profile-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        
+        .btn-main { padding: 15px 30px; border: none; border-radius: 10px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000; }
+        .modal { background:white; padding:30px; border-radius:15px; width:90%; max-width:400px; }
+    </style>
+</head>
+<body>
+
+<div id="welcome-screen">
+    <div class="hero-header">
+        <h1>Selamat Datang di Tes Pemikir atau Perasa</h1>
+    </div>
+    <div class="info-text">
+        <p>Halo semuanya. Pernahkah kamu merasa bingung? Haruskah mengikuti logika atau hati nurani saat mengambil keputusan? Perbedaan ini menunjukkan dua cara berbeda dalam memutuskan sesuatu, <b>Thinking</b> atau <b>Feeling</b>.</p>
+        <p><b>Tipe Thinking</b> menggunakan logika, fakta, dan objektivitas. Mereka fokus pada apa yang benar dan adil. Sementara <b>Tipe Feeling</b> mengutamakan nilai kemanusiaan, perasaan, dan harmoni. Mereka fokus pada dampaknya terhadap orang lain.</p>
+        <p style="text-align: center; font-weight: bold; color: #3498db; border: 2px dashed #3498db; padding: 15px; border-radius: 10px;">
+            Siapkan kertas dan pulpen untuk mencatat jawabanmu, ya.<br>Yuk, kita mulai tesnya sekarang!
+        </p>
+    </div>
+
+    <div class="token-box">
+        <input type="text" id="token-input" class="token-input" placeholder="Masukkan Kode Token...">
+        <br>
+        <button class="btn-main" onclick="validateToken()">MULAI SEKARANG</button>
+        <a href="https://wa.me/6285159601400" target="_blank" class="wa-link">
+            Apabila kamu belum memiliki token,<br>silahkan hubungi Lidan Psikologi (Klik Di Sini)
+        </a>
+    </div>
+</div>
+
+<div id="quiz-container">
+    <div class="video-box"><iframe width="560" height="315" src="https://www.youtube.com/embed/BN2kZJfojrA?si=2CwFz8uJqUkA9nmA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+    <div class="quiz-card">
+        <h2 id="q-number" style="color: var(--primary);">Soal Nomor 1</h2>
+        <p>Pilih jawaban yang paling sesuai dengan diri Anda:</p>
+        <div>
+            <button class="option-btn" onclick="handleAnswer('A')">A</button>
+            <button class="option-btn" onclick="handleAnswer('B')">B</button>
+        </div>
+    </div>
+</div>
+
+<div id="data-modal" class="overlay">
+    <div class="modal">
+        <h3 style="text-align:center;">Tes Selesai!</h3>
+        <label>Nama Lengkap</label>
+        <input type="text" id="user-name" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:5px;">
+        <label>Usia</label>
+        <input type="number" id="user-age" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:5px;">
+        <button class="btn-main" style="width:100%;" onclick="processResult()">LIHAT HASIL</button>
+    </div>
+</div>
+
+<div id="result-container">
+    <div id="capture-area">
+        <div class="res-header">
+            <h1>🧠 Analisis Thinking vs Feeling</h1>
+            <p id="res-tagline"></p>
+        </div>
+        <div class="res-content">
+            <div class="profile-info">
+                <div><b>Nama:</b> <span id="res-name"></span></div>
+                <div><b>Usia:</b> <span id="res-age"></span></div>
+                <div><b>Tanggal:</b> <span id="res-date"></span></div>
+            </div>
+
+            <div style="text-align:center; padding: 25px; border-radius: 15px; background: #f8f9fa; border-bottom: 5px solid var(--primary);">
+                <h2 id="res-type-name" style="font-size: 2.2rem; margin-bottom: 10px;"></h2>
+                <p id="res-description" style="line-height: 1.6; color: #444;"></p>
+            </div>
+
+            <div style="height: 280px; margin: 30px 0;">
+                <canvas id="resultChart"></canvas>
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #eee;">
+                <h3>💡 Karakteristik Utama:</h3>
+                <ul id="res-traits" style="padding-left: 20px; line-height: 1.8;"></ul>
+            </div>
+        </div>
+    </div>
+    <div style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button class="btn-main" style="background:#27ae60;" onclick="downloadJPG()">📥 Simpan JPG</button>
+        <button class="btn-main" style="background:#2c3e50;" onclick="window.print()">🖨️ Cetak PDF</button>
+    </div>
+</div>
+
+<script>
+    const TOKEN_VALID = "123abc";
+    let currentQ = 1;
+    let scores = { A: 0, B: 0 }; // A = Thinking, B = Feeling
+
+    function validateToken() {
+        if (document.getElementById('token-input').value === TOKEN_VALID) {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'flex';
+        } else {
+            alert("Token tidak valid!");
+        }
+    }
+
+    function handleAnswer(choice) {
+        scores[choice]++;
+        if (currentQ < 14) {
+            currentQ++;
+            document.getElementById('q-number').innerText = "Soal Nomor " + currentQ;
+        } else {
+            document.getElementById('data-modal').style.display = 'flex';
+        }
+    }
+
+    function processResult() {
+        document.getElementById('data-modal').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('result-container').style.display = 'block';
+
+        const name = document.getElementById('user-name').value || "Peserta";
+        document.getElementById('res-name').innerText = name;
+        document.getElementById('res-age').innerText = (document.getElementById('user-age').value || "-") + " Tahun";
+        document.getElementById('res-date').innerText = new Date().toLocaleDateString('id-ID');
+
+        const isThinking = scores.A >= scores.B;
+        const typeInfo = isThinking ? {
+            name: "THINKING (Pemikir)",
+            tagline: "Keputusan Berdasarkan Logika & Objektivitas",
+            color: "#2c3e50",
+            desc: "Anda cenderung mengambil keputusan berdasarkan fakta dan logika. Anda menghargai keadilan dan kebenaran di atas segalanya.",
+            traits: ["Analitis dan logis", "Objektif dalam menilai situasi", "Menghargai kompetensi", "Tegas dan lugas"]
+        } : {
+            name: "FEELING (Perasa)",
+            tagline: "Keputusan Berdasarkan Nilai & Harmoni",
+            color: "#e67e22",
+            desc: "Anda mengutamakan perasaan dan dampak keputusan terhadap orang lain. Harmoni dan nilai kemanusiaan adalah prioritas Anda.",
+            traits: ["Empatik dan penuh kasih", "Menghargai keharmonisan", "Peka terhadap perasaan orang lain", "Membangun hubungan baik"]
+        };
+
+        document.getElementById('res-type-name').innerText = typeInfo.name;
+        document.getElementById('res-type-name').style.color = typeInfo.color;
+        document.getElementById('res-tagline').innerText = typeInfo.tagline;
+        document.getElementById('res-description').innerText = typeInfo.desc;
+        document.getElementById('res-traits').innerHTML = typeInfo.traits.map(t => `<li>${t}</li>`).join('');
+
+        new Chart(document.getElementById('resultChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Thinking', 'Feeling'],
+                datasets: [{
+                    data: [scores.A, scores.B],
+                    backgroundColor: ['#2c3e50', '#e67e22']
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    async function downloadJPG() {
+        const area = document.getElementById('capture-area');
+        const canvas = await html2canvas(area, { scale: 2 });
+        const link = document.createElement('a');
+        link.download = 'Hasil-Tes-Thinking-Feeling.jpg';
+        link.href = canvas.toDataURL('image/jpeg');
+        link.click();
+    }
+</script>
+
+</body>
+</html>
