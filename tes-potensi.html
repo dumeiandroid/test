@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- ===== SEO ===== -->
+  <title>Tes Potensi – Kenali Bakat dan Gaya Belajar Anda | Lidan</title>
+  <meta name="description" content="Temukan metode belajar yang paling efektif dan kenali bakat alami Anda. Hasil tes ini membantu Anda mengoptimalkan cara kerja otak untuk mencapai prestasi maksimal."/>
+  <meta name="keywords" content="tes potensi, tes bakat, gaya belajar, kecerdasan majemuk, tes IQ, psikotes potensi, bakat alami, lidan"/>
+  <meta name="author" content="Lidan"/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://test.lidan.co.id/tes-potensi"/>
+
+  <!-- ===== Open Graph ===== -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://test.lidan.co.id/tes-potensi"/>
+  <meta property="og:title" content="Tes Potensi – Kenali Bakat dan Gaya Belajar Anda | Lidan"/>
+  <meta property="og:description" content="Temukan metode belajar yang paling efektif dan kenali bakat alami Anda. Optimalkan cara kerja otak untuk mencapai prestasi maksimal."/>
+  <meta property="og:image" content="https://placehold.co/1200x630/1a3a2a/a8d5b5?text=Tes+Potensi+%E2%80%93+Lidan"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:alt" content="Tes Potensi oleh Lidan – Kenali bakat dan gaya belajar Anda"/>
+  <meta property="og:locale" content="id_ID"/>
+  <meta property="og:site_name" content="Lidan"/>
+
+  <!-- ===== Twitter Card ===== -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:url" content="https://test.lidan.co.id/tes-potensi"/>
+  <meta name="twitter:title" content="Tes Potensi – Kenali Bakat dan Gaya Belajar Anda | Lidan"/>
+  <meta name="twitter:description" content="Temukan metode belajar paling efektif dan kenali bakat alami Anda untuk mencapai prestasi maksimal."/>
+  <meta name="twitter:image" content="https://placehold.co/1200x630/1a3a2a/a8d5b5?text=Tes+Potensi+%E2%80%93+Lidan"/>
+
+  <!-- ===== Favicon placeholder ===== -->
+  <link rel="icon" type="image/png" href="https://placehold.co/32x32/1a3a2a/fff?text=L"/>
+
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f5f2ec;
+      --surface: #ffffff;
+      --accent: #1a3a2a;
+      --accent2: #4a7c59;
+      --accent-soft: rgba(26, 58, 42, 0.06);
+      --text-primary: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --border: rgba(26, 58, 42, 0.15);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Instrument Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Organic blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+    .blob-1 {
+      width: 500px; height: 500px;
+      top: -200px; right: -100px;
+      background: rgba(74, 124, 89, 0.12);
+    }
+    .blob-2 {
+      width: 400px; height: 400px;
+      bottom: -150px; left: -100px;
+      background: rgba(26, 58, 42, 0.08);
+    }
+
+    /* Dot pattern */
+    .dots {
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(26,58,42,0.08) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    .card {
+      position: relative;
+      z-index: 10;
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 60px 52px 52px;
+      max-width: 520px;
+      width: 90%;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.03), 0 20px 60px rgba(0,0,0,0.08);
+      animation: slideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--accent-soft);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 32px;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent2);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .icon-wrap {
+      width: 72px; height: 72px;
+      background: var(--accent);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 24px rgba(26,58,42,0.25);
+    }
+
+    .icon-wrap svg {
+      width: 32px; height: 32px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 7vw, 48px);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    h1 span {
+      color: var(--accent2);
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+
+    p {
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--text-muted);
+      margin-bottom: 44px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 17px 32px;
+      background: var(--accent);
+      color: #fff;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(26,58,42,0.3);
+    }
+
+    .btn:hover {
+      background: var(--accent2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(26,58,42,0.35);
+    }
+
+    .btn:hover .arrow { transform: translateX(4px); }
+
+    .arrow { transition: transform 0.2s; font-size: 16px; }
+
+    .tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .tag {
+      padding: 5px 12px;
+      background: var(--accent-soft);
+      border-radius: 100px;
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="dots"></div>
+
+  <div class="card">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Psikotes
+    </div>
+
+    <div class="icon-wrap">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+
+    <h1>Tes <span>Potensi</span></h1>
+
+    <div class="divider"></div>
+
+    <div class="tags">
+      <span class="tag">Gaya Belajar</span>
+      <span class="tag">Bakat Alami</span>
+      <span class="tag">Kecerdasan</span>
+    </div>
+
+    <p>Temukan metode belajar yang paling efektif dan kenali bakat alami Anda. Hasil tes ini membantu Anda mengoptimalkan cara kerja otak untuk mencapai prestasi maksimal.</p>
+
+    <a href="#" class="btn">
+      Mulai Tes
+      <span class="arrow">→</span>
+    </a>
+  </div>
+</body>
+</html>
