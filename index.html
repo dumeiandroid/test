@@ -355,7 +355,28 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div class="card">
     <div class="tunggu-icon">🕐</div>
     <div class="tunggu-title">Pendaftaran Berhasil!</div>
-    <p class="tunggu-sub" id="tungguSubTeks">Perhatikan instruksi dari tester dan tunggu konfirmasi untuk memulai tes. Jangan tutup atau muat ulang halaman ini.</p>
+    <p class="tunggu-sub" id="tungguSubText">Perhatikan instruksi dari tester dan tunggu konfirmasi untuk memulai tes. Jangan tutup atau muat ulang halaman ini.</p>
+    <div id="tungguIqExtra" style="display:none;margin-top:18px;">
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:16px 18px;margin-bottom:16px;text-align:left;">
+        <div style="font-size:.78em;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#16a34a;margin-bottom:8px;">📋 Informasi Penting</div>
+        <p style="font-size:.88em;line-height:1.75;color:#14532d;">
+          Tes ini akan diawasi tester secara langsung.<br>
+          Pastikan Anda mengerjakan dengan <strong>benar dan jujur</strong>.
+        </p>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:12px;padding:16px 18px;margin-bottom:16px;text-align:center;">
+        <div style="font-size:.88em;color:#1e40af;font-weight:600;margin-bottom:12px;">Minta tester ke <strong>Lidan Psikologi</strong></div>
+        <a id="btnWaLidan"
+           href="https://wa.me/6285159601400?text=Halo%20Lidan%20Psikologi%2C%20saya%20sudah%20mengisi%20biodata%20dan%20siap%20untuk%20memulai%20Tes%20IQ.%20Mohon%20konfirmasi%20dari%20tester.%20Saya%20ingin%20tahu%20berapa%20biayanya%3F"
+           target="_blank" rel="noopener"
+           style="display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;border:none;border-radius:10px;padding:13px 24px;font-size:.95em;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;width:100%;"
+           onmouseover="this.style.background='#1ebe5a';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 16px rgba(37,211,102,.3)'"
+           onmouseout="this.style.background='#25D366';this.style.transform='translateY(0)';this.style.boxShadow='none'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Hubungi Lidan Psikologi
+        </a>
+      </div>
+    </div>
     <div class="tunggu-status" id="tungguStatus"><div class="tunggu-pulse"></div><span id="tungguStatusTxt">Menunggu konfirmasi tester...</span></div>
     <div id="tungguZoomWrap" style="display:none;margin-top:20px;text-align:left;">
       <div style="background:linear-gradient(135deg,#1e1b4b 0%,#3730a3 50%,#1d4ed8 100%);border-radius:16px;padding:18px 18px 16px;box-shadow:0 6px 24px rgba(55,48,163,.3);margin-bottom:14px;position:relative;overflow:hidden;">
@@ -377,29 +398,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         🎥 Bergabung ke Zoom
       </a>
     </div>
-
-    <!-- Blok khusus IQ: instruksi + tombol WA -->
-    <div id="tungguIqWrap" style="display:none;margin-top:20px;text-align:left;">
-      <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:.75em;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">⚠ Perhatian</div>
-        <p style="font-size:.88em;color:#78350f;line-height:1.7;margin:0;">
-          Tes ini akan diawasi tester secara langsung. Pastikan Anda mengerjakan dengan benar dan jujur.
-        </p>
-      </div>
-      <p style="font-size:.88em;color:var(--muted);line-height:1.7;margin-bottom:14px;font-weight:600;">
-        Minta tester ke <strong style="color:var(--text);">Lidan Psikologi</strong>
-      </p>
-      <a id="btnWaIq"
-         href="https://wa.me/6285159601400?text=Halo%20Lidan%20Psikologi%2C%20saya%20ingin%20mengikuti%20Tes%20IQ%20yang%20diawasi%20tester.%20Boleh%20saya%20tahu%20berapa%20biayanya%3F"
-         target="_blank" rel="noopener"
-         style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 20px;background:#25D366;color:#fff;border:none;border-radius:12px;font-size:.95em;font-weight:800;text-decoration:none;transition:all .2s;cursor:pointer;"
-         onmouseover="this.style.background='#1ebe5a';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 16px rgba(37,211,102,.3)'"
-         onmouseout="this.style.background='#25D366';this.style.transform='translateY(0)';this.style.boxShadow='none'">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Hubungi via WhatsApp
-      </a>
-    </div>
-
     <button class="btn btn-primary" id="btnMulaiTes" onclick="mulaiTes()" style="margin-top:14px;">▶ Mulai Tes</button>
   </div>
 </div>
@@ -489,9 +487,6 @@ const AUTO_PAKET = (_urlParams.get('p') || '').trim();
 // Paket yang langsung aktif tanpa konfirmasi manual tester
 const PAKET_AUTO_AKTIF = ['asmara','potensi','karakter','karir'];
 const IS_AUTO_AKTIF = PAKET_AUTO_AKTIF.includes(AUTO_PAKET.toLowerCase());
-
-// Deteksi paket IQ — layar tunggu dengan instruksi khusus + tombol WA
-const IS_IQ = AUTO_PAKET.toLowerCase() === 'iq';
 
 const BASE='https://cipta.my.id/psikotest/simpel/';
 const ALL_CONFIG=[
@@ -1284,6 +1279,23 @@ async function cekKontrol(){
 }
 
 function showZoomTunggu(){
+  // ── Tampilkan konten khusus IQ ──
+  if(AUTO_PAKET.toLowerCase()==='iq'){
+    const iqExtra=document.getElementById('tungguIqExtra');
+    const subText=document.getElementById('tungguSubText');
+    if(iqExtra)iqExtra.style.display='block';
+    if(subText){
+      subText.textContent='Tes ini akan diawasi tester secara langsung. Pastikan Anda mengerjakan dengan benar dan jujur.';
+    }
+    // Update WA link dengan data peserta jika sudah ada
+    const btn=document.getElementById('btnWaLidan');
+    if(btn){
+      let nama='';let telp='';let idPeserta=localStorage.getItem('db_id')||'';
+      if(cu){try{const bio=JSON.parse(cu.x_02||'{}');nama=bio.nama||'';telp=bio.telepon||'';}catch{}}
+      const pretext='Halo Lidan Psikologi, saya '+(nama||'peserta')+' sudah mengisi biodata dan siap untuk memulai Tes IQ.'+(telp?' No. WhatsApp saya: '+telp+'.':'')+(idPeserta?' ID Peserta: '+idPeserta+'.':'')+' Mohon konfirmasi dari tester. Saya ingin tahu berapa biayanya?';
+      btn.href='https://wa.me/6285159601400?text='+encodeURIComponent(pretext);
+    }
+  }
   if(_kontrolInfo.link){
     const wrap=document.getElementById('tungguZoomWrap'),btn=document.getElementById('tungguLinkBtn');
     if(wrap)wrap.style.display='block';if(btn)btn.href=_kontrolInfo.link;
