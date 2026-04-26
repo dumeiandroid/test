@@ -463,7 +463,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 const _urlParams = new URLSearchParams(window.location.search);
 const AUTO_PAKET = (_urlParams.get('p') || '').trim();
 
-
+// Paket yang langsung aktif tanpa konfirmasi manual tester
+const PAKET_AUTO_AKTIF = ['asmara','potensi','karakter','karir'];
+const IS_AUTO_AKTIF = PAKET_AUTO_AKTIF.includes(AUTO_PAKET.toLowerCase());
 
 const BASE='https://cipta.my.id/psikotest/simpel/';
 const ALL_CONFIG=[
@@ -599,13 +601,15 @@ async function handleDaftar(){
       telepon:telpVal,
       kesediaan_dihubungi:kesediaanEl?kesediaanEl.value:'tidak_berlaku',
       tgl_tes:td(),
-      status:'nonaktif'
+      status:IS_AUTO_AKTIF?'aktif':'nonaktif'
     });
     sl('Menyimpan data...');
     const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tok,x_02:bio})});
     if(!res.success)throw new Error(res.message||'Gagal.');
     localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',pnm);
-    cu={id_x:res.id_x,x_01:tok,x_02:bio};sl('Memuat tes...');await loadAC();hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
+    cu={id_x:res.id_x,x_01:tok,x_02:bio};sl('Memuat tes...');await loadAC();
+    if(IS_AUTO_AKTIF){hl();startGlobalPolling();await goNext2();}
+    else{hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();}
   }catch(e){hl();eb.textContent='⚠ '+e.message;eb.classList.add('show');sLoad(btn,false)}
 }
 
@@ -722,7 +726,7 @@ async function cekSebelumInstruksi(){
       if(res.success&&res.data){
         cu=res.data;
         let status='nonaktif';try{status=JSON.parse(cu.x_02||'{}').status||'nonaktif'}catch{}
-        if(status!=='aktif'){
+        if(status!=='aktif'&&!IS_AUTO_AKTIF){
           hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
           return false;
         }
@@ -1183,7 +1187,7 @@ function startGlobalPolling(){
         if(!res.success||!res.data){_globalPollBusy=false;return;}
         cu=res.data;
         let status='nonaktif';try{status=JSON.parse(cu.x_02||'{}').status||'nonaktif'}catch{}
-        if(status==='aktif'){
+        if(status==='aktif'||IS_AUTO_AKTIF){
           stopGlobalPolling();
           const st=$('tungguStatus'),tx=$('tungguStatusTxt'),btn=$('btnMulaiTes');
           if(st)st.classList.add('aktif');if(tx)tx.textContent='Tes siap dimulai!';if(btn)btn.style.display='block';
@@ -1207,7 +1211,7 @@ function startGlobalPolling(){
         if(!res.success||!res.data){_globalPollBusy=false;return;}
         cu=res.data;
         let status='nonaktif';try{status=JSON.parse(cu.x_02||'{}').status||'nonaktif'}catch{}
-        if(status!=='aktif'){
+        if(status!=='aktif'&&!IS_AUTO_AKTIF){
           stopGlobalPolling();hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
           _globalPollBusy=false;return;
         }
@@ -1369,6 +1373,7 @@ window.onload = async () => {
       await loadAC();
       let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
       if (status === 'aktif') { hl(); startGlobalPolling(); await goNext2(); }
+      else if(IS_AUTO_AKTIF){ hl(); startGlobalPolling(); await goNext2(); }
       else { hl(); ss('screenTunggu'); showZoomTunggu(); startGlobalPolling(); }
     } catch (e) { localStorage.clear(); hl(); ss('screenDaftar'); }
     return;
