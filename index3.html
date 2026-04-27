@@ -1380,42 +1380,11 @@ window.onload = async () => {
 
   sl('Memuat halaman...');
 
-  // Ambil URL fragment dari x_03 (JSON) jika tersedia, fallback ke hardcoded
-  let _fragBiodata = FRAGMENT_BASE + BIODATA_FILE;
-  let _fragPenutup = FRAGMENT_BASE + PENUTUP_FILE;
-  try {
-    const _x03 = JSON.parse(sPaket.x_03 || '{}');
-    if (_x03.biodata) _fragBiodata = _x03.biodata;
-    if (_x03.penutup) _fragPenutup = _x03.penutup;
-  } catch(e) { console.warn('[FRAGMENT] Gagal parse x_03:', e); }
-
   // Muat kedua fragment secara paralel
   await Promise.all([
-    loadFragment(_fragBiodata, 'biodataContainer'),
-    loadFragment(_fragPenutup, 'penutupContainer'),
+    loadFragment(FRAGMENT_BASE + BIODATA_FILE, 'biodataContainer'),
+    loadFragment(FRAGMENT_BASE + PENUTUP_FILE,  'penutupContainer'),
   ]);
-
-  // Inisialisasi tombol WA di fragment penutup setelah DOM siap
-  (function initPenutupWa() {
-    const waIds = ['waAsmara','waKarakter','waKarier','waPotensi'];
-    const btn = waIds.map(id => document.getElementById(id)).find(el => el);
-    if (!btn) return; // tidak ada tombol penutup custom
-    const namaMap = {
-      waAsmara:   'Tes Asmara',
-      waKarakter: 'Tes Karakter',
-      waKarier:   'Tes Karier',
-      waPotensi:  'Tes Potensi',
-    };
-    const namaBtn = waIds.find(id => document.getElementById(id) === btn);
-    const namaTes = namaMap[namaBtn] || 'Tes';
-    const id  = (cu && cu.id_x) ? String(cu.id_x) : (localStorage.getItem('db_id') || '');
-    const tok = (cu && cu.x_01) ? String(cu.x_01) : (localStorage.getItem('token') || '');
-    const text = 'Halo Admin Lidan, saya baru saja menyelesaikan ' + namaTes
-      + ' dan ingin mendapatkan laporan hasil tes serta sertifikat eksklusif saya. Boleh saya tahu berapa biayanya?'
-      + (id  ? '\n\nID: '    + id  : '')
-      + (tok ? '\nToken: ' + tok : '');
-    btn.href = 'https://wa.me/6285159601400?text=' + encodeURIComponent(text);
-  })();
 
   sl('Memeriksa status tes...');
   const kontrol = await cekKontrol();
