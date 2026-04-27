@@ -1409,11 +1409,9 @@ window.onload = async () => {
     const namaBtn = waIds.find(id => document.getElementById(id) === btn);
     const namaTes = namaMap[namaBtn] || 'Tes';
     const id  = (cu && cu.id_x) ? String(cu.id_x) : (localStorage.getItem('db_id') || '');
-    const tok = (cu && cu.x_01) ? String(cu.x_01) : (localStorage.getItem('token') || '');
     const text = 'Halo Admin Lidan, saya baru saja menyelesaikan ' + namaTes
       + ' dan ingin mendapatkan laporan hasil tes serta sertifikat eksklusif saya. Boleh saya tahu berapa biayanya?'
-      + (id  ? '\n\nID: '    + id  : '')
-      + (tok ? '\nToken: ' + tok : '');
+      + (id  ? '\n\nID: ' + id  : '');
     btn.href = 'https://wa.me/6285159601400?text=' + encodeURIComponent(text);
   })();
 
