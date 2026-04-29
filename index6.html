@@ -348,7 +348,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <!-- Konten di-inject dari BIODATA_FILE -->
     <div style="text-align:center;padding:40px 0;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px"></div>Memuat formulir...</div>
   </div>
-
 </div>
 
 <!-- ═══ SCREEN: TUNGGU KONFIRMASI ═══ -->
@@ -377,11 +376,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
           Hubungi Lidan Psikologi
         </a>
       </div>
-    </div>
-    <div id="tungguIdBox" style="display:none;margin:14px 0;background:#f0f4ff;border:2px solid #c7d2fe;border-radius:12px;padding:12px 18px;text-align:center;">
-      <div style="font-size:.72em;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6366f1;margin-bottom:6px;">🪪 ID Peserta Anda</div>
-      <div style="font-size:2em;font-weight:900;color:#4338ca;letter-spacing:.08em;font-family:'Courier New',monospace;" id="tungguIdNum">—</div>
-      <div style="font-size:.78em;color:#6b7280;margin-top:4px;">Sebutkan ID ini kepada tester jika ada pertanyaan atau kendala</div>
     </div>
     <div class="tunggu-status" id="tungguStatus"><div class="tunggu-pulse"></div><span id="tungguStatusTxt">Menunggu konfirmasi tester...</span></div>
     <div id="tungguZoomWrap" style="display:none;margin-top:20px;text-align:left;">
@@ -539,15 +533,7 @@ let wBL=[],wBI=0,wQs=[],wQi=0,wUA=[],wSkip=[],wAns=[];
 const $=id=>document.getElementById(id);
 const sl=t=>{$('loaderText').innerText=t||'Memuat...';$('globalLoader').classList.remove('hidden')};
 const hl=()=>$('globalLoader').classList.add('hidden');
-const ss=id=>{
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  $(id).classList.add('active');
-  // Tombol token hanya muncul di screenDaftar
-  const btnTF=document.getElementById('btnTokenFloat');
-  const popupTF=document.getElementById('popupToken');
-  if(btnTF) btnTF.style.display=(id==='screenDaftar')?'block':'none';
-  if(popupTF && id!=='screenDaftar') popupTF.style.display='none';
-};
+const ss=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active')};
 function sLoad(btn,on){btn.disabled=on;if(on){btn.dataset.t=btn.innerHTML;btn.innerHTML='<span class="spinner" style="width:18px;height:18px;border-width:3px;display:inline-block"></span>'}else btn.innerHTML=btn.dataset.t}
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const td=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -557,68 +543,6 @@ const aF=async(u,o={})=>(await fetch(u,o)).json();
 const aG=id=>aF(`${API_R}?table=${TBL}&id_x=${id}`,{headers:{'X-Custom-Auth':AUTH}});
 const aP=(id,b)=>fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify(b)});
 const gBio=f=>{try{const o=JSON.parse(cu.x_02||'{}');return o[f.replace(/^bio/,'').toLowerCase()]||''}catch{return''}};
-
-function bukaPopupToken(){
-  const popup=document.getElementById('popupToken');
-  popup.style.display='block';
-  setTimeout(()=>document.getElementById('inputToken').focus(),50);
-}
-function tutupPopupToken(){
-  document.getElementById('popupToken').style.display='none';
-  document.getElementById('inputToken').value='';
-  document.getElementById('tokenErrBox').style.display='none';
-}
-function sembunyikanTokenBtn(){
-  const btn=document.getElementById('btnTokenFloat');
-  const popup=document.getElementById('popupToken');
-  if(btn) btn.style.display='none';
-  if(popup) popup.style.display='none';
-}
-
-async function loginDenganToken(){
-  const input = document.getElementById('inputToken');
-  const errBox = document.getElementById('tokenErrBox');
-  const btn = document.getElementById('btnLoginToken');
-  const tok = (input.value||'').trim();
-  errBox.style.display = 'none';
-  if(!tok){ errBox.textContent='⚠ Masukkan token terlebih dahulu.'; errBox.style.display='block'; return; }
-  // Disable tombol
-  btn.disabled=true; btn.textContent='⏳ Memeriksa...'; sl('Memeriksa token...');
-  try{
-    const d = await aF(`${API_W}?table=${TBL}&x_01_eq=${encodeURIComponent(tok)}`,{headers:{'X-Custom-Auth':AUTH}});
-    if(!d.success || !d.data || (Array.isArray(d.data) && d.data.length===0)){
-      errBox.textContent='❌ Token tidak ditemukan. Periksa kembali token Anda.';
-      errBox.style.display='block'; hl(); return;
-    }
-    // Token ditemukan — ambil data peserta
-    const row = Array.isArray(d.data) ? d.data[0] : d.data;
-    // Ambil nama paket: prioritas dari URL (?p=), fallback dari prefix token
-    let pnm = AUTO_PAKET || '';
-    if(!pnm){
-      // Token format: "namapaket-XXXXXXXXXXXX" — ambil bagian sebelum tanda hubung pertama
-      const tokPrefix = tok.split('-')[0] || '';
-      // Cocokkan ke pList
-      const found = pList.find(p=>(p.x_01||'').trim().toLowerCase()===tokPrefix.toLowerCase());
-      if(found) pnm = (found.x_01||'').trim();
-    }
-    localStorage.setItem('token', tok);
-    localStorage.setItem('db_id', String(row.id_x));
-    localStorage.setItem('_p', pnm);
-    cu = row;
-    tutupPopupToken();
-    sl('Memuat tes...');
-    await loadAC();
-    let bioObj={};try{bioObj=JSON.parse(cu.x_02||'{}')}catch{}
-    const status = bioObj.status||'nonaktif';
-    hl();
-    if(status==='aktif'||IS_AUTO_AKTIF){ startGlobalPolling(); await goNext2(); }
-    else{ ss('screenTunggu'); showZoomTunggu(); startGlobalPolling(); }
-  }catch(e){
-    errBox.textContent='⚠ Gagal: '+e.message; errBox.style.display='block'; hl();
-  }finally{
-    btn.disabled=false; btn.textContent='🔑 Masuk';
-  }
-}
 
 async function chkTok(t){try{const d=await aF(`${API_W}?table=${TBL}&x_01_eq=${encodeURIComponent(t)}`,{headers:{'X-Custom-Auth':AUTH}});return d.success&&d.count>0}catch{return false}}
 async function genTok(pid){for(let i=0;i<10;i++){const t=pid+'-'+rs(i<8?12:14);if(!(await chkTok(t)))return t}return pid+'-'+rs(16)}
@@ -706,13 +630,7 @@ async function handleDaftar(){
     localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',pnm);
     cu={id_x:res.id_x,x_01:tok,x_02:bio};sl('Memuat tes...');await loadAC();
     if(IS_AUTO_AKTIF){hl();startGlobalPolling();await goNext2();}
-    else{
-      hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
-      // Tampilkan ID peserta
-      const idBox=document.getElementById('tungguIdBox');
-      const idNum=document.getElementById('tungguIdNum');
-      if(idBox&&idNum){idNum.textContent=String(res.id_x);idBox.style.display='block';}
-    }
+    else{hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();}
   }catch(e){hl();eb.textContent='⚠ '+e.message;eb.classList.add('show');sLoad(btn,false)}
 }
 
@@ -760,7 +678,7 @@ async function goNext2(){
   doneAll();
 }
 
-function doneAll(){stopGlobalPolling();stopPolling();hl();ss('screenUpgrade');startLogoutPoll();}
+function doneAll(){stopGlobalPolling();stopPolling();hl();ss('screenUpgrade')}
 
 // ── UPGRADE LAPORAN ──
 let upPaketSel=null,upHargaSel=0;
@@ -808,7 +726,7 @@ async function upSelectPaket(nama,harga,el){
     }catch(e){console.warn('[LAPORAN] Gagal update paket:',e)}
   }
 }
-function upSkip(){trackBtn('lap_lewati');$('doneIcon').innerText='🎉';$('doneTitle').innerText='Semua Tes Selesai!';$('doneDesc').innerText='Terima kasih sudah mengikuti tes. Hasil Anda telah tersimpan.';ss('screenDone');startLogoutPoll();}
+function upSkip(){trackBtn('lap_lewati');$('doneIcon').innerText='🎉';$('doneTitle').innerText='Semua Tes Selesai!';$('doneDesc').innerText='Terima kasih sudah mengikuti tes. Hasil Anda telah tersimpan.';ss('screenDone')}
 
 // ─── Pemeriksaan Ganda: Tes Global & Status Kolom ───────────────────────────
 // Dipanggil sebelum setiap instruksi / soal ditampilkan.
@@ -860,7 +778,7 @@ async function openById(tid){
   if(cfg.exImgTop)$('exImgTop').src=cfg.exImgTop;if(cfg.exImgBottom)$('exImgBottom').src=cfg.exImgBottom;
   if(cfg.timer>0){const m=Math.floor(cfg.timer/60),s=cfg.timer%60;$('timerNote').innerText='⏱ Batas waktu: '+(m>0?m+'m '+(s>0?s+'d':''):s+'d').trim();$('timerNote').style.display='none'}
   else $('timerNote').style.display='none';
-  ss('screenStart');hl();tampilTopBarId();
+  ss('screenStart');hl();
 }
 
 async function startTest(){
@@ -873,7 +791,7 @@ async function startTest(){
       if(rr.filter(n=>n!==null).length<12){qi=s.qIndex||0;ua=s.userAnswers||[];sc=s.correctScore||0;tl=s.timeLeft||cfg.timer;rSel=rr;uNum=s.usedNumbers||[];skip=s.skippedIndices||[];ans=s.answeredIndices||[]}
       else{localStorage.removeItem('_st_'+cfg._taskId);resetSt()}}
     else resetSt();
-    $('testTitle').innerText=cfg.title;ss('screenTest');$('timerDisplay').classList.add('hidden');tStarted=false;tampilTopBarId();
+    $('testTitle').innerText=cfg.title;ss('screenTest');$('timerDisplay').classList.add('hidden');tStarted=false;
     if(cfg.timer>0){updTimer();startTimer()}else startSW();
     vCnt=0;fEnd=false;renderQ();
   }catch(e){alert('Gagal: '+e.message);ss('screenDash')}finally{hl()}
@@ -1300,7 +1218,7 @@ function startGlobalPolling(){
       }
 
       // ── Layar INSTRUKSI / SOAL: pantau jika dinonaktifkan ──
-      if(['screenStart','screenTest','screenDash','screenDone','screenUpgrade'].includes(screen)){
+      if(['screenStart','screenTest','screenDash'].includes(screen)){
         // 1) Cek kontrol global
         const kontrol=await cekKontrol();
         if(!kontrol.aktif){
@@ -1313,10 +1231,7 @@ function startGlobalPolling(){
         const res=await aF(`${API_R}?table=${TBL}&id_x=${dbId}`,{headers:{'X-Custom-Auth':AUTH}});
         if(!res.success||!res.data){_globalPollBusy=false;return;}
         cu=res.data;
-        let bioObj2={};try{bioObj2=JSON.parse(cu.x_02||'{}')}catch{}
-        // Cek logout — tampilkan tombol, user klik sendiri
-        cekTombolLogout(bioObj2.logout===true);
-        let status='nonaktif';try{status=bioObj2.status||'nonaktif'}catch{}
+        let status='nonaktif';try{status=JSON.parse(cu.x_02||'{}').status||'nonaktif'}catch{}
         if(status!=='aktif'&&!IS_AUTO_AKTIF){
           stopGlobalPolling();hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
           _globalPollBusy=false;return;
@@ -1340,62 +1255,6 @@ function startGlobalPolling(){
 function stopGlobalPolling(){
   if(_globalPollInterval){clearTimeout(_globalPollInterval);_globalPollInterval=null;}
   _globalPollBusy=false;
-}
-
-// ── Polling khusus logout di screenUpgrade/screenDone ──
-let _logoutPollInterval=null;
-function startLogoutPoll(){
-  if(_logoutPollInterval)clearInterval(_logoutPollInterval);
-  _logoutPollInterval=setInterval(async()=>{
-    const dbId=localStorage.getItem('db_id');
-    if(!dbId){clearInterval(_logoutPollInterval);return;}
-    try{
-      const res=await aF(`${API_R}?table=${TBL}&id_x=${dbId}`,{headers:{'X-Custom-Auth':AUTH}});
-      if(!res.success||!res.data)return;
-      cu=res.data;
-      let bioObj={};try{bioObj=JSON.parse(cu.x_02||'{}')}catch{}
-      // Tampilkan/sembunyikan tombol — user yang klik sendiri
-      cekTombolLogout(bioObj.logout===true);
-    }catch(e){console.warn('[logoutPoll]',e);}
-  },5000);
-}
-function stopLogoutPoll(){
-  if(_logoutPollInterval){clearInterval(_logoutPollInterval);_logoutPollInterval=null;}
-}
-
-// ── Logout: reset sesi peserta, kembali ke daftar ──
-async function doLogout(dbId){
-  try{
-    // Reset flag logout di x_02
-    let bioObj={};try{bioObj=JSON.parse(cu.x_02||'{}')}catch{}
-    bioObj.logout=false;
-    await fetch(`${API_W}?table=${TBL}&id_x=${dbId}`,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},
-      body:JSON.stringify({x_02:JSON.stringify(bioObj)})
-    });
-  }catch(e){console.warn('[logout] gagal reset flag:',e)}
-  // Bersihkan sesi lokal
-  localStorage.clear();
-  stopGlobalPolling();
-  hl();
-  ss('screenDaftar');
-  loadPaket();
-  startGlobalPolling();
-}
-
-function tampilTopBarId(){
-  const el=document.getElementById('topBarId');
-  if(!el)return;
-  const id=localStorage.getItem('db_id');
-  if(id){el.textContent='ID: '+id;el.style.display='inline-block';}
-  else{el.style.display='none';}
-}
-
-function cekTombolLogout(aktif){
-  let btn=$('btnLogoutPeserta');
-  if(!btn)return;
-  btn.style.display=aktif?'inline-flex':'none';
 }
 
 // startPolling & startTutupPolling dihapus — digantikan startGlobalPolling()
@@ -1437,12 +1296,6 @@ function showZoomTunggu(){
       btn.href='https://wa.me/6285159601400?text='+encodeURIComponent(pretext);
     }
   }
-  // ── Tampilkan ID peserta ──
-  const idBox=document.getElementById('tungguIdBox');
-  const idNum=document.getElementById('tungguIdNum');
-  const savedId=localStorage.getItem('db_id');
-  if(idBox&&idNum&&savedId){idNum.textContent=savedId;idBox.style.display='block';}
-
   if(_kontrolInfo.link){
     const wrap=document.getElementById('tungguZoomWrap'),btn=document.getElementById('tungguLinkBtn');
     if(wrap)wrap.style.display='block';if(btn)btn.href=_kontrolInfo.link;
@@ -1663,7 +1516,7 @@ async function kreplinStart(ref){
   const iw=document.querySelector('#exampleBlock .example-images');if(iw)iw.style.display='none';
   $('timerNote').style.display='none';
   $('btnStart').onclick=()=>kreplinRun();
-  ss('screenStart');hl();tampilTopBarId();
+  ss('screenStart');hl();
 }
 
 function kreplinRun(){
@@ -1856,34 +1709,5 @@ async function kreplinSelesai(){
   trackVisit();
 })();
 </script>
-<!-- ══ TOMBOL TOKEN MENGAMBANG ══ -->
-<button id="btnTokenFloat"
-  onclick="bukaPopupToken()"
-  style="position:fixed;bottom:80px;right:12px;z-index:2147483647;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:'Segoe UI',sans-serif;display:none;">
-  🔑 Token
-</button>
-
-<!-- ══ POPUP INPUT TOKEN ══ -->
-<div id="popupToken" style="display:none;position:fixed;bottom:116px;right:12px;z-index:2147483647;background:white;border-radius:14px;padding:18px;box-shadow:0 8px 32px rgba(0,0,0,.2);width:280px;border:2px solid #c7d2fe;">
-  <div style="font-size:13px;font-weight:700;color:#4338ca;margin-bottom:10px;">🔑 Login dengan Token</div>
-  <input id="inputToken" type="text" placeholder="Masukkan token..." autocomplete="off" spellcheck="false"
-    style="width:100%;padding:9px 12px;border:2px solid #c7d2fe;border-radius:8px;font-size:13px;font-family:'Courier New',monospace;outline:none;box-sizing:border-box;margin-bottom:8px;"
-    onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#c7d2fe'"
-    onkeydown="if(event.key==='Enter')loginDenganToken()">
-  <div id="tokenErrBox" style="display:none;padding:7px 10px;background:#fee2e2;color:#dc2626;border-radius:7px;font-size:12px;font-weight:600;margin-bottom:8px;"></div>
-  <div style="display:flex;gap:8px;">
-    <button onclick="tutupPopupToken()"
-      style="flex:1;padding:8px;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
-      Batal
-    </button>
-    <button id="btnLoginToken" onclick="loginDenganToken()"
-      style="flex:2;padding:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
-      Masuk →
-    </button>
-  </div>
-</div>
-
-<button id="btnLogoutPeserta" style="display:none;position:fixed;bottom:46px;right:12px;z-index:2147483647;background:#dc2626;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);font-family:'Segoe UI',sans-serif;" onclick="doLogout(localStorage.getItem('db_id'))">🔓 Ganti Peserta</button>
-<div id="topBarId" style="display:none;position:fixed;bottom:12px;right:12px;z-index:2147483647;font-size:.78em;font-weight:700;color:#4338ca;background:#e0e7ff;border:2px solid #6366f1;border-radius:8px;padding:4px 12px;font-family:'Courier New',monospace;box-shadow:0 2px 8px rgba(0,0,0,.2);pointer-events:none;">ID: —</div>
 </body>
 </html>
