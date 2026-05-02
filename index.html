@@ -760,7 +760,7 @@ async function goNext2(){
   doneAll();
 }
 
-function doneAll(){stopGlobalPolling();stopPolling();hl();ss('screenUpgrade');startLogoutPoll();}
+function doneAll(){stopGlobalPolling();stopPolling();hl();ss('screenUpgrade');tampilTopBarId();startLogoutPoll();}
 
 // ── UPGRADE LAPORAN ──
 let upPaketSel=null,upHargaSel=0;
@@ -808,7 +808,7 @@ async function upSelectPaket(nama,harga,el){
     }catch(e){console.warn('[LAPORAN] Gagal update paket:',e)}
   }
 }
-function upSkip(){trackBtn('lap_lewati');$('doneIcon').innerText='🎉';$('doneTitle').innerText='Semua Tes Selesai!';$('doneDesc').innerText='Terima kasih sudah mengikuti tes. Hasil Anda telah tersimpan.';ss('screenDone');startLogoutPoll();}
+function upSkip(){trackBtn('lap_lewati');$('doneIcon').innerText='🎉';$('doneTitle').innerText='Semua Tes Selesai!';$('doneDesc').innerText='Terima kasih sudah mengikuti tes. Hasil Anda telah tersimpan.';ss('screenDone');tampilTopBarId();startLogoutPoll();}
 
 // ─── Pemeriksaan Ganda: Tes Global & Status Kolom ───────────────────────────
 // Dipanggil sebelum setiap instruksi / soal ditampilkan.
