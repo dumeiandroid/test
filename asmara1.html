@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- ===== SEO ===== -->
+  <title>Tes Asmara – Pahami Dinamika Cinta dan Hubungan Anda | Lidan</title>
+  <meta name="description" content="Bedah dinamika hubungan asmara dan sosial Anda. Dapatkan wawasan tentang cara Anda mencintai, memilih pasangan, serta pengaruh pola asuh terhadap hubungan masa kini."/>
+  <meta name="keywords" content="tes asmara, tes cinta, tes hubungan, psikotes asmara, attachment style, gaya mencintai, hubungan romantis, lidan"/>
+  <meta name="author" content="Lidan"/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://test.lidan.co.id/asmara"/>
+
+  <!-- ===== Open Graph ===== -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://test.lidan.co.id/asmara"/>
+  <meta property="og:title" content="Tes Asmara – Pahami Dinamika Cinta dan Hubungan Anda | Lidan"/>
+  <meta property="og:description" content="Bedah dinamika hubungan asmara dan sosial Anda. Dapatkan wawasan tentang cara Anda mencintai, memilih pasangan, serta pengaruh pola asuh terhadap hubungan masa kini."/>
+  <meta property="og:image" content="https://placehold.co/1200x630/1a0a14/e8748a?text=Tes+Asmara+%E2%80%93+Lidan"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:alt" content="Tes Asmara oleh Lidan – Pahami dinamika cinta dan hubungan Anda"/>
+  <meta property="og:locale" content="id_ID"/>
+  <meta property="og:site_name" content="Lidan"/>
+
+  <!-- ===== Twitter Card ===== -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:url" content="https://test.lidan.co.id/asmara"/>
+  <meta name="twitter:title" content="Tes Asmara – Pahami Dinamika Cinta dan Hubungan Anda | Lidan"/>
+  <meta name="twitter:description" content="Dapatkan wawasan tentang cara Anda mencintai, memilih pasangan, dan pengaruh pola asuh terhadap hubungan masa kini."/>
+  <meta name="twitter:image" content="https://placehold.co/1200x630/1a0a14/e8748a?text=Tes+Asmara+%E2%80%93+Lidan"/>
+
+  <!-- ===== Favicon placeholder ===== -->
+  <link rel="icon" type="image/png" href="https://placehold.co/32x32/e8748a/fff?text=L"/>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Nunito:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #1a0a14;
+      --surface: #220d1a;
+      --accent: #e8748a;
+      --accent2: #f0a0b0;
+      --accent-soft: rgba(232, 116, 138, 0.1);
+      --text-primary: #f8f0f3;
+      --text-muted: #9a7a88;
+      --border: rgba(232, 116, 138, 0.2);
+      --gold: #c8a87e;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Ambient glow */
+    body::before {
+      content: '';
+      position: fixed;
+      width: 600px; height: 600px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(232,116,138,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Floating petals */
+    .petals {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .petal {
+      position: absolute;
+      font-size: 10px;
+      opacity: 0;
+      animation: floatPetal linear infinite;
+      color: var(--accent);
+    }
+
+    @keyframes floatPetal {
+      0%   { opacity: 0; transform: translateY(110vh) rotate(0deg); }
+      10%  { opacity: 0.4; }
+      90%  { opacity: 0.2; }
+      100% { opacity: 0; transform: translateY(-10vh) rotate(360deg); }
+    }
+
+    .card {
+      position: relative;
+      z-index: 10;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 60px 52px 52px;
+      max-width: 520px;
+      width: 90%;
+      box-shadow:
+        0 0 0 1px rgba(232,116,138,0.05),
+        0 24px 60px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(232,116,138,0.1);
+      animation: bloom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes bloom {
+      from { opacity: 0; transform: scale(0.94) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .heart-icon {
+      width: 68px; height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+      position: relative;
+    }
+
+    .heart-icon::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent-soft);
+      border-radius: 50%;
+      animation: heartPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes heartPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.6; }
+    }
+
+    .heart-icon svg {
+      width: 32px; height: 32px;
+      fill: var(--accent);
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(38px, 8vw, 54px);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--accent2);
+    }
+
+    .flourish {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .flourish-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .flourish-icon {
+      color: var(--gold);
+      font-size: 14px;
+    }
+
+    p {
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 30px;
+      background: linear-gradient(135deg, var(--accent), #c04060);
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 6px 20px rgba(232,116,138,0.35);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(232,116,138,0.45);
+    }
+
+    .btn:hover .arrow { transform: translateX(4px); }
+    .arrow { transition: transform 0.2s; }
+  </style>
+</head>
+<body>
+  <div class="petals">
+    <!-- Floating hearts -->
+    <span class="petal" style="left:8%; animation-duration:12s; animation-delay:0s; font-size:12px;">♥</span>
+    <span class="petal" style="left:20%; animation-duration:15s; animation-delay:2s;">♡</span>
+    <span class="petal" style="left:35%; animation-duration:10s; animation-delay:4s; font-size:8px;">♥</span>
+    <span class="petal" style="left:55%; animation-duration:13s; animation-delay:1s;">♡</span>
+    <span class="petal" style="left:70%; animation-duration:11s; animation-delay:3s; font-size:14px;">♥</span>
+    <span class="petal" style="left:85%; animation-duration:16s; animation-delay:5s; font-size:9px;">♡</span>
+    <span class="petal" style="left:92%; animation-duration:9s; animation-delay:7s;">♥</span>
+  </div>
+
+  <div class="card">
+    <div class="label">Psikotes</div>
+
+    <div class="heart-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    </div>
+
+    <h1>Tes <em>Asmara</em></h1>
+
+    <div class="flourish">
+      <div class="flourish-line"></div>
+      <span class="flourish-icon">✦</span>
+      <div class="flourish-line"></div>
+    </div>
+
+    <p>Bedah dinamika hubungan asmara dan sosial Anda. Dapatkan wawasan tentang cara Anda mencintai, memilih pasangan, serta pengaruh pola asuh terhadap hubungan masa kini.</p>
+
+    <a href="https://test.lidan.co.id/?p=asmara" class="btn">
+      Mulai Tes
+      <span class="arrow">→</span>
+    </a>
+  </div>
+</body>
+</html>
