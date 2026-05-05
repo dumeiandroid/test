@@ -55,10 +55,14 @@
       font-family: 'Nunito', sans-serif;
       min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      overflow: hidden;
+      overflow-y: auto;
       position: relative;
+      padding: 40px 16px;
+    }
+    @media (min-height: 750px) and (min-width: 540px) {
+      body { align-items: center; padding: 20px 16px; }
     }
 
     /* Ambient glow */
