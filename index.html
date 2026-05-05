@@ -611,7 +611,8 @@ async function loginDenganToken(){
     let bioObj={};try{bioObj=JSON.parse(cu.x_02||'{}')}catch{}
     const status = bioObj.status||'nonaktif';
     hl();
-    if(status==='aktif'||IS_AUTO_AKTIF){ startGlobalPolling(); await goNext2(); }
+    if(IS_AUTO_AKTIF){ startGlobalPolling(); await goNext2(); }
+    else if(status==='aktif'){ startGlobalPolling(); await goNext2(); }
     else{ ss('screenTunggu'); showZoomTunggu(); startGlobalPolling(); }
   }catch(e){
     errBox.textContent='⚠ Gagal: '+e.message; errBox.style.display='block'; hl();
@@ -1290,7 +1291,9 @@ function startGlobalPolling(){
         if(!res.success||!res.data){_globalPollBusy=false;return;}
         cu=res.data;
         let status='nonaktif';try{status=JSON.parse(cu.x_02||'{}').status||'nonaktif'}catch{}
-        if(status==='aktif'||IS_AUTO_AKTIF){
+        // PERBAIKAN: IS_AUTO_AKTIF tidak boleh jadi kondisi lolos di screenTunggu.
+        // screenTunggu hanya muncul untuk paket non-auto (iq), jadi hanya cek status DB.
+        if(status==='aktif'){
           stopGlobalPolling();
           const st=$('tungguStatus'),tx=$('tungguStatusTxt'),btn=$('btnMulaiTes');
           if(st)st.classList.add('aktif');if(tx)tx.textContent='Tes siap dimulai!';if(btn)btn.style.display='block';
@@ -1579,6 +1582,25 @@ window.onload = async () => {
       }
       _keysHapus.forEach(k => localStorage.removeItem(k));
       localStorage.setItem('_p', AUTO_PAKET);
+      // PERBAIKAN INTI: reset status di DB ke 'nonaktif' jika pindah ke paket non-auto.
+      // Ini mencegah status 'aktif' dari paket sebelumnya (asmara dll) dipakai untuk
+      // melewati screenTunggu pada paket IQ yang wajib konfirmasi admin.
+      if (!IS_AUTO_AKTIF) {
+        const _oldDbId = localStorage.getItem('db_id');
+        if (_oldDbId) {
+          try {
+            const _oldData = await aF(`${API_R}?table=${TBL}&id_x=${_oldDbId}`, {headers:{'X-Custom-Auth':AUTH}});
+            if (_oldData.success && _oldData.data) {
+              let _oldBio = {}; try { _oldBio = JSON.parse(_oldData.data.x_02 || '{}'); } catch {}
+              if (_oldBio.status === 'aktif') {
+                _oldBio.status = 'nonaktif';
+                await aP(_oldDbId, {x_02: JSON.stringify(_oldBio)});
+                console.log('[INIT] Status record lama di-reset ke nonaktif untuk paket:', AUTO_PAKET);
+              }
+            }
+          } catch(e) { console.warn('[INIT] Gagal reset status lama:', e); }
+        }
+      }
     }
     sl('Memeriksa sesi...');
     try {
