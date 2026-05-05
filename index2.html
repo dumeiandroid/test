@@ -1569,9 +1569,7 @@ window.onload = async () => {
   const tok = localStorage.getItem('token');
   if (tok) {
     const _pLama = localStorage.getItem('_p');
-    // Catat apakah token ini berasal dari paket yang berbeda SEBELUM dioverwrite
-    const _paketBeda = !!(_pLama && _pLama !== AUTO_PAKET);
-    if (_paketBeda) {
+    if (_pLama && _pLama !== AUTO_PAKET) {
       const _keysHapus = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -1588,20 +1586,9 @@ window.onload = async () => {
       vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
       await loadAC();
       let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
-      // PERBAIKAN BUG: jika paket berbeda (misal sebelumnya asmara, sekarang iq),
-      // status 'aktif' dari sesi lama TIDAK boleh dipakai untuk bypass screenTunggu.
-      // Paket non-auto-aktif (iq) wajib tunggu konfirmasi admin meskipun punya token.
-      if (IS_AUTO_AKTIF) {
-        // Paket auto-aktif (asmara/karakter/potensi/karir): langsung mulai
-        hl(); startGlobalPolling(); await goNext2();
-      } else if (status === 'aktif' && !_paketBeda) {
-        // Paket non-auto (iq): lanjut hanya jika token memang dari paket ini
-        // DAN admin sudah mengaktifkan status peserta untuk paket ini
-        hl(); startGlobalPolling(); await goNext2();
-      } else {
-        // Token dari paket lain, atau status belum diaktifkan admin → wajib tunggu
-        hl(); ss('screenTunggu'); showZoomTunggu(); startGlobalPolling();
-      }
+      if (status === 'aktif') { hl(); startGlobalPolling(); await goNext2(); }
+      else if(IS_AUTO_AKTIF){ hl(); startGlobalPolling(); await goNext2(); }
+      else { hl(); ss('screenTunggu'); showZoomTunggu(); startGlobalPolling(); }
     } catch (e) { localStorage.clear(); hl(); ss('screenDaftar'); }
     return;
   }
