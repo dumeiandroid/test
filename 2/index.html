@@ -368,7 +368,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:12px;padding:16px 18px;margin-bottom:16px;text-align:center;">
         <div style="font-size:.88em;color:#1e40af;font-weight:600;margin-bottom:12px;">Minta tester ke <strong>Lidan Psikologi</strong></div>
         <a id="btnWaLidan"
-           href="https://wa.me/6285159601400?text=Halo%20Lidan%20Psikologi%2C%20saya%20sudah%20mengisi%20biodata%20dan%20siap%20untuk%20memulai%20Tes%20IQ.%20Mohon%20konfirmasi%20dari%20tester.%20Saya%20ingin%20tahu%20berapa%20biayanya%3F"
+           href="https://wa.me/6285159601400?text=Hallo%20Lidan%20Psikologi%2C%20saya%20sudah%20mengisi%20biodata%20dan%20siap%20untuk%20memulai%20Tes%20IQ.%20Mohon%20konfirmasi%20dari%20tester.%20Saya%20ingin%20tahu%20berapa%20biayanya%3F"
            target="_blank" rel="noopener"
            style="display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;border:none;border-radius:10px;padding:13px 24px;font-size:.95em;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;width:100%;"
            onmouseover="this.style.background='#1ebe5a';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 16px rgba(37,211,102,.3)'"
@@ -411,7 +411,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ═══ SCREEN: DASHBOARD SUBTES ═══ -->
 <div id="screenDash" class="screen">
   <div class="card">
-    <div class="welcome" id="welcomeName">Halo!</div>
+    <div class="welcome" id="welcomeName">Hallo!</div>
     <div class="welcome-sub" id="welcomeSub">Selesaikan semua tes berikut secara berurutan.</div>
     <div class="task-grid" id="taskGrid"></div>
   </div>
@@ -833,7 +833,7 @@ async function upSelectPaket(nama,harga,el){
   const id=localStorage.getItem('db_id')||'—';
   const tok=localStorage.getItem('token')||'—';
   const telp=gBio('biotelepon')||(() => {try{return JSON.parse((cu&&cu.x_02)||'{}').telepon||'—'}catch{return'—'}})();
-  const msg=encodeURIComponent('Halo Lidan Psikologi, saya ingin memesan laporan hasil Tes IQ.\n\nPaket: '+nama+'\nHarga: Rp '+harga.toLocaleString('id-ID')+'\nID: '+id+'\nToken: '+tok+'\nNo. Telepon: '+telp+'\n\nMohon informasi selanjutnya. Terima kasih.');
+  const msg=encodeURIComponent('Hallo Lidan Psikologi, saya ingin memesan laporan hasil Tes IQ.\n\nPaket: '+nama+'\nHarga: Rp '+harga.toLocaleString('id-ID')+'\nID: '+id+'\nToken: '+tok+'\nNo. Telepon: '+telp+'\n\nMohon informasi selanjutnya. Terima kasih.');
   btn.href='https://wa.me/6285159601400?text='+msg;
   btn.onclick=()=>{trackBtn('lap_wa_'+nama.toLowerCase())};
   btn.style.display='flex';
@@ -1154,7 +1154,7 @@ async function wOpen(idx){
 async function wDash(){
   sl('Memuat daftar...');
   for(let i=0;i<wBL.length;i++){if(!wBL[i].data){try{wBL[i].data=await(await fetch(wBL[i].dataUrl+'?v='+Date.now())).json()}catch{wBL[i].data={title:'Tes '+wBL[i].fileKey}}}}
-  hl();$('welcomeName').innerText='Halo, '+(gBio('bioNama')||'Peserta')+'!';
+  hl();$('welcomeName').innerText='Hallo, '+(gBio('bioNama')||'Peserta')+'!';
   const g=$('taskGrid');g.innerHTML='';let fp=null;
   wBL.forEach((b,i)=>{
     const d=b.data||{},sf=d.saveField||'x_07';let done=false;try{const o=JSON.parse(cu[sf]||'{}');done=o[b._taskId]!=null&&o[b._taskId]!==''}catch{}
@@ -1437,7 +1437,7 @@ function showZoomTunggu(){
     if(btn){
       let nama='';let telp='';let idPeserta=localStorage.getItem('db_id')||'';
       if(cu){try{const bio=JSON.parse(cu.x_02||'{}');nama=bio.nama||'';telp=bio.telepon||'';}catch{}}
-      const pretext='Halo Lidan Psikologi, saya '+(nama||'peserta')+' sudah mengisi biodata dan siap untuk memulai Tes IQ.'+(telp?' No. WhatsApp saya: '+telp+'.':'')+(idPeserta?' ID Peserta: '+idPeserta+'.':'')+' Mohon konfirmasi dari tester. Saya ingin tahu berapa biayanya?';
+      const pretext='Hallo Lidan Psikologi, saya '+(nama||'peserta')+' sudah mengisi biodata dan siap untuk memulai Tes IQ.'+(telp?' No. WhatsApp saya: '+telp+'.':'')+(idPeserta?' ID Peserta: '+idPeserta+'.':'')+' Mohon konfirmasi dari tester. Saya ingin tahu berapa biayanya?';
       btn.href='https://wa.me/6285159601400?text='+encodeURIComponent(pretext);
     }
   }
@@ -1560,7 +1560,7 @@ window.onload = async () => {
     const namaBtn = waIds.find(id => document.getElementById(id) === btn);
     const namaTes = namaMap[namaBtn] || 'Tes';
     const id  = (cu && cu.id_x) ? String(cu.id_x) : (localStorage.getItem('db_id') || '');
-    const text = 'Halo Admin Lidan, saya baru saja menyelesaikan ' + namaTes
+    const text = 'Hallo Admin Lidan, saya baru saja menyelesaikan ' + namaTes
       + ' dan ingin mendapatkan laporan hasil tes serta sertifikat eksklusif saya. Boleh saya tahu berapa biayanya?'
       + (id  ? '\n\nID: ' + id  : '');
     btn.href = 'https://wa.me/6285159601400?text=' + encodeURIComponent(text);
