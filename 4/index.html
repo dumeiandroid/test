@@ -526,8 +526,8 @@ const ALL_CONFIG=[
   {id:'tkd6',  dataUrl:BASE+'tkd6_a.txt', type:'text_input',        saveField:'x_05'},
   {id:'kreplin',dataUrl:BASE+'kreplin.txt',type:'kreplin',           saveField:'x_06'}
 ];
-const API_W='https://tabi.my.id/api/contacts_filter_dinamis6';
-const API_R='https://tabi.my.id/api/contacts_filter_dinamis7';
+const API_W='https://talentmap.my.id/api/contacts_filter_dinamis6';
+const API_R='https://talentmap.my.id/api/contacts_filter_dinamis7';
 const TBL='nilai1_json',TBL_P='alat_tes',TBL_K='admin_kontrol',AUTH='admin',WHO_B='https://cipta.my.id/who2/';
 const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -1870,7 +1870,7 @@ async function kreplinSelesai(){
 <!-- <script>
 // ═══ Pelacak Kunjungan Harian Unik ═══
 (function(){
-  const API_BASE_URL='https://tabi.my.id/api/contacts';
+  const API_BASE_URL='https://talentmap.my.id/api/contacts';
   const TABLE_NAME='kunjungan',BASE_LS_KEY='visit_tracker_',QUERY_PARAM=`tabel=${TABLE_NAME}`;
   function simpleHash(str){let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return Math.abs(h).toString(16)}
   function getTodayDate(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
