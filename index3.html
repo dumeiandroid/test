@@ -531,7 +531,7 @@ const API_R='https://lidan-co-id.pages.dev/api/contacts_filter_dinamis7';
 const TBL='nilai1_json',TBL_P='alat_tes',TBL_K='admin_kontrol',AUTH='admin',WHO_B='https://cipta.my.id/who2/';
 const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-let cu=null,cfg=null,qs=[],qi=0,ua=[],sc=0,tl=0,ti=null;
+let cu=null,cfg=null,qs=[],qi=0,ua=[],sc=0,tl=0,ti=null,tsi=null,tfci=null;
 let tStarted=false,fEnd=false,swEl=0,vCnt=0,rSel=[],uNum=[],skip=[],ans=[];
 let AC=[],WTL=[],UT=[],pList=[],sPaket=null,vMap={};
 let wBL=[],wBI=0,wQs=[],wQi=0,wUA=[],wSkip=[],wAns=[];
@@ -737,46 +737,9 @@ async function loadAC(){
 }
 
 async function goNext2(){
-  // ── Cek status logout dari cu (data sudah ada di memori, 0 request) ──
-  try{let bio={};try{bio=JSON.parse(cu?.x_02||'{}')}catch{}cekTombolLogout(bio.logout===true);}catch{}
   // ── Periksa dulu sebelum lanjut ke instruksi berikutnya ──
   const boleh=await cekSebelumInstruksi();
   if(!boleh)return;
-
-  // ── RESTORE: kalau ada soal aktif saat refresh, langsung lanjutkan tanpa instruksi ──
-  const activeTask=localStorage.getItem('_activeTask');
-  if(activeTask){
-    const stKey='_st_'+activeTask;
-    const stData=localStorage.getItem(stKey);
-    // Kreplin: state-nya disimpan dengan key berbeda (_kreplinState)
-    if(activeTask==='kreplin'){
-      const krepSaved=kreplinLoadState();
-      if(krepSaved&&krepSaved.introShown){
-        const krepRef=UT.find(u=>u.type==='kreplin');
-        if(krepRef){hl();await kreplinStart(krepRef.ref);return;}
-      }else{localStorage.removeItem('_activeTask');}
-    }else if(stData){
-      // State masih ada — coba temukan config-nya dan langsung startTest()
-      const isSub=activeTask.includes('_k');
-      let base,kol;
-      if(isSub){const b=activeTask.replace(/_k\d+$/,'');kol=parseInt(activeTask.split('_k')[1]);base=AC.find(c=>c.id===b);if(base)cfg={...base,kolom:kol,_taskId:activeTask}}
-      else{base=AC.find(c=>c.id===activeTask);if(base)cfg={...base,_taskId:activeTask}}
-      if(base&&cfg){
-        // Muat meta jika belum ada
-        if(cfg.dataUrl&&!cfg.title){
-          try{sl('Memuat...');const raw=await(await fetch(cfg.dataUrl+'?v='+Date.now())).json();
-            if(raw&&!Array.isArray(raw)&&raw.meta&&raw.soal){for(const k of Object.keys(raw.meta)){if(cfg[k]==null||cfg[k]==='')cfg[k]=raw.meta[k]}cfg._cs=raw.soal}}catch(e){console.warn('[restore]',e)}
-        }
-        await startTest();return;
-      }
-      // Config tidak ditemukan — bersihkan saja dan lanjut normal
-      localStorage.removeItem('_activeTask');
-      localStorage.removeItem(stKey);
-    }else{
-      // State sudah hilang (soal sudah selesai sebelumnya) — bersihkan
-      localStorage.removeItem('_activeTask');
-    }
-  }
 
   for(const ut of UT){
     if(ut.type==='who'){wBL=WTL;const i=wFindNext();if(i!==-1){wBI=i;wOpen(i);return}}
@@ -904,8 +867,6 @@ async function openById(tid){
 async function startTest(){
   if(cfg&&cfg._isWho){await wStart();return}
   sl('Memuat soal...');
-  // Tandai soal yang sedang aktif agar bisa di-restore saat refresh
-  if(cfg&&cfg._taskId) localStorage.setItem('_activeTask', cfg._taskId);
   try{
     await loadQ();
     const sv=localStorage.getItem('_st_'+cfg._taskId);
@@ -932,27 +893,21 @@ async function loadQ(){
 
 function startTimer(){
   if(tStarted)return;tStarted=true;if(!tl)tl=cfg.timer;
-  ti=setInterval(()=>{tl--;updTimer();saveSt();if(tl<=0){clearInterval(ti);endTest(true)}},1000);
-  // Hanya kirim ke DB saat pertama kali mulai (bukan resume setelah refresh).
-  // Saat resume, x_04 di DB sudah ada dari START asli — admin tetap hitung mundur dari sana.
-  const isResume = tl < cfg.timer;
-  if(!isResume){
-    syncT('START:'+cfg.title+':'+new Date().toISOString()+':'+cfg.timer);
-  }
+  ti=setInterval(()=>{tl--;updTimer();saveSt();if(tl<=0){clearInterval(ti);clearInterval(tsi);tsi=null;endTest(true)}},1000);
+  tsi=setInterval(()=>syncT('COUNTDOWN:'+tl),5000);
+  tfci=setInterval(chkFE,3000);syncT('COUNTDOWN:'+tl);
 }
 function startSW(){swEl=0;ti=setInterval(()=>{swEl++;saveSt()},1000)}
-// chkFE (force end check) dihapus — tidak lagi polling tiap 3 detik
+async function chkFE(){
+  if(fEnd)return;
+  try{const d=await aF(`${API_R}?table=${TBL}&id_x=${localStorage.getItem('db_id')}`,{headers:{'X-Custom-Auth':AUTH}});
+    if(d?.data?.x_12==='FORCE_END'){fEnd=true;clearInterval(ti);clearInterval(tsi);clearInterval(tfci);tsi=null;tfci=null;endTest(true)}}catch{}
+}
 async function syncT(v){
-  const id=localStorage.getItem('db_id');if(!id)return;
-  try{await fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_04:v})})}catch{}
+  const id=localStorage.getItem('db_id');if(!id||fEnd)return;
+  try{await fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_04:cfg.title+'|'+v})})}catch{}
 }
-function updTimer(){
-  const m=String(Math.floor(tl/60)).padStart(2,'0'),s=String(tl%60).padStart(2,'0');
-  // Timer disembunyikan dari user — hanya tampil di DevTools console untuk developer
-  const el=$('timerDisplay');
-  if(el){el.innerText=m+':'+s;el.classList.add('hidden');}
-  console.log('[TIMER]',(cfg&&cfg._taskId)||'',m+':'+s);
-}
+function updTimer(){const m=String(Math.floor(tl/60)).padStart(2,'0'),s=String(tl%60).padStart(2,'0');if(tl%10===0||tl<=10)console.log('[TIMER]',m+':'+s)}
 function saveSt(){localStorage.setItem('_st_'+cfg._taskId,JSON.stringify({qIndex:qi,userAnswers:ua,correctScore:sc,timeLeft:tl,rowSelections:rSel,usedNumbers:uNum,skippedIndices:skip,answeredIndices:ans}))}
 
 const SB='<span style="background:#fef3c7;color:#92400e;font-size:.75em;padding:2px 8px;border-radius:99px;font-weight:600">⟳ Dilewati</span>';
@@ -1101,10 +1056,8 @@ async function endTest(to){
     upd[sf]=JSON.stringify(o);
     if(cfg.logField&&qs.length>0){let lo={};try{lo=JSON.parse(cur.data[cfg.logField]||'{}')}catch{}lo[cfg.id]=ua.map((a,i)=>{const q=qs[i];if(!q)return'';if(cfg.type==='text_input_scored'){return`${i+1}.${a}✗`}return`${i+1}.${a}${String(a).toLowerCase()===String(q.answer||q.correctAnswer||'').toLowerCase()?'✓':'✗'}`}).join(';');upd[cfg.logField]=JSON.stringify(lo)}
     if(cfg.timer>0)upd.x_04='';upd.x_12='';
-    await aP(id,upd);
-    localStorage.removeItem('_st_'+cfg._taskId);
-    localStorage.removeItem('_activeTask');
-    cu=cur.data;cu[sf]=upd[sf];if(cfg.logField)cu[cfg.logField]=upd[cfg.logField];
+    await aP(id,upd);clearInterval(tsi);clearInterval(tfci);tsi=null;tfci=null;
+    localStorage.removeItem('_st_'+cfg._taskId);cu=cur.data;cu[sf]=upd[sf];if(cfg.logField)cu[cfg.logField]=upd[cfg.logField];
     hl();afterT();
   }catch(e){alert('Gagal: '+e.message);hl()}
 }
@@ -1272,10 +1225,15 @@ document.addEventListener('dragstart',e=>{if(e.target.tagName==='IMG'){e.prevent
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='s'){e.preventDefault();return false}});
 
 // ═══════════════════════════════════════════
-// POLLING TERPUSAT — hanya aktif di layar tunggu & tutup
-// screenTunggu → 15 detik (tunggu peserta diaktifkan)
-// screenTutup  → 20 detik (tunggu tes dibuka)
-// layar lain   → berhenti (hemat query D1)
+// POLLING TERPUSAT — memantau status global & peserta
+// Interval adaptif: 5 detik di instruksi/soal, 3 detik di layar tunggu
+// ═══════════════════════════════════════════
+// POLLING TERPUSAT — satu loop menangani semua skenario
+// Interval adaptif berdasarkan layar aktif:
+//   screenTutup  → 4 detik (tunggu tes dibuka)
+//   screenTunggu → 3 detik (tunggu peserta diaktifkan)
+//   screenStart / screenTest → 5 detik (pantau nonaktif)
+//   layar lain → berhenti
 // ═══════════════════════════════════════════
 let _globalPollInterval=null;
 let _globalPollBusy=false;
@@ -1322,6 +1280,7 @@ function startGlobalPolling(){
       if(screen==='screenTunggu'){
         const dbId=localStorage.getItem('db_id');
         if(!dbId){_globalPollBusy=false;return;}
+        // Cek kontrol global terlebih dahulu
         const kontrol=await cekKontrol();
         if(!kontrol.aktif){
           stopGlobalPolling();
@@ -1332,6 +1291,8 @@ function startGlobalPolling(){
         if(!res.success||!res.data){_globalPollBusy=false;return;}
         cu=res.data;
         let status='nonaktif';try{status=JSON.parse(cu.x_02||'{}').status||'nonaktif'}catch{}
+        // PERBAIKAN: IS_AUTO_AKTIF tidak boleh jadi kondisi lolos di screenTunggu.
+        // screenTunggu hanya muncul untuk paket non-auto (iq), jadi hanya cek status DB.
         if(status==='aktif'){
           stopGlobalPolling();
           const st=$('tungguStatus'),tx=$('tungguStatusTxt'),btn=$('btnMulaiTes');
@@ -1341,17 +1302,39 @@ function startGlobalPolling(){
         _globalPollBusy=false;return;
       }
 
-      // ── Layar lain (soal, instruksi, selesai) → tidak perlu poll ──
-      // Hemat query D1. Admin kontrol peserta lewat layar admin terpisah.
+      // ── Layar INSTRUKSI / SOAL: pantau jika dinonaktifkan ──
+      if(['screenStart','screenTest','screenDash','screenDone','screenUpgrade'].includes(screen)){
+        // 1) Cek kontrol global
+        const kontrol=await cekKontrol();
+        if(!kontrol.aktif){
+          stopGlobalPolling();hl();showScreenTutup(kontrol);startGlobalPolling();
+          _globalPollBusy=false;return;
+        }
+        // 2) Cek status peserta
+        const dbId=localStorage.getItem('db_id');
+        if(!dbId){_globalPollBusy=false;return;}
+        const res=await aF(`${API_R}?table=${TBL}&id_x=${dbId}`,{headers:{'X-Custom-Auth':AUTH}});
+        if(!res.success||!res.data){_globalPollBusy=false;return;}
+        cu=res.data;
+        let bioObj2={};try{bioObj2=JSON.parse(cu.x_02||'{}')}catch{}
+        // Cek logout — tampilkan tombol, user klik sendiri
+        cekTombolLogout(bioObj2.logout===true);
+        let status='nonaktif';try{status=bioObj2.status||'nonaktif'}catch{}
+        if(status!=='aktif'&&!IS_AUTO_AKTIF){
+          stopGlobalPolling();hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
+          _globalPollBusy=false;return;
+        }
+        _globalPollBusy=false;return;
+      }
+
+      // Layar lain (daftar, done, upgrade) → tidak perlu poll
       _globalPollBusy=false;
     }catch(e){console.warn('[globalPoll]',e);_globalPollBusy=false;}
   }
 
   function scheduleNext(){
     const screen=getActiveScreen();
-    // Hanya poll di layar tunggu & tutup — layar lain tidak dijadwalkan ulang
-    if(screen!=='screenTunggu'&&screen!=='screenTutup'){return;}
-    const delay=screen==='screenTunggu'?15000:20000;
+    const delay=screen==='screenTunggu'?3000:screen==='screenTutup'?4000:5000;
     _globalPollInterval=setTimeout(async()=>{await pollTick();scheduleNext();},delay);
   }
   scheduleNext();
@@ -1362,9 +1345,23 @@ function stopGlobalPolling(){
   _globalPollBusy=false;
 }
 
-// Logout poll dihapus — cek dari cu langsung saat refresh/goNext2, 0 request ke DB
+// ── Polling khusus logout di screenUpgrade/screenDone ──
 let _logoutPollInterval=null;
-function startLogoutPoll(){}
+function startLogoutPoll(){
+  if(_logoutPollInterval)clearInterval(_logoutPollInterval);
+  _logoutPollInterval=setInterval(async()=>{
+    const dbId=localStorage.getItem('db_id');
+    if(!dbId){clearInterval(_logoutPollInterval);return;}
+    try{
+      const res=await aF(`${API_R}?table=${TBL}&id_x=${dbId}`,{headers:{'X-Custom-Auth':AUTH}});
+      if(!res.success||!res.data)return;
+      cu=res.data;
+      let bioObj={};try{bioObj=JSON.parse(cu.x_02||'{}')}catch{}
+      // Tampilkan/sembunyikan tombol — user yang klik sendiri
+      cekTombolLogout(bioObj.logout===true);
+    }catch(e){console.warn('[logoutPoll]',e);}
+  },5000);
+}
 function stopLogoutPoll(){
   if(_logoutPollInterval){clearInterval(_logoutPollInterval);_logoutPollInterval=null;}
 }
@@ -1384,7 +1381,6 @@ async function doLogout(dbId){
   // Bersihkan sesi lokal
   localStorage.clear();
   stopGlobalPolling();
-  stopLogoutPoll();
   hl();
   ss('screenDaftar');
   loadPaket();
@@ -1686,7 +1682,6 @@ async function kreplinStart(ref){
     _kTL=saved.timeLeft||meta.detikPerKolom;
     _kLog=saved.log||[];
     ss('screenKreplin');hl();
-    localStorage.setItem('_activeTask','kreplin');
     kreplinRenderKolom();
     kreplinSoalBaru();
     // Timer resume dari sisa waktu
@@ -1709,7 +1704,6 @@ async function kreplinStart(ref){
 function kreplinRun(){
   _kKolom=1;_kBenar=0;_kSalah=0;_kBenarPrev=0;_kSalahPrev=0;_kLog=[];_kDone=false;_kSoalIdx=0;
   _kTL=_kCfg.detikPerKolom||30;
-  localStorage.setItem('_activeTask','kreplin');
   kreplinSaveState();
   ss('screenKreplin');
   kreplinRenderKolom();
@@ -1847,7 +1841,6 @@ async function kreplinSelesai(){
   if(_kDone)return;_kDone=true;
   if(_kTimer){clearInterval(_kTimer);_kTimer=null;}
   kreplinClearState();
-  localStorage.removeItem('_activeTask');
   const dbId=localStorage.getItem('db_id');
   if(dbId){
     sl('Menyimpan hasil...');
