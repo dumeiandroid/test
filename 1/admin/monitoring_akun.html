@@ -702,13 +702,71 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
     border-radius: 4px;
     padding: 0 3px 1px;
 }
-</style>
+
+/* ── Server Switcher (topnav) ── */
+.srv-switcher-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    border-left: 1px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+}
+.srv-switcher-label {
+    font-size: 11px;
+    color: rgba(255,255,255,.6);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.srv-chip {
+    padding: 4px 12px;
+    border: 1.5px solid rgba(255,255,255,.3);
+    border-radius: 99px;
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.75);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .2s;
+    font-family: inherit;
+    flex-shrink: 0;
+}
+.srv-chip:hover:not(.active) {
+    background: rgba(255,255,255,.18);
+    color: white;
+    border-color: rgba(255,255,255,.6);
+}
+.srv-chip.active {
+    background: rgba(255,255,255,.25);
+    color: white;
+    border-color: white;
+    box-shadow: 0 0 0 2px rgba(255,255,255,.15);
+}
+
+/* ── Server info pill ── */
+.srv-active-pill {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 10px;
+    padding: 2px 9px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    color: rgba(255,255,255,.9);
+    white-space: nowrap;
+}</style>
 </head>
 <body>
 
 <!-- TOP NAV -->
 <nav class="topnav">
     <div class="topnav-brand">🧠 Psikotest</div>
+    <!-- Server Switcher -->
+    <div class="srv-switcher-bar">
+        <span class="srv-switcher-label">Server:</span>
+        <div id="topnavSrvChips" style="display:flex;gap:5px;"><!-- filled by JS --></div>
+    </div>
     <div id="nav-tabs-container" style="display:flex;flex-direction:row;flex:1;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;"></div>
     <div style="padding:8px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);">
         <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;white-space:nowrap;">Soal Gr</span>
@@ -1487,14 +1545,71 @@ function renderInstruksiDetail(data, key) {
 
 
 /* ══════════════════════════════════════════════════════════════════
+   SERVER LIST — tambah / kurangi di sini saja
+══════════════════════════════════════════════════════════════════ */
+const SERVERS = [
+    { label: 'Lidan',     domain: 'lidan-co-id.pages.dev'  },
+    { label: 'Tabi',      domain: 'tabi.my.id'              },
+    { label: 'Mobeli',    domain: 'mobeli.my.id'            },
+    { label: 'TalentMap', domain: 'talentmap.my.id'         },
+];
+let activeSrvIdx = 0;
+
+// Path API (tetap, hanya domain yg berubah)
+const API_PATH_BASE   = '/api/contacts_filter_dinamis7';
+const API_PATH_INSERT = '/api/contacts_filter_dinamis6';
+
+// Getter dinamis — ikut server aktif
+function getApiBase()   { return `https://${SERVERS[activeSrvIdx].domain}${API_PATH_BASE}`; }
+function getApiInsert() { return `https://${SERVERS[activeSrvIdx].domain}${API_PATH_INSERT}`; }
+
+// Alias agar kode lama tetap jalan tanpa ubah satu-per-satu
+Object.defineProperty(window, 'API_BASE',   { get: getApiBase });
+Object.defineProperty(window, 'API_INSERT', { get: getApiInsert });
+
+/* ══════════════════════════════════════════════════════════════════
    CONSTANTS
 ══════════════════════════════════════════════════════════════════ */
-const API_BASE   = 'https://lidan-co-id.pages.dev/api/contacts_filter_dinamis7';
-const API_INSERT = 'https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6';
 const AUTH_KEY   = 'admin';
 const PSIKOTEST_URL = 'https://psikotest.lidan.co.id/';
 const CHARS      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const TOKEN_LEN  = 12;
+
+/* ── Server Switcher ── */
+function renderSrvChips() {
+    const wrap = document.getElementById('topnavSrvChips');
+    if (!wrap) return;
+    wrap.innerHTML = SERVERS.map((s, i) => `
+        <button class="srv-chip${i === activeSrvIdx ? ' active' : ''}"
+            onclick="switchSrcServer(${i})"
+            title="https://${s.domain}">
+            ${i === activeSrvIdx ? '✓ ' : ''}${s.label}
+        </button>
+    `).join('');
+}
+
+function switchSrcServer(idx) {
+    if (idx === activeSrvIdx) return;
+    activeSrvIdx = idx;
+    renderSrvChips();
+
+    // Reset semua cache & tabel agar data diambil ulang dari server baru
+    allLastHash = null;
+    allRawCache = {};
+    emptyRawCache = {};
+    filterPaketData = null;
+    filterPaketLoaded = false;
+
+    // Reload halaman yang sedang aktif
+    const activePage = document.querySelector('.page.active');
+    if (activePage) {
+        const pageId = activePage.id;
+        if      (pageId === 'pageAll')      { allLoadTable(); }
+        else if (pageId === 'pageToday')    { todayLoadTable(); }
+        else if (pageId === 'pageEmpty')    { emptyLoadTable(); }
+        else if (pageId === 'pagePerPaket') { renderPerPaketButtons(); }
+    }
+}
 
 // x_02 sekarang format JSON: {"nama":"...","usia":"...","pendidikan":"...","jenis_kelamin":"...","tgl_tes":"YYYY-MM-DD"}
 
@@ -1552,6 +1667,7 @@ function renderNav() {
     });
 }
 renderNav();
+renderSrvChips();
 
 function openSoalZoomModal() {
     document.getElementById('modalSoalZoom').classList.add('open');

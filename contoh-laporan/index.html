@@ -1,0 +1,2803 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisa Psikogram</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg:       #080b12;
+    --surface:  #0f1420;
+    --surface2: #161d2e;
+    --border:   #1e2a42;
+    --accent:   #5F4EDA;
+    --accent2:  #7c6ef0;
+    --kurang:   #ef4444;
+    --cukup:    #f59e0b;
+    --baik:     #22c55e;
+    --text:     #e2e8f0;
+    --muted:    #5a6a8a;
+    --radius:   16px;
+
+    /* Group colors */
+    --kem-color: #3b82f6;
+    --kem-bg: rgba(59,130,246,.12);
+    --kem-glow: rgba(59,130,246,.3);
+    --kep-color: #a855f7;
+    --kep-bg: rgba(168,85,247,.12);
+    --kep-glow: rgba(168,85,247,.3);
+    --sik-color: #10b981;
+    --sik-bg: rgba(16,185,129,.12);
+    --sik-glow: rgba(16,185,129,.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image: radial-gradient(ellipse at 20% 0%, rgba(59,130,246,.06) 0%, transparent 50%),
+                      radial-gradient(ellipse at 80% 10%, rgba(168,85,247,.05) 0%, transparent 50%);
+  }
+
+
+  /* ── LOADING ── */
+  #loading-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,17,23,.92);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 9999;
+    gap: 16px;
+  }
+  #loading-overlay.hidden { display: none; }
+  .spin {
+    width: 48px; height: 48px;
+    border: 4px solid rgba(95,78,218,.3);
+    border-top-color: var(--accent2);
+    border-radius: 50%;
+    animation: spin .75s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .load-txt { font-size: 15px; color: var(--muted); }
+
+  /* ── REPORT HEADER ── */
+  .report-header {
+    padding: 16px 28px 0;
+  }
+  .report-header-inner {
+    background: linear-gradient(135deg, rgba(95,78,218,.15) 0%, rgba(124,110,240,.08) 50%, rgba(168,85,247,.12) 100%);
+    border: 1px solid rgba(95,78,218,.35);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .report-header-inner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), #a855f7);
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .report-header-icon {
+    font-size: 26px;
+    width: 44px; height: 44px;
+    background: rgba(95,78,218,.2);
+    border: 1px solid rgba(95,78,218,.3);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .report-header-title {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -.3px;
+    color: var(--text);
+  }
+  .report-header-title span {
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .report-header-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+    font-weight: 500;
+  }
+
+  /* ── SUMMARY STRIP ── */
+  .summary-strip {
+    display: flex;
+    gap: 12px;
+    padding: 20px 28px 0;
+    flex-wrap: wrap;
+  }
+  .sum-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    flex: 1;
+    min-width: 130px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .sum-box:hover { transform: translateY(-2px); }
+  .sum-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--sum-accent, var(--accent2));
+    border-radius: 0 0 0 0;
+  }
+  .sum-box::after {
+    content: attr(data-icon);
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 28px;
+    opacity: .12;
+    pointer-events: none;
+  }
+  .sum-num {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .sum-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+  /* ── MAIN GRID ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 18px;
+    padding: 20px 28px 40px;
+  }
+
+  /* ── RADAR OVERVIEW CARD ── */
+  .radar-overview-card {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: cardIn .5s cubic-bezier(.22,1,.36,1) both;
+  }
+  .radar-overview-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(95,78,218,.12), rgba(168,85,247,.08));
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .radar-overview-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(95,78,218,.25);
+    border: 1px solid rgba(124,110,240,.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .radar-overview-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (max-width: 800px) {
+    .radar-overview-body { grid-template-columns: 1fr; }
+  }
+  .radar-canvas-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .radar-legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 640px) {
+    .radar-legend-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .radar-legend-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .radar-legend-item:hover { background: rgba(255,255,255,.04); }
+  .radar-legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .radar-legend-name { font-size: 11px; font-weight: 600; flex: 1; color: var(--text); }
+  .radar-legend-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ── CHART CARD ── */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color .25s, transform .25s, box-shadow .25s;
+    animation: cardIn .5s cubic-bezier(.22,1,.36,1) both;
+    position: relative;
+  }
+  .chart-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, var(--border));
+    transition: opacity .25s;
+  }
+  .chart-card:hover {
+    border-color: var(--card-accent-hover, var(--accent));
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px var(--card-glow, rgba(95,78,218,.2));
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Card header groups */
+  .chart-card-head {
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .chart-card-icon {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .chart-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -.1px;
+  }
+  .chart-card-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+    font-weight: 500;
+  }
+  .chart-card-body {
+    padding: 16px 18px;
+  }
+
+  /* Bar aspek */
+  .bar-section { margin-bottom: 8px; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 9px;
+    cursor: pointer;
+  }
+  .bar-row:hover .bar-track { opacity: .85; }
+  .bar-label {
+    font-size: 11px;
+    width: 44px;
+    text-align: right;
+    color: var(--muted);
+    flex-shrink: 0;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    letter-spacing: -.1px;
+  }
+  .bar-track {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 99px;
+    height: 20px;
+    overflow: hidden;
+    position: relative;
+    transition: opacity .2s;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 9px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    min-width: 24px;
+    transition: width .7s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    animation: shimmer 2.5s infinite;
+    animation-delay: var(--shimmer-delay, 0s);
+  }
+  @keyframes shimmer {
+    0% { left: -60%; }
+    100% { left: 160%; }
+  }
+  .bar-count {
+    font-size: 11px;
+    color: var(--muted);
+    width: 28px;
+    text-align: right;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+  }
+  .legend-dots {
+    display: flex;
+    gap: 14px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .legend-dot {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Pie IQ */
+  .pie-wrap {
+    position: relative;
+    height: 210px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pie-center-text {
+    position: absolute;
+    text-align: center;
+    pointer-events: none;
+  }
+  .pie-center-num {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .pie-center-lbl {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+  }
+  .pie-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .pie-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 6px;
+    transition: background .15s;
+  }
+  .pie-legend-row:hover { background: var(--surface2); }
+  .pie-legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .pie-legend-lbl { flex: 1; }
+  .pie-legend-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .pie-legend-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    width: 38px;
+    text-align: right;
+  }
+
+  /* IQ spans full width */
+  .chart-card.iq-card {
+    grid-column: 1 / -1;
+  }
+  .iq-card .chart-card-body {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 640px) {
+    .iq-card .chart-card-body { grid-template-columns: 1fr; }
+    .pie-wrap { height: 180px; }
+  }
+
+  /* ── ERROR / EMPTY ── */
+  .error-box, .empty-box {
+    grid-column: 1/-1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 50px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .error-box { border-color: var(--kurang); color: #fca5a5; }
+  .error-icon, .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* ── MODAL POPUP ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 680px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,.6);
+    animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn {
+    from { transform: scale(.92); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .modal-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .modal-head-info { flex: 1; }
+  .modal-head-title { font-size: 16px; font-weight: 800; }
+  .modal-head-sub   { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .modal-close {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--border); }
+
+  /* Kategori badge di modal head */
+  .kat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .modal-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 16px 20px;
+  }
+
+  /* Search in modal */
+  .modal-search {
+    margin-bottom: 14px;
+  }
+  .modal-search input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .modal-search input:focus { outline: none; border-color: var(--accent2); }
+
+  /* Modal table */
+  .modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .modal-table th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 9px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+  }
+  .modal-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(46,52,80,.5);
+    vertical-align: middle;
+  }
+  .modal-table tr:last-child td { border-bottom: none; }
+  .modal-table tr:hover td { background: var(--surface2); }
+
+  .skor-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px; height: 24px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pill-k  { background: rgba(239,68,68,.2);  color: #fca5a5; }
+  .pill-c  { background: rgba(245,158,11,.2); color: #fcd34d; }
+  .pill-b  { background: rgba(34,197,94,.2);  color: #86efac; }
+
+  .nama-link {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .nama-link:hover { color: var(--accent2); text-decoration: underline; }
+
+  /* Ranking no */
+  .rank-no {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 24px;
+    text-align: center;
+  }
+
+  /* Filter chips di modal */
+  .filter-chips {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+    color: var(--muted);
+    background: transparent;
+    font-family: inherit;
+  }
+  .chip.active-k { background: rgba(239,68,68,.2);  color: #fca5a5; border-color: #ef4444; }
+  .chip.active-c { background: rgba(245,158,11,.2); color: #fcd34d; border-color: #f59e0b; }
+  .chip.active-b { background: rgba(34,197,94,.2);  color: #86efac; border-color: #22c55e; }
+  .chip.active-all { background: var(--accent); color: white; border-color: var(--accent); }
+  .chip:hover { border-color: var(--accent2); }
+
+  /* Empty modal */
+  .modal-empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* IQ colors */
+  :root {
+    --iq0: #7f1d1d; --iq1: #991b1b; --iq2: #b45309; --iq3: #78716c;
+    --iq4: #4ade80; --iq5: #3b82f6; --iq6: #8b5cf6;
+    --iq7: #a855f7; --iq8: #ec4899;
+  }
+
+  /* ── INSIGHT PANEL ── */
+  .insight-panel {
+    margin: 0 28px 48px;
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .insight-panel.visible { display: flex; }
+
+  .insight-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .insight-header-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(95,78,218,.3), rgba(168,85,247,.2));
+    border: 1px solid rgba(168,85,247,.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .insight-header-text h2 {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -.3px;
+  }
+  .insight-header-text p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Health Score */
+  .health-score-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .health-score-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 28px;
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .health-score-ring {
+    position: relative;
+    width: 72px; height: 72px;
+    flex-shrink: 0;
+  }
+  .health-score-ring svg { transform: rotate(-90deg); }
+  .health-score-ring-num {
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .health-score-info h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .health-score-info p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .health-grade {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 6px;
+  }
+
+  /* Strength / Weakness section */
+  .sw-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 700px) { .sw-grid { grid-template-columns: 1fr; } }
+
+  .sw-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .sw-card-head {
+    padding: 13px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sw-card-head.strength { background: rgba(34,197,94,.08); border-bottom-color: rgba(34,197,94,.2); color: #86efac; }
+  .sw-card-head.weakness { background: rgba(239,68,68,.08); border-bottom-color: rgba(239,68,68,.2); color: #fca5a5; }
+  .sw-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(46,52,80,.4);
+  }
+  .sw-item:last-child { border-bottom: none; }
+  .sw-item-icon { font-size: 18px; flex-shrink: 0; }
+  .sw-item-label { font-size: 13px; font-weight: 600; flex: 1; }
+  .sw-item-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .sw-pct-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .sw-pct-pill.good  { background: rgba(34,197,94,.15);  color: #86efac; }
+  .sw-pct-pill.bad   { background: rgba(239,68,68,.15);  color: #fca5a5; }
+  .sw-pct-pill.mid   { background: rgba(245,158,11,.15); color: #fcd34d; }
+
+  /* Rekomendasi cards */
+  .rekomendasi-section h3 {
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .rekom-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 900px) {
+    .rekom-grid { grid-template-columns: 1fr; }
+  }
+  .rekom-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color .2s, transform .2s;
+  }
+  .rekom-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .rekom-card-head {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .rekom-aspek-icon { font-size: 20px; }
+  .rekom-aspek-name { font-size: 13px; font-weight: 700; flex: 1; }
+  .rekom-kurang-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fca5a5;
+    background: rgba(239,68,68,.15);
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .rekom-items { padding: 10px 0; }
+  .rekom-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(46,52,80,.3);
+    transition: background .15s;
+  }
+  .rekom-item:last-child { border-bottom: none; }
+  .rekom-item:hover { background: var(--surface2); }
+  .rekom-tipe-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+  .tipe-workshop   { background: rgba(59,130,246,.15);  color: #93c5fd; border: 1px solid rgba(59,130,246,.3); }
+  .tipe-seminar    { background: rgba(168,85,247,.15);  color: #d8b4fe; border: 1px solid rgba(168,85,247,.3); }
+  .tipe-program    { background: rgba(34,197,94,.15);   color: #86efac; border: 1px solid rgba(34,197,94,.3);  }
+  .tipe-konseling  { background: rgba(245,158,11,.15);  color: #fcd34d; border: 1px solid rgba(245,158,11,.3); }
+  .rekom-item-info { flex: 1; }
+  .rekom-item-judul { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .rekom-item-desc  { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .rekom-item-meta  {
+    display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap;
+  }
+  .rekom-meta-tag {
+    font-size: 10px;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 3px;
+  }
+
+  /* Priority badge */
+  .priority-1 { border-top: 3px solid #ef4444; }
+  .priority-2 { border-top: 3px solid #f59e0b; }
+  .priority-3 { border-top: 3px solid #3b82f6; }
+
+
+  /* ── INSIGHT BUTTON ── */
+  .insight-btn-wrap {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 16px;
+  }
+  .btn-insight {
+    background: linear-gradient(135deg, rgba(95,78,218,.25), rgba(168,85,247,.18));
+    color: var(--accent2);
+    border: 1px solid rgba(168,85,247,.4);
+    border-radius: 12px;
+    padding: 14px 36px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all .2s;
+    letter-spacing: -.1px;
+  }
+  .btn-insight:hover {
+    background: linear-gradient(135deg, rgba(95,78,218,.4), rgba(168,85,247,.3));
+    border-color: rgba(168,85,247,.7);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(168,85,247,.2);
+  }
+  .btn-insight.active {
+    background: linear-gradient(135deg, rgba(95,78,218,.5), rgba(168,85,247,.4));
+    border-color: rgba(168,85,247,.9);
+  }
+
+  /* ── ASPEK POPUP (level 1: bar chart) ── */
+  .aspek-popup-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 1100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .aspek-popup-overlay.open { display: flex; }
+  .aspek-popup-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 480px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,.6);
+    animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .aspek-popup-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .aspek-popup-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .aspek-popup-title { font-size: 16px; font-weight: 800; }
+  .aspek-popup-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .aspek-popup-body  { padding: 20px; }
+  .aspek-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all .18s;
+  }
+  .aspek-bar-row:hover {
+    background: rgba(255,255,255,.04);
+    border-color: var(--border);
+    transform: translateX(3px);
+  }
+  .aspek-bar-label {
+    font-size: 12px;
+    font-weight: 700;
+    width: 48px;
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+  .aspek-bar-track {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 99px;
+    height: 24px;
+    overflow: hidden;
+  }
+  .aspek-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    transition: width .7s cubic-bezier(.4,0,.2,1);
+    min-width: 0;
+  }
+  .aspek-bar-count {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    width: 30px;
+    text-align: right;
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+  .aspek-popup-hint {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 4px;
+    opacity: .7;
+  }
+  .aspek-deskripsi {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.65;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+    margin-bottom: 14px;
+  }
+  .aspek-legend-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .aspek-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── DETAIL TABLE POPUP (level 2) ── */
+  .detail-popup-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 1200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .detail-popup-overlay.open { display: flex; }
+  .detail-popup-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 700px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,.7);
+    animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  /* ── HEALTH SUMMARY BOX ── */
+  .sum-box-health {
+    flex: 2.5;
+    min-width: 260px !important;
+    padding: 14px 20px 12px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sum-health-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 8px;
+    flex: 1;
+  }
+  .sum-health-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+  }
+  .sum-health-num {
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .sum-health-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    opacity: .85;
+  }
+  .sum-health-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .sum-health-bar-wrap {
+    display: flex;
+    border-radius: 99px;
+    overflow: hidden;
+    height: 5px;
+    gap: 2px;
+  }
+  .sum-health-bar {
+    height: 100%;
+    border-radius: 99px;
+    flex: 0;
+    transition: flex .9s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── MINAT CARD ── */
+  .minat-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .minat-bar-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 72px;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .minat-bar-row:hover {
+    background: rgba(255,255,255,.04);
+    border-color: var(--border);
+    transform: translateX(3px);
+  }
+  @media (max-width: 640px) {
+    .minat-bar-row { grid-template-columns: 120px 1fr 56px; }
+  }
+  .minat-bar-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .minat-singkatan {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .5px;
+  }
+  .minat-nama {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .minat-bar-track {
+    background: var(--surface2);
+    border-radius: 99px;
+    height: 22px;
+    overflow: hidden;
+  }
+  .minat-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .8s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .minat-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+    animation: shimmer 2.5s infinite;
+  }
+  .minat-bar-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
+  .minat-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .minat-pct {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* View button */
+  .btn-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(95,78,218,.15);
+    color: var(--accent2);
+    border: 1px solid rgba(124,110,240,.3);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .btn-view:hover {
+    background: rgba(95,78,218,.3);
+    border-color: var(--accent2);
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+
+
+<!-- Loading -->
+<div id="loading-overlay" class="hidden">
+  <div class="spin"></div>
+  <div class="load-txt" id="load-txt">Memuat data analisa...</div>
+</div>
+
+
+<!-- Report Header -->
+<div class="report-header" id="report-header" style="display:none;">
+  <div class="report-header-inner">
+    <div class="report-header-icon">📊</div>
+    <div class="report-header-text">
+      <div class="report-header-title">Laporan Analisa Psikogram — <span id="report-header-table-name"></span></div>
+      <div class="report-header-sub">Dimuat: <span id="report-header-time"></span> · <span id="report-header-count"></span> peserta</div>
+    </div>
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="summary-strip" id="summary-strip" style="display:none;">
+  <div class="sum-box" style="--sum-accent:#7c6ef0;" data-icon="👥">
+    <div class="sum-num" id="sum-total" style="color:var(--accent2);">–</div>
+    <div class="sum-lbl">Total Peserta</div>
+  </div>
+  <div class="sum-box sum-box-health" style="--sum-accent:#22c55e;" id="sum-health-box">
+    <div class="sum-health-inner">
+      <div class="sum-health-col">
+        <div class="sum-health-num" id="sum-count-baik" style="color:var(--baik);">–</div>
+        <div class="sum-health-lbl" style="color:var(--baik);">Baik</div>
+      </div>
+      <div class="sum-health-divider"></div>
+      <div class="sum-health-col">
+        <div class="sum-health-num" id="sum-count-cukup" style="color:var(--cukup);">–</div>
+        <div class="sum-health-lbl" style="color:var(--cukup);">Cukup</div>
+      </div>
+      <div class="sum-health-divider"></div>
+      <div class="sum-health-col">
+        <div class="sum-health-num" id="sum-count-kurang" style="color:var(--kurang);">–</div>
+        <div class="sum-health-lbl" style="color:var(--kurang);">Kurang</div>
+      </div>
+    </div>
+    <div class="sum-health-bar-wrap">
+      <div class="sum-health-bar" id="sum-bar-baik"   style="background:var(--baik);  transition:flex .8s ease;"></div>
+      <div class="sum-health-bar" id="sum-bar-cukup"  style="background:var(--cukup); transition:flex .8s ease;"></div>
+      <div class="sum-health-bar" id="sum-bar-kurang" style="background:var(--kurang);transition:flex .8s ease;"></div>
+    </div>
+  </div>
+  <div class="sum-box" style="--sum-accent:#c084fc;" data-icon="🧩">
+    <div class="sum-num" id="sum-iq-avg" style="color:#c084fc;">–</div>
+    <div class="sum-lbl">Rata-rata IQ</div>
+  </div>
+</div>
+
+<!-- Main Grid -->
+<div class="main-grid" id="main-grid"></div>
+
+<!-- Insight Panel -->
+<div class="insight-panel" id="insight-panel"></div>
+
+<!-- Aspek Popup (level 1: bar chart per aspek) -->
+<div class="aspek-popup-overlay" id="aspek-popup-overlay" onclick="closeAspekPopupOutside(event)">
+  <div class="aspek-popup-box">
+    <div class="aspek-popup-head">
+      <div class="aspek-popup-icon" id="aspek-popup-icon">🧠</div>
+      <div>
+        <div class="aspek-popup-title" id="aspek-popup-title">–</div>
+        <div class="aspek-popup-sub"   id="aspek-popup-sub">–</div>
+      </div>
+      <button class="modal-close" onclick="closeAspekPopup()" style="margin-left:auto;">✕</button>
+    </div>
+    <div class="aspek-popup-body" id="aspek-popup-body"></div>
+  </div>
+</div>
+
+<!-- Detail Popup (level 2: tabel peserta) -->
+<div class="detail-popup-overlay" id="detail-popup-overlay" onclick="closeDetailPopupOutside(event)">
+  <div class="detail-popup-box">
+    <div class="modal-head">
+      <div class="modal-head-info">
+        <div class="kat-badge" id="detail-badge"></div>
+        <div class="modal-head-title" id="detail-title">–</div>
+        <div class="modal-head-sub"   id="detail-sub">–</div>
+      </div>
+      <button class="modal-close" onclick="closeDetailPopup()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-search">
+        <input type="text" id="detail-search-inp" placeholder="🔍 Cari nama..." oninput="filterDetailTable()">
+      </div>
+      <div class="filter-chips" id="detail-chips"></div>
+      <div id="detail-table-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Popup (IQ) -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-head-info">
+        <div class="kat-badge" id="modal-badge"></div>
+        <div class="modal-head-title" id="modal-title">–</div>
+        <div class="modal-head-sub"  id="modal-sub">–</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-search">
+        <input type="text" id="modal-search-inp" placeholder="🔍 Cari nama..." oninput="filterModalTable()">
+      </div>
+      <div class="filter-chips" id="modal-chips"></div>
+      <div id="modal-table-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const API    = 'https://lidan-co-id.pages.dev/api/db_psikogram1';
+const SECRET = 'admin';
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => loadData());
+
+// ── ASPEK DEFINISI ──
+const ASPEK_KEMAMPUAN   = [
+  { label:'Kemampuan Umum',            key:'kemampuan_umum',            icon:'🧠', group:'KEMAMPUAN',   deskripsi:'Kemampuan kognitif umum yang mencerminkan kecerdasan dasar seseorang dalam berpikir, belajar, dan memecahkan masalah secara menyeluruh.' },
+  { label:'Daya Tangkap Visual',       key:'daya_tangkap_visual',       icon:'👁️', group:'KEMAMPUAN',   deskripsi:'Kemampuan memproses, menginterpretasikan, dan memahami informasi yang disajikan dalam bentuk visual seperti gambar, diagram, grafik, dan pola.' },
+  { label:'Berpikir Logis',            key:'kemampuan_berpikir_logis',  icon:'⚙️', group:'KEMAMPUAN',   deskripsi:'Kemampuan berpikir secara sistematis, terstruktur, dan menggunakan logika untuk menganalisis masalah serta menarik kesimpulan yang valid.' },
+  { label:'Berpikir Abstrak',          key:'kemampuan_berpikir_abstrak',icon:'🔷', group:'KEMAMPUAN',   deskripsi:'Kemampuan memahami konsep-konsep non-konkret, mengenali pola tersembunyi, dan berpikir di luar hal-hal yang tampak secara langsung.' },
+  { label:'Penalaran Verbal',          key:'penalaran_verbal',          icon:'💬', group:'KEMAMPUAN',   deskripsi:'Kemampuan memahami, menganalisis, dan menggunakan bahasa secara efektif untuk bernalar, berkomunikasi, dan memahami hubungan antar konsep verbal.' },
+  { label:'Penalaran Numerik',         key:'penalaran_numerik',         icon:'🔢', group:'KEMAMPUAN',   deskripsi:'Kemampuan berpikir dengan angka, memahami data kuantitatif, dan menggunakan operasi matematika untuk memecahkan permasalahan.' },
+];
+const ASPEK_KEPRIBADIAN = [
+  { label:'Hasrat Berprestasi',        key:'hasrat_berprestasi',        icon:'🏆', group:'KEPRIBADIAN', deskripsi:'Motivasi intrinsik yang kuat untuk mencapai hasil terbaik, melampaui standar, dan terus berkembang dalam setiap aspek kehidupan.' },
+  { label:'Daya Tahan Stress',         key:'daya_tahan_stress',         icon:'💪', group:'KEPRIBADIAN', deskripsi:'Kemampuan tetap tenang, fokus, dan produktif di bawah tekanan atau kondisi penuh tantangan tanpa mengalami penurunan performa signifikan.' },
+  { label:'Kepercayaan Diri',          key:'kepercayaan_diri',          icon:'✨', group:'KEPRIBADIAN', deskripsi:'Keyakinan terhadap kemampuan diri sendiri dalam mengambil keputusan, menghadapi tantangan, dan tampil secara optimal di depan orang lain.' },
+  { label:'Relasi Sosial',             key:'relasi_sosial',             icon:'🤝', group:'KEPRIBADIAN', deskripsi:'Kemampuan membangun, menjaga, dan mengembangkan hubungan interpersonal yang positif, hangat, dan saling mendukung dengan orang lain.' },
+  { label:'Kerjasama',                 key:'kerjasama',                 icon:'👥', group:'KEPRIBADIAN', deskripsi:'Kemampuan bekerja secara efektif dalam tim, menghargai kontribusi orang lain, dan mencapai tujuan bersama melalui sinergi kelompok.' },
+];
+const ASPEK_SIKAP = [
+  { label:'Sistematika Kerja',         key:'sistematika_kerja',         icon:'📋', group:'SIKAP KERJA', deskripsi:'Kemampuan bekerja secara terencana, terorganisir, dan terstruktur sehingga setiap tugas dapat diselesaikan secara efisien dan tepat waktu.' },
+  { label:'Inisiatif',                 key:'inisiatif',                 icon:'🚀', group:'SIKAP KERJA', deskripsi:'Kemauan dan kemampuan untuk bertindak secara proaktif, mengambil langkah pertama tanpa harus diminta, dan mencari solusi atas tantangan yang ada.' },
+  { label:'Kemandirian',               key:'kemandirian',               icon:'🦅', group:'SIKAP KERJA', deskripsi:'Kemampuan belajar, bekerja, dan membuat keputusan secara mandiri tanpa bergantung berlebihan pada arahan atau bantuan orang lain.' },
+];
+const ALL_ASPEK = [...ASPEK_KEMAMPUAN, ...ASPEK_KEPRIBADIAN, ...ASPEK_SIKAP];
+
+const GROUP_COLORS = {
+  'KEMAMPUAN':   { bg:'var(--kem-bg)',  border:'var(--kem-color)', icon:'var(--kem-color)', glow:'var(--kem-glow)',  accent:'#3b82f6' },
+  'KEPRIBADIAN': { bg:'var(--kep-bg)',  border:'var(--kep-color)', icon:'var(--kep-color)', glow:'var(--kep-glow)',  accent:'#a855f7' },
+  'SIKAP KERJA': { bg:'var(--sik-bg)',  border:'var(--sik-color)', icon:'var(--sik-color)', glow:'var(--sik-glow)',  accent:'#10b981' },
+};
+
+// IQ kategori
+const IQ_KATEGORI = [
+  { label:'Sangat Rendah',      min:0,   max:69,  color:'#dc2626' },
+  { label:'Rendah',             min:70,  max:79,  color:'#ea580c' },
+  { label:'Di Bawah Rata-rata', min:80,  max:89,  color:'#ca8a04' },
+  { label:'Rata-rata Bawah',    min:90,  max:99,  color:'#64748b' },
+  { label:'Rata-rata',          min:100, max:109, color:'#22c55e' },
+  { label:'Di Atas Rata-rata',  min:110, max:119, color:'#3b82f6' },
+  { label:'Superior',           min:120, max:129, color:'#8b5cf6' },
+  { label:'Sangat Superior',    min:130, max:139, color:'#a855f7' },
+  { label:'Genius',             min:140, max:9999,color:'#ec4899' },
+];
+
+// ── GLOBAL STATE ──
+let allRows = [];        // raw data dari API
+let modalRows = [];      // baris yang sedang tampil di modal
+let modalActiveFilter = 'all';
+let pieChart = null;
+
+// ── KLASIFIKASI ──
+function klasSkor(s) {
+  if (s <= 4) return 'kurang';
+  if (s <= 6) return 'cukup';
+  return 'baik';
+}
+function klasIQ(iq) {
+  for (const k of IQ_KATEGORI) {
+    if (iq >= k.min && iq <= k.max) return k;
+  }
+  return IQ_KATEGORI[4];
+}
+
+// ── SAFE JSON PARSE ──
+function sj(str, fb) { try { return JSON.parse(str||'{}'); } catch { return fb; } }
+
+// ── LOAD DATA ──
+async function loadData() {
+  const params = new URLSearchParams(location.search);
+  const table = params.get('table');
+  if (!table || !table.trim()) {
+    renderError('Parameter <b>?table=</b> tidak ditemukan di URL.<br>Contoh penggunaan: <code>index_publik.html?table=nama_tabel</code>');
+    return;
+  }
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  document.getElementById('load-txt').textContent = `Memuat data...`;
+  document.getElementById('main-grid').innerHTML = '';
+  document.getElementById('summary-strip').style.display = 'none';
+  document.getElementById('report-header').style.display = 'none';
+  _insightRendered = false;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const url = `${API}?table=${encodeURIComponent(table)}`;
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers:{ 'X-Custom-Auth': SECRET, 'Content-Type':'application/json' }
+    });
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || 'Gagal ambil data');
+    allRows = json.data || [];
+    if (allRows.length === 0) {
+      renderEmpty();
+    } else {
+      renderAll();
+      document.getElementById('insight-panel').classList.remove('visible');
+      document.getElementById('insight-panel').innerHTML = '';
+    }
+  } catch(e) {
+    clearTimeout(timeoutId);
+    renderError(e.name === 'AbortError' ? 'Koneksi timeout. Periksa jaringan Anda.' : e.message);
+  } finally {
+    document.getElementById('loading-overlay').classList.add('hidden');
+  }
+}
+
+// ── RENDER ALL ──
+function renderAll() {
+  const grid = document.getElementById('main-grid');
+  grid.innerHTML = '';
+  _cardIndex = 0;
+
+  // Hitung summary: per peserta, mayoritas aspek → Baik/Cukup/Kurang
+  const total = allRows.length;
+  let countBaik=0, countCukup=0, countKurang=0, iqTotal=0, iqCount=0;
+
+  allRows.forEach(row => {
+    const kem = sj(row.x_03,{}); const kep = sj(row.x_04,{}); const sik = sj(row.x_05,{});
+    let pBaik=0, pCukup=0, pKurang=0;
+    ALL_ASPEK.forEach(a => {
+      const src = a.group==='KEMAMPUAN'?kem: a.group==='KEPRIBADIAN'?kep:sik;
+      const s = parseInt(src[a.key])||0;
+      if (s>0) {
+        const k = klasSkor(s);
+        if (k==='baik') pBaik++;
+        else if (k==='cukup') pCukup++;
+        else pKurang++;
+      }
+    });
+    // Mayoritas aspek peserta ini
+    if (pBaik>=pCukup && pBaik>=pKurang) countBaik++;
+    else if (pCukup>=pKurang) countCukup++;
+    else countKurang++;
+
+    const iq = parseInt(row.x_06)||0;
+    if (iq>0) { iqTotal+=iq; iqCount++; }
+  });
+
+  document.getElementById('sum-total').textContent      = total;
+  document.getElementById('sum-count-baik').textContent   = countBaik;
+  document.getElementById('sum-count-cukup').textContent  = countCukup;
+  document.getElementById('sum-count-kurang').textContent = countKurang;
+  document.getElementById('sum-iq-avg').textContent     = iqCount>0?Math.round(iqTotal/iqCount):'–';
+
+  // Warna border box ikut mayoritas
+  const dominant = countBaik>=countCukup && countBaik>=countKurang ? '#22c55e'
+                 : countCukup>=countKurang ? '#f59e0b' : '#ef4444';
+  document.getElementById('sum-health-box').style.setProperty('--sum-accent', dominant);
+
+  // Animated proportion bar bawah
+  setTimeout(() => {
+    document.getElementById('sum-bar-baik').style.flex   = countBaik;
+    document.getElementById('sum-bar-cukup').style.flex  = countCukup;
+    document.getElementById('sum-bar-kurang').style.flex = countKurang;
+  }, 120);
+
+  document.getElementById('summary-strip').style.display = 'flex';
+
+  // Report header
+  const tableName = (new URLSearchParams(location.search).get('table') || '').toUpperCase();
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const tglMuat = `${pad(now.getDate())} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'][now.getMonth()]} ${now.getFullYear()}, ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  document.getElementById('report-header-table-name').textContent = tableName;
+  document.getElementById('report-header-time').textContent = tglMuat;
+  document.getElementById('report-header-count').textContent = total;
+  document.getElementById('report-header').style.display = 'block';
+
+  // Render IQ (full width)
+  const iqCard = buildIQCard();
+  grid.appendChild(iqCard);
+
+  // Render Arah Minat (full width)
+  const minatCard = buildMinatCard();
+  grid.appendChild(minatCard);
+
+  // Render Radar overview card (di bawah, klik item → popup aspek)
+  const radarCard = buildRadarCard();
+  grid.appendChild(radarCard);
+
+  // Tombol Insight
+  const insightBtn = document.createElement('div');
+  insightBtn.className = 'insight-btn-wrap';
+  insightBtn.innerHTML = `
+    <button class="btn-insight" id="btn-show-insight" onclick="toggleInsight()">
+      📋 Insight &amp; Rekomendasi Sekolah
+    </button>`;
+  grid.appendChild(insightBtn);
+
+  // Pre-build aspek data (disimpan di memori, bukan di DOM)
+  _buildAllAspekData();
+}
+
+// ── BUILD RADAR OVERVIEW CARD ──
+let radarChart = null;
+function buildRadarCard() {
+  // Hitung % baik per aspek
+  const aspekStats = ALL_ASPEK.map(aspek => {
+    let baik=0, cukup=0, kurang=0;
+    allRows.forEach(row => {
+      const src = aspek.group==='KEMAMPUAN' ? sj(row.x_03,{})
+                : aspek.group==='KEPRIBADIAN' ? sj(row.x_04,{})
+                : sj(row.x_05,{});
+      const s = parseInt(src[aspek.key]) || 0;
+      if (s<=0) return;
+      const k = klasSkor(s);
+      if (k==='baik') baik++;
+      else if (k==='cukup') cukup++;
+      else kurang++;
+    });
+    const total = baik+cukup+kurang;
+    return {
+      ...aspek,
+      pctBaik:   total>0 ? Math.round(baik/total*100)   : 0,
+      pctCukup:  total>0 ? Math.round(cukup/total*100)  : 0,
+      pctKurang: total>0 ? Math.round(kurang/total*100) : 0,
+      total,
+    };
+  });
+
+  const card = document.createElement('div');
+  card.className = 'radar-overview-card';
+  card.style.animationDelay = '0ms';
+
+  const legendItems = aspekStats.map(a => {
+    const gc = GROUP_COLORS[a.group] || GROUP_COLORS['KEMAMPUAN'];
+    return `
+      <div class="radar-legend-item" onclick="openAspekPopup('${a.key}','${a.group}')"
+           title="${a.deskripsi || ''}">
+        <div class="radar-legend-dot" style="background:${gc.accent};"></div>
+        <div class="radar-legend-name">${a.icon} ${a.label}</div>
+        <div class="radar-legend-pct" style="color:${a.pctBaik>=50?'var(--baik)':a.pctBaik>=30?'var(--cukup)':'var(--kurang)'};">${a.pctBaik}%</div>
+      </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="radar-overview-head">
+      <div class="radar-overview-icon">🕸️</div>
+      <div>
+        <div style="font-size:14px; font-weight:800; letter-spacing:-.2px;">Profil Kelompok — Overview Radar</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:2px; font-weight:500;">Persentase siswa kategori <strong style="color:var(--baik);">Baik</strong> di setiap aspek · Klik item untuk detail</div>
+      </div>
+    </div>
+    <div class="radar-overview-body">
+      <div class="radar-canvas-wrap">
+        <canvas id="radar-main" width="300" height="300"></canvas>
+      </div>
+      <div class="radar-legend-grid">${legendItems}</div>
+    </div>`;
+
+  setTimeout(() => {
+    const ctx = card.querySelector('#radar-main').getContext('2d');
+    if (radarChart) radarChart.destroy();
+
+    const kemData  = aspekStats.filter(a=>a.group==='KEMAMPUAN').map(a=>a.pctBaik);
+    const kepData  = aspekStats.filter(a=>a.group==='KEPRIBADIAN').map(a=>a.pctBaik);
+    const sikData  = aspekStats.filter(a=>a.group==='SIKAP KERJA').map(a=>a.pctBaik);
+    const labels   = aspekStats.map(a => a.label.length > 14 ? a.label.split(' ').slice(0,2).join(' ') : a.label);
+
+    radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Kemampuan',
+            data: [...kemData, ...Array(aspekStats.length - kemData.length).fill(null)],
+            backgroundColor: 'rgba(59,130,246,.15)',
+            borderColor: '#3b82f6',
+            borderWidth: 2,
+            pointBackgroundColor: '#3b82f6',
+            pointBorderColor: '#080b12',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+          },
+          {
+            label: 'Kepribadian',
+            data: [...Array(ASPEK_KEMAMPUAN.length).fill(null), ...kepData, ...Array(ASPEK_SIKAP.length).fill(null)],
+            backgroundColor: 'rgba(168,85,247,.15)',
+            borderColor: '#a855f7',
+            borderWidth: 2,
+            pointBackgroundColor: '#a855f7',
+            pointBorderColor: '#080b12',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+          },
+          {
+            label: 'Sikap Kerja',
+            data: [...Array(ASPEK_KEMAMPUAN.length + ASPEK_KEPRIBADIAN.length).fill(null), ...sikData],
+            backgroundColor: 'rgba(16,185,129,.15)',
+            borderColor: '#10b981',
+            borderWidth: 2,
+            pointBackgroundColor: '#10b981',
+            pointBorderColor: '#080b12',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+          },
+        ]
+      },
+      options: {
+        responsive: false,
+        scales: {
+          r: {
+            min: 0,
+            max: 100,
+            ticks: {
+              stepSize: 25,
+              color: '#3a4a6a',
+              font: { size: 9, family: "'JetBrains Mono'" },
+              backdropColor: 'transparent',
+              callback: v => v + '%',
+            },
+            grid: { color: 'rgba(255,255,255,.06)' },
+            angleLines: { color: 'rgba(255,255,255,.06)' },
+            pointLabels: {
+              color: '#8a9ab8',
+              font: { size: 10, family: "'Outfit'", weight: '600' },
+            }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.raw !== null ? ctx.raw + '% Baik' : '–'}`,
+            },
+            bodyColor: '#e2e8f0',
+            backgroundColor: '#0f1420',
+            borderColor: '#1e2a42',
+            borderWidth: 1,
+          }
+        },
+        animation: { duration: 1000, easing: 'easeInOutQuart' },
+      }
+    });
+  }, 200);
+
+  return card;
+}
+
+// ── BUILD ASPEK CARD ──
+let _cardIndex = 0;
+function buildAspekCard(aspek) {
+  const gc = GROUP_COLORS[aspek.group] || GROUP_COLORS['KEMAMPUAN'];
+  const cardIdx = _cardIndex++;
+
+  // Hitung distribusi
+  const baik=[], cukup=[], kurang=[];
+  allRows.forEach(row => {
+    const src = aspek.group==='KEMAMPUAN' ? sj(row.x_03,{})
+              : aspek.group==='KEPRIBADIAN' ? sj(row.x_04,{})
+              : sj(row.x_05,{});
+    const s = parseInt(src[aspek.key]) || 0;
+    const iq = parseInt(row.x_06) || 0;
+    const bio = sj(row.x_02,{});
+    const nama = bio.nama || row.x_01 || '–';
+    const entry = { nama, skor:s, iq, id_x: row.id_x, x_01: row.x_01 };
+    if (s<=0) return;
+    const k = klasSkor(s);
+    if (k==='baik') baik.push(entry);
+    else if (k==='cukup') cukup.push(entry);
+    else kurang.push(entry);
+  });
+
+  const total = baik.length + cukup.length + kurang.length;
+
+  const card = document.createElement('div');
+  card.className = 'chart-card';
+  card.style.cssText = `
+    --card-accent: ${gc.accent};
+    --card-accent-hover: ${gc.accent};
+    --card-glow: ${gc.glow};
+    animation-delay: ${cardIdx * 45}ms;
+  `;
+
+  card.innerHTML = `
+    <div class="chart-card-head" style="background:${gc.bg}; border-bottom-color:${gc.accent}22;">
+      <div class="chart-card-icon" style="background:${gc.bg}; border:1px solid ${gc.accent}44; color:${gc.accent};">
+        ${aspek.icon}
+      </div>
+      <div>
+        <div class="chart-card-title">${aspek.label}</div>
+        <div class="chart-card-sub">${aspek.group} &bull; ${total} peserta</div>
+      </div>
+    </div>
+    <div class="chart-card-body">
+      ${buildBarRow('baik',   'Baik',   baik.length,   total, aspek, baik,   cukup, kurang, gc, 0)}
+      ${buildBarRow('cukup',  'Cukup',  cukup.length,  total, aspek, baik,   cukup, kurang, gc, 1)}
+      ${buildBarRow('kurang', 'Kurang', kurang.length,  total, aspek, baik,   cukup, kurang, gc, 2)}
+      <div class="legend-dots">
+        <div class="legend-dot" onclick="openModal('${aspek.label}','baik','${aspek.key}','${aspek.group}')">
+          <div class="dot" style="background:var(--baik)"></div><span>Baik (${baik.length})</span>
+        </div>
+        <div class="legend-dot" onclick="openModal('${aspek.label}','cukup','${aspek.key}','${aspek.group}')">
+          <div class="dot" style="background:var(--cukup)"></div><span>Cukup (${cukup.length})</span>
+        </div>
+        <div class="legend-dot" onclick="openModal('${aspek.label}','kurang','${aspek.key}','${aspek.group}')">
+          <div class="dot" style="background:var(--kurang)"></div><span>Kurang (${kurang.length})</span>
+        </div>
+      </div>
+    </div>`;
+
+  // Simpan data ke dataset card
+  card.dataset.aspekKey   = aspek.key;
+  card.dataset.aspekGroup = aspek.group;
+  card.dataset.aspekLabel = aspek.label;
+  card.dataset.baik   = JSON.stringify(baik.sort((a,b)=>b.skor-a.skor));
+  card.dataset.cukup  = JSON.stringify(cukup.sort((a,b)=>b.skor-a.skor));
+  card.dataset.kurang = JSON.stringify(kurang.sort((a,b)=>a.skor-b.skor));
+
+  return card;
+}
+
+function buildBarRow(kat, range, count, total, aspek, baik, cukup, kurang, gc, idx) {
+  const pct = total>0 ? Math.round((count/total)*100) : 0;
+  const gradients = {
+    baik:   'linear-gradient(90deg, #16a34a, #22c55e, #4ade80)',
+    cukup:  'linear-gradient(90deg, #d97706, #f59e0b, #fbbf24)',
+    kurang: 'linear-gradient(90deg, #dc2626, #ef4444, #f87171)',
+  };
+  const grad = gradients[kat] || gradients.baik;
+  const delay = `${idx * 0.4}s`;
+  return `
+    <div class="bar-row" onclick="openModal('${aspek.label}','${kat}','${aspek.key}','${aspek.group}')">
+      <div class="bar-label">${range}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:0%; background:${grad}; --shimmer-delay:${delay};" data-target="${pct}">
+          ${pct>=12 ? pct+'%' : ''}
+        </div>
+      </div>
+      <div class="bar-count">${count}</div>
+    </div>`;
+}
+
+function animateBars() {
+  document.querySelectorAll('.bar-fill').forEach(el => {
+    const target = el.dataset.target;
+    setTimeout(() => { el.style.width = target + '%'; }, 10);
+  });
+}
+
+// ── BUILD IQ CARD ──
+function buildIQCard() {
+  // Hitung distribusi IQ
+  const dist = IQ_KATEGORI.map(k => ({ ...k, entries:[] }));
+  allRows.forEach(row => {
+    const iq = parseInt(row.x_06) || 0;
+    if (!iq) return;
+    const bio = sj(row.x_02,{});
+    const nama = bio.nama || row.x_01 || '–';
+    const entry = { nama, iq, id_x: row.id_x, x_01: row.x_01 };
+    const kat = dist.find(d => iq >= d.min && iq <= d.max);
+    if (kat) kat.entries.push(entry);
+  });
+
+  const totalIQ = dist.reduce((s,d)=>s+d.entries.length, 0);
+  const iqValues = allRows.map(r=>parseInt(r.x_06)||0).filter(v=>v>0);
+  const iqAvg = iqValues.length ? Math.round(iqValues.reduce((a,b)=>a+b,0)/iqValues.length) : 0;
+
+  const card = document.createElement('div');
+  card.className = 'chart-card iq-card';
+  card.style.cssText = `--card-accent: #a855f7; --card-accent-hover: #a855f7; --card-glow: rgba(168,85,247,.25); animation-delay: ${_cardIndex * 45}ms;`;
+  _cardIndex++;
+  card.innerHTML = `
+    <div class="chart-card-head" style="background:rgba(168,85,247,.1); border-bottom-color:rgba(168,85,247,.3);">
+      <div class="chart-card-icon" style="background:rgba(168,85,247,.15); border:1px solid rgba(168,85,247,.3);">📊</div>
+      <div>
+        <div class="chart-card-title">Intelligence Quotient (IQ)</div>
+        <div class="chart-card-sub">Distribusi kategori IQ &bull; ${totalIQ} peserta &bull; Rata-rata: ${iqAvg}</div>
+      </div>
+    </div>
+    <div class="chart-card-body">
+      <div class="pie-wrap">
+        <canvas id="pie-iq" width="240" height="240"></canvas>
+        <div class="pie-center-text">
+          <div class="pie-center-num" style="color:#c084fc;">${iqAvg}</div>
+          <div class="pie-center-lbl">Rata-rata IQ</div>
+        </div>
+      </div>
+      <div class="pie-legend" id="pie-legend"></div>
+    </div>`;
+
+  // Simpan distribusi untuk modal
+  card.dataset.iqDist = JSON.stringify(dist);
+
+  // Render legenda
+  setTimeout(() => {
+    const legendEl = card.querySelector('#pie-legend');
+    dist.filter(d=>d.entries.length>0).forEach(d => {
+      const pct = totalIQ>0 ? Math.round(d.entries.length/totalIQ*100) : 0;
+      const row = document.createElement('div');
+      row.className = 'pie-legend-row';
+      row.innerHTML = `
+        <div class="pie-legend-dot" style="background:${d.color};"></div>
+        <div class="pie-legend-lbl">${d.label}</div>
+        <div class="pie-legend-count">${d.entries.length} orang</div>
+        <div class="pie-legend-pct">${pct}%</div>`;
+      row.onclick = () => openIQModal(d.label, d.entries, d.color, dist, totalIQ);
+      legendEl.appendChild(row);
+    });
+
+    // Draw pie chart
+    const ctx = card.querySelector('#pie-iq').getContext('2d');
+    if (pieChart) { pieChart.destroy(); }
+    const filtered = dist.filter(d=>d.entries.length>0);
+    pieChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: filtered.map(d=>d.label),
+        datasets: [{
+          data: filtered.map(d=>d.entries.length),
+          backgroundColor: filtered.map(d=>d.color+'cc'),
+          borderColor: filtered.map(d=>d.color),
+          borderWidth: 2,
+          hoverOffset: 8,
+        }]
+      },
+      options: {
+        cutout: '62%',
+        responsive: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const pct = totalIQ>0?Math.round(ctx.raw/totalIQ*100):0;
+                return ` ${ctx.label}: ${ctx.raw} orang (${pct}%)`;
+              }
+            },
+            bodyColor: '#e2e8f0',
+            backgroundColor: '#191c27',
+            borderColor: '#2e3450',
+            borderWidth: 1,
+          }
+        },
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const idx = elements[0].index;
+          const d = filtered[idx];
+          openIQModal(d.label, d.entries, d.color, dist, totalIQ);
+        }
+      }
+    });
+  }, 100);
+
+  return card;
+}
+
+// ── BUILD MINAT CARD ──
+const MINAT_COLORS = [
+  '#3b82f6','#a855f7','#10b981','#f59e0b','#ef4444',
+  '#06b6d4','#ec4899','#84cc16','#f97316','#6366f1',
+  '#14b8a6','#e11d48','#8b5cf6','#0ea5e9','#d946ef',
+];
+
+function buildMinatCard() {
+  // Kumpulkan minat tertinggi tiap peserta (index 0 dari array x_10)
+  const minatMap = {}; // singkatan → { nama, keterangan, entries:[] }
+
+  allRows.forEach(row => {
+    const arr = sj(row.x_10, null);
+    if (!Array.isArray(arr) || arr.length === 0) return;
+    const top = arr[0];
+    if (!top || !top.singkatan) return;
+    const key = top.singkatan;
+    if (!minatMap[key]) {
+      minatMap[key] = { singkatan: key, nama: top.nama || key, keterangan: top.keterangan || '', entries: [] };
+    }
+    const bio  = sj(row.x_02, {});
+    const nama = bio.nama || row.x_01 || '–';
+    minatMap[key].entries.push({ nama, x_01: row.x_01 });
+  });
+
+  const minatList = Object.values(minatMap).sort((a,b) => b.entries.length - a.entries.length);
+  const totalMinat = minatList.reduce((s, m) => s + m.entries.length, 0);
+  const maxCount   = minatList.length ? minatList[0].entries.length : 1;
+
+  const card = document.createElement('div');
+  card.className = 'chart-card minat-card';
+  card.style.cssText = `grid-column:1/-1; --card-accent:#06b6d4; --card-accent-hover:#06b6d4; --card-glow:rgba(6,182,212,.2); animation-delay:${_cardIndex*45}ms;`;
+  _cardIndex++;
+
+  if (!minatList.length) {
+    card.innerHTML = `
+      <div class="chart-card-head" style="background:rgba(6,182,212,.1); border-bottom-color:rgba(6,182,212,.3);">
+        <div class="chart-card-icon" style="background:rgba(6,182,212,.15); border:1px solid rgba(6,182,212,.3);">🎯</div>
+        <div>
+          <div class="chart-card-title">Arah Minat / Pekerjaan</div>
+          <div class="chart-card-sub">Distribusi minat tertinggi per peserta</div>
+        </div>
+      </div>
+      <div class="chart-card-body"><div style="color:var(--muted); text-align:center; padding:20px;">Tidak ada data minat</div></div>`;
+    return card;
+  }
+
+  const barsHtml = minatList.map((m, i) => {
+    const color = MINAT_COLORS[i % MINAT_COLORS.length];
+    const pct   = Math.round(m.entries.length / totalMinat * 100);
+    const barW  = Math.round(m.entries.length / maxCount * 100);
+    return `
+      <div class="minat-bar-row" onclick="openMinatPopup('${escHtml(m.singkatan)}')"
+           title="${escHtml(m.keterangan)}">
+        <div class="minat-bar-label">
+          <span class="minat-singkatan" style="color:${color};">${escHtml(m.singkatan)}</span>
+          <span class="minat-nama">${escHtml(m.nama)}</span>
+        </div>
+        <div class="minat-bar-track">
+          <div class="minat-bar-fill" data-target="${barW}" style="width:0%; background:${color}cc;">
+          </div>
+        </div>
+        <div class="minat-bar-meta">
+          <span class="minat-count" style="color:${color};">${m.entries.length}</span>
+          <span class="minat-pct">${pct}%</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="chart-card-head" style="background:rgba(6,182,212,.08); border-bottom-color:rgba(6,182,212,.3);">
+      <div class="chart-card-icon" style="background:rgba(6,182,212,.15); border:1px solid rgba(6,182,212,.3);">🎯</div>
+      <div>
+        <div class="chart-card-title">Arah Minat / Pekerjaan</div>
+        <div class="chart-card-sub">Minat tertinggi per peserta · ${totalMinat} peserta · ${minatList.length} jenis minat · Klik bar untuk detail</div>
+      </div>
+    </div>
+    <div class="chart-card-body minat-body">
+      ${barsHtml}
+    </div>`;
+
+  // Simpan data minat ke memori
+  _minatData = {};
+  minatList.forEach((m, i) => {
+    m.color = MINAT_COLORS[i % MINAT_COLORS.length];
+    _minatData[m.singkatan] = m;
+  });
+
+  // Animate bars
+  setTimeout(() => {
+    card.querySelectorAll('.minat-bar-fill').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 80);
+
+  return card;
+}
+
+// ── MINAT POPUP ──
+let _minatData = {};
+
+function openMinatPopup(singkatan) {
+  const m = _minatData[singkatan];
+  if (!m) return;
+
+  // Reuse detail popup
+  const badgeEl = document.getElementById('detail-badge');
+  badgeEl.style.cssText = `color:white; background:${m.color}cc;`;
+  badgeEl.textContent = m.singkatan;
+
+  document.getElementById('detail-title').textContent = m.nama;
+  document.getElementById('detail-sub').textContent   = `${m.entries.length} peserta dengan minat tertinggi ini`;
+
+  // Sembunyikan chips filter
+  document.getElementById('detail-chips').innerHTML = m.keterangan
+    ? `<div style="font-size:12px; color:var(--muted); line-height:1.6; padding:4px 0 8px; border-bottom:1px solid var(--border); margin-bottom:8px;">${escHtml(m.keterangan)}</div>`
+    : '';
+
+  // Render tabel nama saja
+  const wrap = document.getElementById('detail-table-wrap');
+  if (!m.entries.length) {
+    wrap.innerHTML = '<div class="modal-empty">😕 Tidak ada peserta</div>';
+  } else {
+    let html = `<table class="modal-table">
+      <thead><tr>
+        <th>#</th>
+        <th>Nama</th>
+        <th>View</th>
+      </tr></thead><tbody>`;
+    m.entries.forEach((e, i) => {
+      const viewUrl = `view.html?token=${encodeURIComponent(e.x_01||'')}`;
+      html += `<tr>
+        <td><span class="rank-no">${i+1}</span></td>
+        <td style="font-weight:600;">${escHtml(e.nama)}</td>
+        <td><a href="${viewUrl}" target="_blank" class="btn-view">🔗 View</a></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  }
+
+  // Search untuk minat popup
+  const searchInp = document.getElementById('detail-search-inp');
+  searchInp.value = '';
+  searchInp.oninput = () => {
+    const q = searchInp.value.toLowerCase();
+    const filtered = m.entries.filter(e => (e.nama||'').toLowerCase().includes(q));
+    let html2 = `<table class="modal-table">
+      <thead><tr><th>#</th><th>Nama</th><th>View</th></tr></thead><tbody>`;
+    filtered.forEach((e, i) => {
+      const viewUrl = `view.html?token=${encodeURIComponent(e.x_01||'')}`;
+      html2 += `<tr>
+        <td><span class="rank-no">${i+1}</span></td>
+        <td style="font-weight:600;">${escHtml(e.nama)}</td>
+        <td><a href="${viewUrl}" target="_blank" class="btn-view">🔗 View</a></td>
+      </tr>`;
+    });
+    html2 += '</tbody></table>';
+    wrap.innerHTML = html2;
+  };
+
+  document.getElementById('detail-popup-overlay').classList.add('open');
+}
+
+// ── MODAL ASPEK ──
+let _modalAllEntries = { baik:[], cukup:[], kurang:[] };
+let _modalAspekLabel = '';
+let _modalAspekKey   = '';
+
+function openModal(aspekLabel, kat, aspekKey, aspekGroup) {
+  // Cari card yang sesuai
+  const cards = document.querySelectorAll('.chart-card');
+  let baik=[], cukup=[], kurang=[];
+  cards.forEach(c => {
+    if (c.dataset.aspekKey === aspekKey && c.dataset.aspekGroup === aspekGroup) {
+      baik   = JSON.parse(c.dataset.baik   || '[]');
+      cukup  = JSON.parse(c.dataset.cukup  || '[]');
+      kurang = JSON.parse(c.dataset.kurang || '[]');
+    }
+  });
+
+  _modalAllEntries = { baik, cukup, kurang };
+  _modalAspekLabel = aspekLabel;
+  _modalAspekKey   = aspekKey;
+  modalActiveFilter = kat;
+
+  updateModalContent();
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal-search-inp').value = '';
+}
+
+function updateModalContent() {
+  const kat = modalActiveFilter;
+  const { baik, cukup, kurang } = _modalAllEntries;
+  const total = baik.length + cukup.length + kurang.length;
+
+  // Badge
+  const badgeEl = document.getElementById('modal-badge');
+  const colors = { baik:['#86efac','rgba(34,197,94,.2)'], cukup:['#fcd34d','rgba(245,158,11,.2)'], kurang:['#fca5a5','rgba(239,68,68,.2)'], all:['#a5b4fc','rgba(99,102,241,.2)'] };
+  const labels = { baik:'Baik (7–10)', cukup:'Cukup (5–6)', kurang:'Kurang (1–4)', all:'Semua Kategori' };
+  const [fc, bg] = colors[kat] || colors.all;
+  badgeEl.style.cssText = `color:${fc}; background:${bg};`;
+  badgeEl.textContent = labels[kat] || '';
+
+  document.getElementById('modal-title').textContent = _modalAspekLabel;
+
+  let entries;
+  if (kat==='all')    entries = [...baik,...cukup,...kurang];
+  else if (kat==='baik')   entries = baik;
+  else if (kat==='cukup')  entries = cukup;
+  else                      entries = kurang;
+
+  document.getElementById('modal-sub').textContent =
+    `${entries.length} peserta dari total ${total} peserta`;
+
+  // Chips filter
+  const chipsEl = document.getElementById('modal-chips');
+  chipsEl.innerHTML = '';
+  const chips = [
+    { key:'all',    label:`Semua (${total})`,       cls:'active-all' },
+    { key:'baik',   label:`Baik (${baik.length})`,  cls:'active-b' },
+    { key:'cukup',  label:`Cukup (${cukup.length})`,cls:'active-c' },
+    { key:'kurang', label:`Kurang (${kurang.length})`,cls:'active-k'},
+  ];
+  chips.forEach(ch => {
+    const btn = document.createElement('button');
+    btn.className = `chip ${kat===ch.key ? ch.cls : ''}`;
+    btn.textContent = ch.label;
+    btn.onclick = () => { modalActiveFilter = ch.key; document.getElementById('modal-search-inp').value=''; updateModalContent(); };
+    chipsEl.appendChild(btn);
+  });
+
+  // Store for search
+  modalRows = entries;
+  renderModalTable(entries);
+}
+
+function renderModalTable(entries) {
+  const wrap = document.getElementById('modal-table-wrap');
+  if (!entries.length) {
+    wrap.innerHTML = '<div class="modal-empty">😕 Tidak ada data pada kategori ini</div>';
+    return;
+  }
+  let html = `<table class="modal-table">
+    <thead><tr>
+      <th>#</th>
+      <th>Nama</th>
+      <th>Skor</th>
+      <th>IQ</th>
+    </tr></thead><tbody>`;
+  entries.forEach((e,i) => {
+    const kat = klasSkor(e.skor);
+    const pillCls = kat==='baik'?'pill-b': kat==='cukup'?'pill-c':'pill-k';
+    const iqKat = klasIQ(e.iq);
+    const finalUrl = `index_final.html?id_x=${e.id_x}&x_01=${encodeURIComponent(e.x_01||'')}`;
+    html += `<tr>
+      <td><span class="rank-no">${i+1}</span></td>
+      <td><a href="${finalUrl}" class="nama-link" target="_blank">${escHtml(e.nama)}</a></td>
+      <td><span class="skor-pill ${pillCls}">${e.skor}</span></td>
+      <td>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:${iqKat.color}; font-weight:700;">${e.iq||'–'}</span>
+        ${e.iq ? `<span style="font-size:10px; color:var(--muted); margin-left:4px;">${iqKat.label}</span>` : ''}
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function filterModalTable() {
+  const q = document.getElementById('modal-search-inp').value.toLowerCase();
+  const filtered = modalRows.filter(e => (e.nama||'').toLowerCase().includes(q));
+  renderModalTable(filtered);
+}
+
+// ── MODAL IQ ──
+let _iqModalRows = [];
+
+function openIQModal(katLabel, entries, color, dist, totalIQ) {
+  _iqModalRows = entries;
+  const badgeEl = document.getElementById('modal-badge');
+  badgeEl.style.cssText = `color:white; background:${color}cc;`;
+  badgeEl.textContent = katLabel;
+
+  document.getElementById('modal-title').textContent = `IQ — ${katLabel}`;
+  document.getElementById('modal-sub').textContent =
+    `${entries.length} peserta dari ${totalIQ} peserta`;
+
+  // Chips IQ: semua kategori yang ada
+  const chipsEl = document.getElementById('modal-chips');
+  chipsEl.innerHTML = '';
+  dist.filter(d=>d.entries.length>0).forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = `chip ${d.label===katLabel ? '' : ''}`;
+    btn.style.cssText = d.label===katLabel ? `background:${d.color}33; color:${d.color}; border-color:${d.color};` : '';
+    btn.textContent = `${d.label} (${d.entries.length})`;
+    btn.onclick = () => {
+      openIQModal(d.label, d.entries, d.color, dist, totalIQ);
+    };
+    chipsEl.appendChild(btn);
+  });
+
+  modalRows = entries;
+  renderIQTable(entries);
+  document.getElementById('modal-search-inp').value = '';
+  document.getElementById('modal-search-inp').oninput = () => {
+    const q = document.getElementById('modal-search-inp').value.toLowerCase();
+    renderIQTable(entries.filter(e=>(e.nama||'').toLowerCase().includes(q)));
+  };
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function renderIQTable(entries) {
+  const wrap = document.getElementById('modal-table-wrap');
+  if (!entries.length) {
+    wrap.innerHTML = '<div class="modal-empty">😕 Tidak ada data</div>';
+    return;
+  }
+  const sorted = [...entries].sort((a,b)=>b.iq-a.iq);
+  let html = `<table class="modal-table">
+    <thead><tr>
+      <th>#</th>
+      <th>Nama</th>
+      <th>IQ</th>
+      <th>Kategori</th>
+    </tr></thead><tbody>`;
+  sorted.forEach((e,i) => {
+    const kat = klasIQ(e.iq);
+    const finalUrl = `index_final.html?id_x=${e.id_x}&x_01=${encodeURIComponent(e.x_01||'')}`;
+    html += `<tr>
+      <td><span class="rank-no">${i+1}</span></td>
+      <td><a href="${finalUrl}" class="nama-link" target="_blank">${escHtml(e.nama)}</a></td>
+      <td><span style="font-family:'JetBrains Mono',monospace; font-weight:800; font-size:15px; color:${kat.color};">${e.iq}</span></td>
+      <td><span style="font-size:12px; color:${kat.color}; font-weight:600;">${kat.label}</span></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+// ── CLOSE MODAL ──
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ── ALL ASPEK DATA (built once after loadData) ──
+let _allAspekData = {}; // key → { aspek, baik:[], cukup:[], kurang:[] }
+
+function _buildAllAspekData() {
+  _allAspekData = {};
+  ALL_ASPEK.forEach(aspek => {
+    const baik=[], cukup=[], kurang=[];
+    allRows.forEach(row => {
+      const src = aspek.group==='KEMAMPUAN' ? sj(row.x_03,{})
+                : aspek.group==='KEPRIBADIAN' ? sj(row.x_04,{})
+                : sj(row.x_05,{});
+      const s = parseInt(src[aspek.key]) || 0;
+      const iq = parseInt(row.x_06) || 0;
+      const bio = sj(row.x_02,{});
+      const nama = bio.nama || row.x_01 || '–';
+      const entry = { nama, skor:s, iq, id_x: row.id_x, x_01: row.x_01 };
+      if (s<=0) return;
+      const k = klasSkor(s);
+      if (k==='baik') baik.push(entry);
+      else if (k==='cukup') cukup.push(entry);
+      else kurang.push(entry);
+    });
+    _allAspekData[aspek.key] = {
+      aspek,
+      baik:   baik.sort((a,b)=>b.skor-a.skor),
+      cukup:  cukup.sort((a,b)=>b.skor-a.skor),
+      kurang: kurang.sort((a,b)=>a.skor-b.skor),
+    };
+  });
+}
+
+// ── ASPEK POPUP (level 1) ──
+function openAspekPopup(aspekKey, aspekGroup) {
+  const data = _allAspekData[aspekKey];
+  if (!data) return;
+  const { aspek, baik, cukup, kurang } = data;
+  const total = baik.length + cukup.length + kurang.length;
+  const gc = GROUP_COLORS[aspekGroup] || GROUP_COLORS['KEMAMPUAN'];
+
+  document.getElementById('aspek-popup-title').textContent = aspek.label;
+  document.getElementById('aspek-popup-sub').textContent   = `${aspek.group} · ${total} peserta`;
+  const iconEl = document.getElementById('aspek-popup-icon');
+  iconEl.textContent = aspek.icon;
+  iconEl.style.cssText = `background:${gc.bg}; border:1px solid ${gc.accent}44; color:${gc.accent};`;
+
+  const pctBaik   = total>0 ? Math.round(baik.length/total*100)   : 0;
+  const pctCukup  = total>0 ? Math.round(cukup.length/total*100)  : 0;
+  const pctKurang = total>0 ? Math.round(kurang.length/total*100) : 0;
+
+  const body = document.getElementById('aspek-popup-body');
+  body.innerHTML = `
+    ${aspek.deskripsi ? `<div class="aspek-deskripsi">${escHtml(aspek.deskripsi)}</div>` : ''}
+    <div class="aspek-bar-row" onclick="openDetailPopup('${aspekKey}','baik')">
+      <div class="aspek-bar-label" style="color:var(--baik);">Baik</div>
+      <div class="aspek-bar-track">
+        <div class="aspek-bar-fill" id="apb-baik-${aspekKey}" style="width:0%; background:linear-gradient(90deg,#16a34a,#22c55e,#4ade80);">
+          ${pctBaik>=10 ? pctBaik+'%' : ''}
+        </div>
+      </div>
+      <div class="aspek-bar-count">${baik.length}</div>
+    </div>
+    <div class="aspek-bar-row" onclick="openDetailPopup('${aspekKey}','cukup')">
+      <div class="aspek-bar-label" style="color:var(--cukup);">Cukup</div>
+      <div class="aspek-bar-track">
+        <div class="aspek-bar-fill" id="apb-cukup-${aspekKey}" style="width:0%; background:linear-gradient(90deg,#d97706,#f59e0b,#fbbf24);">
+          ${pctCukup>=10 ? pctCukup+'%' : ''}
+        </div>
+      </div>
+      <div class="aspek-bar-count">${cukup.length}</div>
+    </div>
+    <div class="aspek-bar-row" onclick="openDetailPopup('${aspekKey}','kurang')">
+      <div class="aspek-bar-label" style="color:var(--kurang);">Kurang</div>
+      <div class="aspek-bar-track">
+        <div class="aspek-bar-fill" id="apb-kurang-${aspekKey}" style="width:0%; background:linear-gradient(90deg,#dc2626,#ef4444,#f87171);">
+          ${pctKurang>=10 ? pctKurang+'%' : ''}
+        </div>
+      </div>
+      <div class="aspek-bar-count">${kurang.length}</div>
+    </div>
+    <div class="aspek-legend-row">
+      <div class="aspek-legend-item"><div class="dot" style="background:var(--baik);"></div>Baik (${baik.length})</div>
+      <div class="aspek-legend-item"><div class="dot" style="background:var(--cukup);"></div>Cukup (${cukup.length})</div>
+      <div class="aspek-legend-item"><div class="dot" style="background:var(--kurang);"></div>Kurang (${kurang.length})</div>
+    </div>
+    <div class="aspek-popup-hint">Klik bar untuk lihat daftar peserta</div>
+  `;
+
+  document.getElementById('aspek-popup-overlay').classList.add('open');
+
+  // Animate bars
+  setTimeout(() => {
+    const b = document.getElementById(`apb-baik-${aspekKey}`);
+    const c = document.getElementById(`apb-cukup-${aspekKey}`);
+    const k = document.getElementById(`apb-kurang-${aspekKey}`);
+    if (b) b.style.width = pctBaik + '%';
+    if (c) c.style.width = pctCukup + '%';
+    if (k) k.style.width = pctKurang + '%';
+  }, 60);
+}
+
+function closeAspekPopup() {
+  document.getElementById('aspek-popup-overlay').classList.remove('open');
+}
+function closeAspekPopupOutside(e) {
+  if (e.target === document.getElementById('aspek-popup-overlay')) closeAspekPopup();
+}
+
+// ── DETAIL POPUP (level 2: tabel peserta) ──
+let _detailRows = [];
+let _detailActiveFilter = 'all';
+let _detailAspekKey = '';
+
+function openDetailPopup(aspekKey, filter) {
+  const data = _allAspekData[aspekKey];
+  if (!data) return;
+  _detailAspekKey = aspekKey;
+  _detailActiveFilter = filter || 'all';
+  _updateDetailContent();
+  document.getElementById('detail-search-inp').value = '';
+  document.getElementById('detail-popup-overlay').classList.add('open');
+}
+
+function _updateDetailContent() {
+  const data = _allAspekData[_detailAspekKey];
+  if (!data) return;
+  const { aspek, baik, cukup, kurang } = data;
+  const total = baik.length + cukup.length + kurang.length;
+  const kat = _detailActiveFilter;
+
+  const badgeEl = document.getElementById('detail-badge');
+  const colors = { baik:['#86efac','rgba(34,197,94,.2)'], cukup:['#fcd34d','rgba(245,158,11,.2)'], kurang:['#fca5a5','rgba(239,68,68,.2)'], all:['#a5b4fc','rgba(99,102,241,.2)'] };
+  const labels = { baik:'Baik (7–10)', cukup:'Cukup (5–6)', kurang:'Kurang (1–4)', all:'Semua Kategori' };
+  const [fc, bg] = colors[kat] || colors.all;
+  badgeEl.style.cssText = `color:${fc}; background:${bg};`;
+  badgeEl.textContent = labels[kat] || '';
+  document.getElementById('detail-title').textContent = aspek.label;
+
+  let entries;
+  if (kat==='all')         entries = [...baik,...cukup,...kurang];
+  else if (kat==='baik')   entries = baik;
+  else if (kat==='cukup')  entries = cukup;
+  else                      entries = kurang;
+
+  document.getElementById('detail-sub').textContent = `${entries.length} peserta dari total ${total} peserta`;
+
+  // Chips + deskripsi aspek di atas chips
+  const chipsEl = document.getElementById('detail-chips');
+  chipsEl.innerHTML = aspek.deskripsi
+    ? `<div style="font-size:12px; color:var(--muted); line-height:1.65; padding:10px 14px; background:var(--surface2); border-radius:8px; border-left:3px solid var(--accent); margin-bottom:10px; width:100%;">${escHtml(aspek.deskripsi)}</div>`
+    : '';
+  [
+    { key:'all',    label:`Semua (${total})`,         cls:'active-all' },
+    { key:'baik',   label:`Baik (${baik.length})`,   cls:'active-b' },
+    { key:'cukup',  label:`Cukup (${cukup.length})`, cls:'active-c' },
+    { key:'kurang', label:`Kurang (${kurang.length})`,cls:'active-k' },
+  ].forEach(ch => {
+    const btn = document.createElement('button');
+    btn.className = `chip ${kat===ch.key ? ch.cls : ''}`;
+    btn.textContent = ch.label;
+    btn.onclick = () => { _detailActiveFilter = ch.key; document.getElementById('detail-search-inp').value=''; _updateDetailContent(); };
+    chipsEl.appendChild(btn);
+  });
+
+  _detailRows = entries;
+  renderDetailTable(entries);
+}
+
+function renderDetailTable(entries) {
+  const wrap = document.getElementById('detail-table-wrap');
+  if (!entries.length) {
+    wrap.innerHTML = '<div class="modal-empty">😕 Tidak ada data pada kategori ini</div>';
+    return;
+  }
+  let html = `<table class="modal-table">
+    <thead><tr>
+      <th>#</th>
+      <th>Nama</th>
+      <th>Skor</th>
+      <th>IQ</th>
+      <th>View</th>
+    </tr></thead><tbody>`;
+  entries.forEach((e, i) => {
+    const kat = klasSkor(e.skor);
+    const pillCls = kat==='baik'?'pill-b': kat==='cukup'?'pill-c':'pill-k';
+    const iqKat = klasIQ(e.iq);
+    const viewUrl = `view.html?token=${encodeURIComponent(e.x_01||'')}`;
+    html += `<tr>
+      <td><span class="rank-no">${i+1}</span></td>
+      <td style="font-weight:600;">${escHtml(e.nama)}</td>
+      <td><span class="skor-pill ${pillCls}">${e.skor}</span></td>
+      <td>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:${iqKat.color}; font-weight:700;">${e.iq||'–'}</span>
+        ${e.iq ? `<span style="font-size:10px; color:var(--muted); margin-left:4px;">${iqKat.label}</span>` : ''}
+      </td>
+      <td><a href="${viewUrl}" target="_blank" class="btn-view">🔗 View</a></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function filterDetailTable() {
+  const q = document.getElementById('detail-search-inp').value.toLowerCase();
+  renderDetailTable(_detailRows.filter(e => (e.nama||'').toLowerCase().includes(q)));
+}
+
+function closeDetailPopup() {
+  document.getElementById('detail-popup-overlay').classList.remove('open');
+}
+function closeDetailPopupOutside(e) {
+  if (e.target === document.getElementById('detail-popup-overlay')) closeDetailPopup();
+}
+
+// ── TOGGLE INSIGHT ──
+let _insightRendered = false;
+function toggleInsight() {
+  const panel = document.getElementById('insight-panel');
+  const btn   = document.getElementById('btn-show-insight');
+  const isVisible = panel.classList.contains('visible');
+  if (isVisible) {
+    panel.classList.remove('visible');
+    if (btn) btn.classList.remove('active');
+  } else {
+    if (!_insightRendered) {
+      renderInsightPanel();
+      _insightRendered = true;
+    }
+    panel.classList.add('visible');
+    if (btn) btn.classList.add('active');
+    setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+  }
+}
+
+// ── EMPTY / ERROR ──
+function renderEmpty() {
+  document.getElementById('main-grid').innerHTML = `
+    <div class="empty-box">
+      <div class="empty-icon">📭</div>
+      <div>Tidak ada data ditemukan di tabel ini.</div>
+    </div>`;
+}
+function renderError(msg) {
+  document.getElementById('main-grid').innerHTML = `
+    <div class="error-box">
+      <div class="error-icon">❌</div>
+      <div style="font-weight:700; margin-bottom:8px;">Gagal memuat data</div>
+      <div style="font-size:13px;">${escHtml(msg)}</div>
+    </div>`;
+}
+
+// ── HELPER ──
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── DATA REKOMENDASI ──
+const REKOM_DATA = {
+  kemampuan_umum: {
+    deskripsi: "Kemampuan kognitif dan kecerdasan umum siswa",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Brain Training & Kognisi Dasar',       desc:'Sesi latihan otak terstruktur untuk meningkatkan daya ingat, konsentrasi, dan kecepatan berpikir.',  durasi:'2 hari', peserta:'Semua siswa',      icon:'🧠' },
+      { tipe:'program',   judul:'Program Remedial Kognitif',             desc:'Program belajar intensif 1 bulan dengan metode spaced repetition dan active recall.',               durasi:'1 bulan', peserta:'Siswa kurang',     icon:'📚' },
+      { tipe:'seminar',   judul:'Seminar Belajar Efektif & Berpikir Kritis', desc:'Pengenalan teknik belajar berbasis neurosains: mind mapping, chunking, dan elaborative interrogation.', durasi:'1 hari', peserta:'Siswa & guru', icon:'💡' },
+    ]
+  },
+  daya_tangkap_visual: {
+    deskripsi: "Kemampuan memproses dan memahami informasi visual",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Visual Learning Workshop',              desc:'Pelatihan membaca diagram, grafik, peta, dan simbol secara cepat dan akurat.',                       durasi:'1 hari',  peserta:'Semua siswa',      icon:'👁️' },
+      { tipe:'program',   judul:'Integrasi Media Visual di Kelas',        desc:'Program guru untuk mengintegrasikan infografis, video, dan diagram interaktif dalam pembelajaran.',  durasi:'1 semester', peserta:'Guru',         icon:'🎨' },
+      { tipe:'konseling', judul:'Asesmen Gaya Belajar Visual',            desc:'Sesi identifikasi gaya belajar individual dan penyusunan strategi belajar personal.',               durasi:'2 jam',   peserta:'Siswa kurang',     icon:'🔍' },
+    ]
+  },
+  kemampuan_berpikir_logis: {
+    deskripsi: "Kemampuan berpikir sistematis dan menggunakan logika",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Logika & Problem Solving Dasar',        desc:'Workshop interaktif menggunakan puzzle, teka-teki logika, dan soal analitis bertahap.',               durasi:'2 hari',  peserta:'Semua siswa',      icon:'⚙️' },
+      { tipe:'program',   judul:'Olimpiade Logika Internal Sekolah',      desc:'Kompetisi internal berbasis soal HOTS untuk memotivasi dan mengasah kemampuan berpikir logis.',     durasi:'1 semester', peserta:'Semua siswa',   icon:'🏅' },
+      { tipe:'seminar',   judul:'Computational Thinking untuk Siswa',     desc:'Pengenalan berpikir komputasional: dekomposisi masalah, pengenalan pola, dan algoritma sederhana.', durasi:'1 hari',  peserta:'Siswa & guru',     icon:'💻' },
+    ]
+  },
+  kemampuan_berpikir_abstrak: {
+    deskripsi: "Kemampuan memahami konsep non-konkret dan pola tersembunyi",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Abstract Thinking & Pattern Recognition', desc:'Latihan intensif mengenali pola tersembunyi, analogi, dan hubungan antar konsep abstrak.',        durasi:'1 hari',  peserta:'Semua siswa',      icon:'🔷' },
+      { tipe:'program',   judul:'Seni & Matematika Abstrak',               desc:'Program lintas mata pelajaran yang menghubungkan konsep matematika abstrak dengan ekspresi seni.',  durasi:'2 bulan', peserta:'Semua siswa',      icon:'🎭' },
+      { tipe:'konseling', judul:'Bimbingan Belajar Individual',             desc:'Pendampingan 1-on-1 untuk siswa dengan kesulitan memahami konsep abstrak.',                        durasi:'Berkelanjutan', peserta:'Siswa kurang', icon:'🤝' },
+    ]
+  },
+  penalaran_verbal: {
+    deskripsi: "Kemampuan memahami dan menggunakan bahasa secara efektif",
+    rekomendasi: [
+      { tipe:'program',   judul:'Program Literasi Sekolah',               desc:'Program membaca intensif, diskusi buku, dan debat terstruktur untuk meningkatkan kemampuan verbal.',  durasi:'1 semester', peserta:'Semua siswa',  icon:'📖' },
+      { tipe:'workshop',  judul:'Public Speaking & Komunikasi Efektif',   desc:'Pelatihan berbicara di depan umum, argumentasi logis, dan penyampaian ide secara terstruktur.',      durasi:'2 hari',  peserta:'Semua siswa',      icon:'🎤' },
+      { tipe:'seminar',   judul:'Seminar Kecerdasan Linguistik',           desc:'Memahami peran kecerdasan verbal dalam karir dan kehidupan sehari-hari.',                           durasi:'3 jam',   peserta:'Siswa & orang tua', icon:'💬' },
+    ]
+  },
+  penalaran_numerik: {
+    deskripsi: "Kemampuan berpikir dengan angka dan data",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Numerasi & Literasi Data',               desc:'Workshop memahami statistik dasar, membaca grafik data, dan menginterpretasi angka dalam konteks nyata.', durasi:'2 hari', peserta:'Semua siswa', icon:'🔢' },
+      { tipe:'program',   judul:'Matematika Kontekstual',                 desc:'Pendekatan pembelajaran matematika berbasis proyek nyata seperti keuangan, pengukuran, dan data sains.', durasi:'1 semester', peserta:'Semua siswa', icon:'📊' },
+      { tipe:'konseling', judul:'Mengatasi Math Anxiety',                 desc:'Sesi konseling dan terapi kognitif untuk siswa yang mengalami kecemasan terhadap matematika.',         durasi:'4 sesi',  peserta:'Siswa kurang',     icon:'💭' },
+    ]
+  },
+  hasrat_berprestasi: {
+    deskripsi: "Motivasi intrinsik untuk mencapai hasil terbaik",
+    rekomendasi: [
+      { tipe:'seminar',   judul:'Seminar Growth Mindset',                 desc:'Membangun pola pikir berkembang berdasarkan riset Carol Dweck tentang kecerdasan yang dapat ditumbuhkan.', durasi:'1 hari', peserta:'Semua siswa', icon:'🏆' },
+      { tipe:'program',   judul:'Program Mentoring Siswa Berprestasi',    desc:'Sistem mentoring di mana siswa berprestasi membimbing rekan yang kurang termotivasi.',               durasi:'1 semester', peserta:'Semua siswa',   icon:'⭐' },
+      { tipe:'konseling', judul:'Goal Setting & Motivasi Individual',     desc:'Pendampingan menyusun tujuan SMART dan rencana aksi personal untuk setiap siswa.',                  durasi:'Berkelanjutan', peserta:'Siswa kurang', icon:'🎯' },
+    ]
+  },
+  daya_tahan_stress: {
+    deskripsi: "Kemampuan mengelola tekanan dan tetap performa di bawah stress",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Manajemen Stress & Resiliensi Remaja',   desc:'Pelatihan teknik pernapasan, mindfulness, dan strategi koping yang sehat untuk siswa.',               durasi:'1 hari',  peserta:'Semua siswa',      icon:'💪' },
+      { tipe:'seminar',   judul:'Seminar Kesehatan Mental Sekolah',       desc:'Meningkatkan kesadaran tentang kesehatan mental, tanda-tanda burnout, dan cara mencari bantuan.',     durasi:'3 jam',   peserta:'Siswa, guru & orang tua', icon:'🧘' },
+      { tipe:'konseling', judul:'Konseling Manajemen Emosi',              desc:'Sesi konseling individual untuk siswa dengan tingkat stress tinggi dan kesulitan regulasi emosi.',     durasi:'Berkelanjutan', peserta:'Siswa kurang', icon:'💚' },
+    ]
+  },
+  kepercayaan_diri: {
+    deskripsi: "Keyakinan diri terhadap kemampuan dan keputusan sendiri",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Self-Confidence Building Workshop',      desc:'Aktivitas membangun kepercayaan diri melalui tantangan terstruktur, role play, dan umpan balik positif.', durasi:'2 hari', peserta:'Semua siswa', icon:'✨' },
+      { tipe:'program',   judul:'Ekstrakulikuler Seni Pertunjukan',       desc:'Program teater, debat, atau presentasi publik yang membangun rasa percaya diri secara alami.',        durasi:'1 semester', peserta:'Semua siswa',   icon:'🎭' },
+      { tipe:'konseling', judul:'Terapi Kognitif Harga Diri',             desc:'Sesi konseling untuk mengidentifikasi dan mengubah pola pikir negatif tentang diri sendiri.',         durasi:'6 sesi',  peserta:'Siswa kurang',     icon:'🌟' },
+    ]
+  },
+  relasi_sosial: {
+    deskripsi: "Kemampuan membangun dan menjaga hubungan interpersonal",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Social Skills & Empati',                 desc:'Pelatihan keterampilan sosial, active listening, empati, dan resolusi konflik secara damai.',         durasi:'1 hari',  peserta:'Semua siswa',      icon:'🤝' },
+      { tipe:'program',   judul:'Program Buddy System Sekolah',           desc:'Sistem teman sebangku terstruktur yang mendorong interaksi lintas kelompok dan budaya.',             durasi:'1 semester', peserta:'Semua siswa',   icon:'👫' },
+      { tipe:'seminar',   judul:'Seminar Anti Bullying & Inklusi',        desc:'Membangun budaya sekolah yang inklusif, aman, dan saling menghargai perbedaan.',                    durasi:'1 hari',   peserta:'Semua warga sekolah', icon:'🌈' },
+    ]
+  },
+  kerjasama: {
+    deskripsi: "Kemampuan bekerja efektif dalam tim",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Team Building & Collaborative Learning', desc:'Kegiatan outbound dan proyek kolaboratif yang membangun kepercayaan, komunikasi, dan sinergi tim.',   durasi:'2 hari',  peserta:'Semua siswa',      icon:'👥' },
+      { tipe:'program',   judul:'Project-Based Learning (PBL)',           desc:'Metode pembelajaran berbasis proyek kelompok lintas mata pelajaran dengan peran yang jelas.',        durasi:'1 semester', peserta:'Semua siswa & guru', icon:'📋' },
+      { tipe:'seminar',   judul:'Seminar Kepemimpinan & Teamwork',        desc:'Mengenal dinamika tim, peran kepemimpinan situasional, dan cara mengatasi konflik dalam kelompok.',  durasi:'1 hari',  peserta:'Siswa & guru',     icon:'🎖️' },
+    ]
+  },
+  sistematika_kerja: {
+    deskripsi: "Kemampuan bekerja secara terencana dan terorganisir",
+    rekomendasi: [
+      { tipe:'workshop',  judul:'Manajemen Waktu & Produktivitas',        desc:'Pelatihan teknik time blocking, to-do list efektif, dan prioritisasi tugas dengan metode Eisenhower.', durasi:'1 hari', peserta:'Semua siswa', icon:'📋' },
+      { tipe:'program',   judul:'Sistem Portofolio Belajar Siswa',        desc:'Program dokumentasi belajar terstruktur yang melatih perencanaan, pelaksanaan, dan evaluasi mandiri.', durasi:'1 semester', peserta:'Semua siswa', icon:'📁' },
+      { tipe:'seminar',   judul:'Seminar Organisasi Diri untuk Remaja',   desc:'Pengenalan sistem produktivitas adaptif untuk pelajar: GTD, Pomodoro, dan habit stacking.',         durasi:'3 jam',   peserta:'Siswa & orang tua', icon:'⏰' },
+    ]
+  },
+  inisiatif: {
+    deskripsi: "Kemauan bertindak proaktif tanpa harus diminta",
+    rekomendasi: [
+      { tipe:'program',   judul:'Student Entrepreneurship Program',       desc:'Program inkubasi ide dimana siswa merancang, merencanakan, dan mempresentasikan solusi nyata.',     durasi:'3 bulan', peserta:'Semua siswa',      icon:'🚀' },
+      { tipe:'workshop',  judul:'Design Thinking & Problem Solving',      desc:'Workshop menggunakan kerangka design thinking untuk menemukan dan memecahkan masalah nyata di sekolah.', durasi:'2 hari', peserta:'Semua siswa', icon:'💡' },
+      { tipe:'konseling', judul:'Coaching Proaktivitas Individual',       desc:'Sesi coaching untuk membantu siswa mengenali zona nyaman dan berani mengambil langkah pertama.',    durasi:'4 sesi',  peserta:'Siswa kurang',     icon:'🎯' },
+    ]
+  },
+  kemandirian: {
+    deskripsi: "Kemampuan belajar dan bekerja tanpa bergantung pada orang lain",
+    rekomendasi: [
+      { tipe:'program',   judul:'Self-Directed Learning Program',         desc:'Struktur belajar mandiri dengan target harian, jurnal refleksi, dan evaluasi diri mingguan.',       durasi:'1 semester', peserta:'Semua siswa',   icon:'🦅' },
+      { tipe:'workshop',  judul:'Workshop Kemandirian Belajar',           desc:'Pelatihan strategi belajar mandiri: self-monitoring, self-evaluation, dan self-regulation.',        durasi:'1 hari',  peserta:'Semua siswa',      icon:'📚' },
+      { tipe:'seminar',   judul:'Parenting: Mendukung Kemandirian Anak',  desc:'Seminar untuk orang tua tentang cara mendukung kemandirian tanpa over-parenting.',               durasi:'3 jam',   peserta:'Orang tua',        icon:'👨‍👩‍👧' },
+    ]
+  },
+};
+
+// ── RENDER INSIGHT PANEL ──
+function renderInsightPanel() {
+  const panel = document.getElementById('insight-panel');
+  if (!allRows.length) { panel.classList.remove('visible'); return; }
+
+  // Hitung % kurang per aspek
+  const aspekStats = ALL_ASPEK.map(aspek => {
+    let baik=0, cukup=0, kurang=0;
+    allRows.forEach(row => {
+      const src = aspek.group==='KEMAMPUAN' ? sj(row.x_03,{})
+                : aspek.group==='KEPRIBADIAN' ? sj(row.x_04,{})
+                : sj(row.x_05,{});
+      const s = parseInt(src[aspek.key]) || 0;
+      if (s<=0) return;
+      const k = klasSkor(s);
+      if (k==='baik') baik++;
+      else if (k==='cukup') cukup++;
+      else kurang++;
+    });
+    const total = baik+cukup+kurang;
+    return {
+      ...aspek,
+      baik, cukup, kurang, total,
+      pctBaik:   total>0 ? Math.round(baik/total*100)   : 0,
+      pctCukup:  total>0 ? Math.round(cukup/total*100)  : 0,
+      pctKurang: total>0 ? Math.round(kurang/total*100) : 0,
+    };
+  });
+
+  // Top 3 kekuatan (% baik tertinggi)
+  const strengths = [...aspekStats].sort((a,b)=>b.pctBaik-a.pctBaik).slice(0,3);
+  // Top 3 kelemahan (% kurang tertinggi)
+  const weaknesses = [...aspekStats].sort((a,b)=>b.pctKurang-a.pctKurang).slice(0,3);
+
+  // Health score: rata-rata % baik semua aspek
+  const healthScore = Math.round(aspekStats.reduce((s,a)=>s+a.pctBaik,0)/aspekStats.length);
+  const healthGrade = healthScore>=80?{label:'Sangat Baik',color:'#22c55e',bg:'rgba(34,197,94,.15)',emoji:'🌟'}
+                    : healthScore>=65?{label:'Baik',color:'#3b82f6',bg:'rgba(59,130,246,.15)',emoji:'✅'}
+                    : healthScore>=50?{label:'Cukup',color:'#f59e0b',bg:'rgba(245,158,11,.15)',emoji:'⚠️'}
+                    : {label:'Perlu Perhatian',color:'#ef4444',bg:'rgba(239,68,68,.15)',emoji:'🚨'};
+
+  const tipeLabel = { workshop:'Pelatihan/Workshop', seminar:'Seminar/Talkshow', program:'Program Sekolah', konseling:'Konseling' };
+  const tipeClass = { workshop:'tipe-workshop', seminar:'tipe-seminar', program:'tipe-program', konseling:'tipe-konseling' };
+  const tipeIcon  = { workshop:'🛠️', seminar:'🎙️', program:'🏫', konseling:'💬' };
+  const priorityLabel = ['🔴 Prioritas Utama','🟡 Prioritas Kedua','🔵 Prioritas Ketiga'];
+
+  // Build HTML
+  const circumference = 2 * Math.PI * 30;
+  const dashOffset = circumference - (healthScore / 100) * circumference;
+
+  panel.innerHTML = `
+    <!-- Header -->
+    <div class="insight-header">
+      <div class="insight-header-icon">📋</div>
+      <div class="insight-header-text">
+        <h2>Insight & Rekomendasi Sekolah</h2>
+        <p>Analisa otomatis berdasarkan data ${allRows.length} peserta · Top 3 area prioritas tindakan</p>
+      </div>
+    </div>
+
+    <!-- Health Score -->
+    <div class="health-score-row">
+      <div class="health-score-card">
+        <div class="health-score-ring">
+          <svg width="72" height="72" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="30" fill="none" stroke="var(--surface2)" stroke-width="7"/>
+            <circle cx="36" cy="36" r="30" fill="none" stroke="${healthGrade.color}" stroke-width="7"
+              stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}"
+              stroke-linecap="round" style="transition:stroke-dashoffset 1s ease;"/>
+          </svg>
+          <div class="health-score-ring-num" style="color:${healthGrade.color};">${healthScore}</div>
+        </div>
+        <div class="health-score-info">
+          <h3>Indeks Kesehatan Sekolah</h3>
+          <p>Rata-rata persentase siswa berkategori <strong>Baik</strong> di seluruh aspek psikogram.</p>
+          <div class="health-grade" style="background:${healthGrade.bg}; color:${healthGrade.color};">
+            ${healthGrade.emoji} ${healthGrade.label}
+          </div>
+        </div>
+      </div>
+      <div class="health-score-card" style="flex:2; min-width:300px;">
+        <div style="width:100%;">
+          <div style="font-size:13px; font-weight:700; margin-bottom:12px; color:var(--muted);">DISTRIBUSI RATA-RATA SEMUA ASPEK</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${['baik','cukup','kurang'].map(k => {
+              const avg = Math.round(aspekStats.reduce((s,a)=>s+a['pct'+k.charAt(0).toUpperCase()+k.slice(1)],0)/aspekStats.length);
+              const color = k==='baik'?'var(--baik)':k==='cukup'?'var(--cukup)':'var(--kurang)';
+              const label = k==='baik'?'Baik (7–10)':k==='cukup'?'Cukup (5–6)':'Kurang (1–4)';
+              return `<div style="display:flex; align-items:center; gap:10px;">
+                <div style="font-size:11px; color:var(--muted); width:72px;">${label}</div>
+                <div style="flex:1; background:var(--surface2); border-radius:99px; height:14px; overflow:hidden;">
+                  <div style="width:${avg}%; height:100%; background:${color}; border-radius:99px; transition:width 1s ease;"></div>
+                </div>
+                <div style="font-size:12px; font-family:'JetBrains Mono',monospace; font-weight:700; color:${color}; width:36px;">${avg}%</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kekuatan & Kelemahan -->
+    <div class="sw-grid">
+      <div class="sw-card">
+        <div class="sw-card-head strength">✅ &nbsp;3 Kekuatan Terbesar</div>
+        ${strengths.map(a=>`
+          <div class="sw-item">
+            <div class="sw-item-icon">${a.icon}</div>
+            <div style="flex:1;">
+              <div class="sw-item-label">${a.label}</div>
+              <div class="sw-item-sub">${a.group}</div>
+            </div>
+            <span class="sw-pct-pill good">${a.pctBaik}% Baik</span>
+          </div>`).join('')}
+      </div>
+      <div class="sw-card">
+        <div class="sw-card-head weakness">⚠️ &nbsp;3 Area Perlu Perhatian</div>
+        ${weaknesses.map(a=>`
+          <div class="sw-item">
+            <div class="sw-item-icon">${a.icon}</div>
+            <div style="flex:1;">
+              <div class="sw-item-label">${a.label}</div>
+              <div class="sw-item-sub">${a.group}</div>
+            </div>
+            <span class="sw-pct-pill bad">${a.pctKurang}% Kurang</span>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Rekomendasi -->
+    <div class="rekomendasi-section">
+      <h3>🎯 Rekomendasi Tindakan — Top 3 Prioritas</h3>
+      <div class="rekom-grid">
+        ${weaknesses.map((a, i) => {
+          const rekom = REKOM_DATA[a.key];
+          if (!rekom) return '';
+          return `
+            <div class="rekom-card priority-${i+1}">
+              <div class="rekom-card-head">
+                <span class="rekom-aspek-icon">${a.icon}</span>
+                <span class="rekom-aspek-name">${a.label}<br><small style="font-weight:400; color:var(--muted);">${priorityLabel[i]}</small></span>
+                <span class="rekom-kurang-pct">${a.pctKurang}% Kurang</span>
+              </div>
+              <div class="rekom-items">
+                ${rekom.rekomendasi.map(r=>`
+                  <div class="rekom-item">
+                    <span class="rekom-tipe-badge ${tipeClass[r.tipe]}">${tipeIcon[r.tipe]} ${tipeLabel[r.tipe]}</span>
+                    <div class="rekom-item-info">
+                      <div class="rekom-item-judul">${r.icon} ${r.judul}</div>
+                      <div class="rekom-item-desc">${r.desc}</div>
+                      <div class="rekom-item-meta">
+                        <span class="rekom-meta-tag">⏱️ ${r.durasi}</span>
+                        <span class="rekom-meta-tag">👤 ${r.peserta}</span>
+                      </div>
+                    </div>
+                  </div>`).join('')}
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  panel.classList.add('visible');
+}
+
+// ── INIT ──
+// loadData() dipanggil otomatis saat halaman dibuka
+</script>
+</body>
+</html>
