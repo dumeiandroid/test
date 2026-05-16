@@ -102,7 +102,7 @@
 
   /* BURGER MENU BUTTON */
   .burger-btn {
-    display:none; flex-direction:column; justify-content:center; gap:5px;
+    display:flex; flex-direction:column; justify-content:center; gap:5px;
     width:40px; height:40px; background:rgba(201,168,76,0.15);
     border:1px solid rgba(201,168,76,0.3); border-radius:8px;
     cursor:pointer; padding:10px; flex-shrink:0;
@@ -207,11 +207,11 @@
   .audio-modal-dl:hover { background:rgba(201,168,76,0.2); }
 
   @media(max-width:768px){
-    .burger-btn { display:flex; }
     .header-contact { display:none; }
   }
   @media(min-width:769px){
     .burger-btn { display:none; }
+    .header-contact { display:flex; }
   }
   .pdf-modal-overlay {
     display:none; position:fixed; inset:0; z-index:9999;
