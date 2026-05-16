@@ -99,71 +99,6 @@
     .cards{grid-template-columns:1fr}
     .folder-list{grid-template-columns:1fr}
   }
-
-  /* PDF MODAL */
-  .pdf-modal-overlay {
-    display:none; position:fixed; inset:0; z-index:9999;
-    background:rgba(0,0,0,0.85); align-items:center; justify-content:center;
-    padding:12px;
-  }
-  .pdf-modal-overlay.active { display:flex; }
-  .pdf-modal {
-    background:var(--white); border-radius:16px; overflow:hidden;
-    width:100%; max-width:860px; height:90vh; display:flex; flex-direction:column;
-    box-shadow:0 24px 80px rgba(0,0,0,0.5);
-  }
-  .pdf-modal-header {
-    display:flex; align-items:center; gap:12px;
-    padding:14px 18px; background:var(--navy); flex-shrink:0;
-  }
-  .pdf-modal-title {
-    flex:1; font-size:14px; font-weight:500; color:var(--white);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .pdf-modal-btn {
-    display:flex; align-items:center; gap:6px;
-    padding:7px 14px; border-radius:8px; font-size:13px; font-weight:500;
-    text-decoration:none; border:none; cursor:pointer; transition:all 0.15s;
-  }
-  .pdf-modal-download {
-    background:rgba(201,168,76,0.2); color:var(--gold-light);
-    border:1px solid rgba(201,168,76,0.3);
-  }
-  .pdf-modal-download:hover { background:rgba(201,168,76,0.35); }
-  .pdf-modal-close {
-    background:rgba(255,255,255,0.1); color:var(--white);
-    border:1px solid rgba(255,255,255,0.15); font-size:18px; line-height:1;
-    padding:6px 12px;
-  }
-  .pdf-modal-close:hover { background:rgba(255,255,255,0.2); }
-  .pdf-modal-body { flex:1; overflow:hidden; background:#525659; position:relative; }
-  .pdf-modal-body iframe {
-    width:100%; height:100%; border:none; display:block;
-  }
-  .pdf-modal-loading {
-    position:absolute; inset:0; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:12px;
-    color:rgba(255,255,255,0.7); font-size:14px;
-  }
-  .pdf-modal-spinner {
-    width:36px; height:36px; border:3px solid rgba(255,255,255,0.2);
-    border-top-color:var(--gold); border-radius:50%;
-    animation:spin 0.8s linear infinite;
-  }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  .pdf-modal-fallback {
-    display:none; position:absolute; inset:0;
-    align-items:center; justify-content:center; flex-direction:column;
-    gap:16px; padding:32px; text-align:center; color:var(--white);
-    background:#525659;
-  }
-  .pdf-modal-fallback.show { display:flex; }
-  .pdf-modal-fallback p { font-size:14px; opacity:0.75; line-height:1.6; }
-  .pdf-modal-fallback a {
-    display:inline-flex; align-items:center; gap:8px;
-    background:var(--gold); color:var(--navy); padding:12px 24px;
-    border-radius:10px; font-weight:600; font-size:14px; text-decoration:none;
-  }
 </style>
 </head>
 <body>
@@ -196,29 +131,6 @@
   </div>
   <div id="segments"></div>
 </main>
-
-<!-- PDF MODAL -->
-<div class="pdf-modal-overlay" id="pdfModalOverlay">
-  <div class="pdf-modal">
-    <div class="pdf-modal-header">
-      <span class="pdf-modal-title" id="pdfModalTitle">Memuat dokumen…</span>
-      <a href="#" id="pdfModalDownload" class="pdf-modal-btn pdf-modal-download" download>⬇ Unduh</a>
-      <button class="pdf-modal-btn pdf-modal-close" id="pdfModalClose">✕</button>
-    </div>
-    <div class="pdf-modal-body">
-      <div class="pdf-modal-loading" id="pdfModalLoading">
-        <div class="pdf-modal-spinner"></div>
-        <span>Memuat PDF…</span>
-      </div>
-      <iframe id="pdfModalFrame" src="" title="PDF Viewer" allow="fullscreen"></iframe>
-      <div class="pdf-modal-fallback" id="pdfModalFallback">
-        <div style="font-size:48px">📄</div>
-        <p>Browser HP Anda tidak dapat menampilkan PDF secara langsung.<br>Silakan unduh filenya untuk membuka di aplikasi PDF.</p>
-        <a href="#" id="pdfFallbackDownload" download>⬇ Unduh PDF</a>
-      </div>
-    </div>
-  </div>
-</div>
 
 <footer>
   <strong>Lidan Psikologi</strong> — PT Lidan Indah Abadi &nbsp;|&nbsp;
@@ -646,27 +558,13 @@ function fileBorder(type, segId) {
 
 function renderCard(card, segId) {
   const color = segColor(segId);
-  const files = card.files.map(f => {
-    if (f.type === 'pdf') {
-      // PDF: buka modal, bukan download langsung
-      return `
-    <a href="${f.href}" class="file-link pdf-open-link"
-       data-href="${f.href}" data-label="${f.label}"
-       style="background:${fileBg(f.type,segId)};color:${fileFg(f.type,segId)};border-color:${fileBorder(f.type,segId)}">
-      <div class="file-icon" style="background:${fileBg(f.type,segId)}">${fileEmoji(f.type)}</div>
-      <span class="file-name">${f.label}</span>
-      <span class="file-ext">${f.ext}</span>
-    </a>`;
-    }
-    // DOCX / mp3 / lainnya: tetap download
-    return `
+  const files = card.files.map(f => `
     <a href="${f.href}" class="file-link" download
        style="background:${fileBg(f.type,segId)};color:${fileFg(f.type,segId)};border-color:${fileBorder(f.type,segId)}">
       <div class="file-icon" style="background:${fileBg(f.type,segId)}">${fileEmoji(f.type)}</div>
       <span class="file-name">${f.label}</span>
       <span class="file-ext">${f.ext}</span>
-    </a>`;
-  }).join('');
+    </a>`).join('');
 
   const tags = card.tags.map(t => `<span class="tag">${t}</span>`).join('');
 
@@ -711,92 +609,6 @@ document.getElementById('folderList').innerHTML = DATA.folders.map(f=>`
   </div>`).join('');
 
 document.getElementById('segments').innerHTML   = DATA.segments.map(renderSegment).join('');
-
-/* ================================================================
-   PDF MODAL LOGIC
-   ================================================================ */
-(function() {
-  const overlay   = document.getElementById('pdfModalOverlay');
-  const frame     = document.getElementById('pdfModalFrame');
-  const title     = document.getElementById('pdfModalTitle');
-  const dlBtn     = document.getElementById('pdfModalDownload');
-  const fbDlBtn   = document.getElementById('pdfFallbackDownload');
-  const closeBtn  = document.getElementById('pdfModalClose');
-  const loading   = document.getElementById('pdfModalLoading');
-  const fallback  = document.getElementById('pdfModalFallback');
-
-  // Deteksi apakah browser bisa render PDF inline
-  // (Chrome/Firefox desktop bisa; banyak HP Android tidak bisa)
-  function isMobile() {
-    return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-  }
-
-  function openPdf(href, label) {
-    title.textContent   = label + ' — ' + href.split('/').pop();
-    dlBtn.href          = href;
-    fbDlBtn.href        = href;
-    loading.style.display = 'flex';
-    fallback.classList.remove('show');
-    frame.src           = '';
-
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    // Strategi: gunakan Google Docs Viewer sebagai viewer universal
-    // Ini bekerja di hampir semua HP karena PDF dirender server-side
-    const absoluteHref = new URL(href, window.location.href).href;
-    const gdocsUrl = 'https://docs.google.com/viewer?embedded=true&url=' + encodeURIComponent(absoluteHref);
-
-    frame.onload = function() {
-      loading.style.display = 'none';
-      // Coba deteksi apakah Google Docs berhasil load
-      // (jika gagal karena file lokal/CORS, tampilkan fallback)
-    };
-
-    frame.onerror = function() {
-      loading.style.display = 'none';
-      fallback.classList.add('show');
-    };
-
-    // Timeout fallback: jika 12 detik belum load, tampilkan opsi unduh
-    const timer = setTimeout(function() {
-      if (loading.style.display !== 'none') {
-        loading.style.display = 'none';
-        fallback.classList.add('show');
-      }
-    }, 12000);
-
-    frame.addEventListener('load', function clearTimer() {
-      clearTimeout(timer);
-      frame.removeEventListener('load', clearTimer);
-    }, { once: true });
-
-    frame.src = gdocsUrl;
-  }
-
-  function closePdf() {
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-    frame.src = '';
-  }
-
-  // Intercept semua klik pada link PDF
-  document.addEventListener('click', function(e) {
-    const link = e.target.closest('.pdf-open-link');
-    if (!link) return;
-    e.preventDefault();
-    openPdf(link.dataset.href, link.dataset.label);
-  });
-
-  // Tutup modal
-  closeBtn.addEventListener('click', closePdf);
-  overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) closePdf();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closePdf();
-  });
-})();
 </script>
 </body>
 </html>
