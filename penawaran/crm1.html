@@ -318,17 +318,6 @@ table.main-tbl tr:hover td:last-child{background:#f8fafc;}
         <p style="font-size:13px;color:var(--muted);margin-top:3px;">Ringkasan data seluruh institusi</p>
       </div>
       <div class="stat-grid" id="dashStats"></div>
-      <!-- Duplikat alert card -->
-      <div id="dupCard" style="display:none;background:linear-gradient(135deg,#fff7ed,#fff);border:1.5px solid #fed7aa;border-radius:14px;padding:16px 20px;margin-bottom:16px;display:none;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;" onclick="openDupModal()">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="font-size:28px;">⚠️</div>
-          <div>
-            <div style="font-size:14px;font-weight:900;color:#92400e;">Terdeteksi Data Duplikat</div>
-            <div style="font-size:12px;color:#b45309;margin-top:2px;" id="dupDesc">-</div>
-          </div>
-        </div>
-        <div style="background:#f97316;color:#fff;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:800;white-space:nowrap;">Lihat & Hapus →</div>
-      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;" id="dashCharts">
         <div class="tcard">
           <div class="tcard-head"><span>📊 Per Status</span></div>
@@ -348,13 +337,13 @@ table.main-tbl tr:hover td:last-child{background:#f8fafc;}
     <!-- PAGE: LIST -->
     <div class="page" id="pgList">
       <div class="filter-bar">
-        <input type="text" id="fSearch" placeholder="🔍 Cari nama, kota, provinsi..." oninput="debounceSearch()">
-        <select id="fJenis" onchange="renderList(true)">
+        <input type="text" id="fSearch" placeholder="🔍 Cari nama, kota, provinsi..." oninput="renderList()">
+        <select id="fJenis" onchange="renderList()">
           <option value="">Semua Jenis</option>
           <option value="sekolah">Sekolah</option>
           <option value="kampus">Kampus</option>
         </select>
-        <select id="fStatus" onchange="renderList(true)">
+        <select id="fStatus" onchange="renderList()">
           <option value="">Semua Status</option>
           <option value="baru">Baru</option>
           <option value="diproses">Diproses</option>
@@ -362,8 +351,7 @@ table.main-tbl tr:hover td:last-child{background:#f8fafc;}
           <option value="deal">Deal</option>
           <option value="gagal">Gagal</option>
         </select>
-        <select id="fProvinsi" onchange="onProvinsiChange()"><option value="">Semua Provinsi</option></select>
-        <select id="fKota" onchange="renderList(true)"><option value="">Semua Kota</option></select>
+        <select id="fProvinsi" onchange="renderList()"><option value="">Semua Provinsi</option></select>
         <button class="btn-add" onclick="openAddModal()">+ Tambah Institusi</button>
         <button class="btn-add" style="background:linear-gradient(135deg,#059669,#10b981);" onclick="document.getElementById('excelFileInput').click()">📥 Upload Excel</button>
         <button class="btn-add" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);" onclick="downloadTemplate()">📋 Template Excel</button>
@@ -391,7 +379,6 @@ table.main-tbl tr:hover td:last-child{background:#f8fafc;}
             <tbody id="listBody"></tbody>
           </table>
         </div>
-        <div id="paginationBar"></div>
         <div id="listEmpty" class="empty" style="display:none;">
           <div class="ei">🔍</div>
           <p>Tidak ada data ditemukan</p>
@@ -657,27 +644,6 @@ table.main-tbl tr:hover td:last-child{background:#f8fafc;}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     MODAL: DUPLIKAT
-══════════════════════════════════════════ -->
-<div class="modal-bg" id="mDup">
-  <div class="mbox" style="max-width:780px;">
-    <div class="mhead">
-      <h3>⚠️ Data Duplikat</h3>
-      <button class="x" onclick="closeModal('mDup')">✕</button>
-    </div>
-    <div class="mbody" style="padding:0;">
-      <div style="padding:14px 20px;background:#fff7ed;border-bottom:1px solid #fed7aa;">
-        <p style="font-size:12px;color:#92400e;font-weight:600;line-height:1.6;">
-          Data di bawah terdeteksi duplikat berdasarkan: <strong>nama+kota sama</strong>, atau <strong>nomor WA sama</strong>, atau <strong>media sosial sama</strong>.<br>
-          Satu baris hanya dihitung sekali meskipun memenuhi lebih dari satu kriteria. Klik <strong>Hapus</strong> untuk menghapus data yang tidak diperlukan.
-        </p>
-      </div>
-      <div id="dupGroupsWrap" style="padding:16px 20px;max-height:60vh;overflow-y:auto;"></div>
-    </div>
-  </div>
-</div>
-
 <script>
 /* ================================================================
    CONFIG
@@ -709,12 +675,6 @@ const TBLU= 'users';
 
 /* ── STATE ── */
 let ME = '', ME_ROLE = '', allData = [], selectedFiles = [], currentDetailId = null;
-// Pagination & server-side filter state
-const PAGE_SIZE = 25;
-let listPage  = 1;
-let listTotal = 0;
-let listPages = 1;
-let searchTimer = null;
 
 /* ── HELPERS ── */
 const $  = id => document.getElementById(id);
@@ -783,130 +743,18 @@ async function startApp() {
   $('sbAv').textContent    = ME.charAt(0).toUpperCase();
   $('sbUname').textContent = ME;
   $('sbUrole').textContent = ME_ROLE;
-  await renderDash();
-  populateProvinsiKota(); // populate filter provinsi & kota dari database
+  await loadAllData();
+  renderDash();
 }
 
-/* ── LOAD DATA ──
-   loadAllData: tetap ada untuk loadDash & loadFollowup (ambil semua kolom tertentu)
-   loadPage: fetch satu halaman untuk tabel list (server-side pagination)
-─────────────────────────────────────────────────────────── */
-
-// Ambil data untuk dashboard — hanya ambil kolom yang dibutuhkan via limit besar
-// tapi COUNT per status lewat query terpisah agar ringan
-async function loadDashStats() {
-  const statuses = ['baru','diproses','followup','deal','gagal'];
-  const jenis    = ['sekolah','kampus'];
-  const results  = {};
-
-  // parallel COUNT query per status + per jenis + followup terdekat
-  const [
-    total, baru, diproses, followup, deal, gagal,
-    kampus, sekolah, fuRows
-  ] = await Promise.all([
-    req(`?table=${TBL}&limit=1&offset=0`).then(r=>r.total||0),
-    req(`?table=${TBL}&x_08_eq=baru&limit=1&offset=0`).then(r=>r.total||0),
-    req(`?table=${TBL}&x_08_eq=diproses&limit=1&offset=0`).then(r=>r.total||0),
-    req(`?table=${TBL}&x_08_eq=followup&limit=1&offset=0`).then(r=>r.total||0),
-    req(`?table=${TBL}&x_08_eq=deal&limit=1&offset=0`).then(r=>r.total||0),
-    req(`?table=${TBL}&x_08_eq=gagal&limit=1&offset=0`).then(r=>r.total||0),
-    req(`?table=${TBL}&x_02_eq=kampus&limit=1&offset=0`).then(r=>r.total||0),
-    req(`?table=${TBL}&x_02_eq=sekolah&limit=1&offset=0`).then(r=>r.total||0),
-    req(`?table=${TBL}&x_10_notempty=1&limit=10&offset=0`).then(r=>r.data||[]),
-  ]);
-  return { total, baru, diproses, followup, deal, gagal, kampus, sekolah, fuRows };
-}
-
-// Ambil satu halaman list (server-side)
-async function loadPage(page=1) {
-  const q      = ($('fSearch')||{}).value||'';
-  const fj     = ($('fJenis')||{}).value||'';
-  const fs     = ($('fStatus')||{}).value||'';
-  const fp     = ($('fProvinsi')||{}).value||'';
-  const fk     = ($('fKota')||{}).value||'';
-  const offset = (page-1)*PAGE_SIZE;
-
-  let qs = `?table=${TBL}&limit=${PAGE_SIZE}&offset=${offset}`;
-  if(q)  qs += `&x_01_like=${encodeURIComponent(q)}`;
-  if(fj) qs += `&x_02_eq=${encodeURIComponent(fj)}`;
-  if(fs) qs += `&x_08_eq=${encodeURIComponent(fs)}`;
-  if(fp) qs += `&x_04_eq=${encodeURIComponent(fp)}`;
-  if(fk) qs += `&x_03_eq=${encodeURIComponent(fk)}`;
-
-  const res = await req(qs);
-  allData   = res.data || [];
-  listTotal = res.total || 0;
-  listPages = Math.max(1, Math.ceil(listTotal / PAGE_SIZE));
-  listPage  = page;
-  return res;
-}
-
-// Legacy wrapper — dipakai oleh saveUpdate/saveInstitusi untuk refresh detail
+/* ── LOAD DATA ── */
 async function loadAllData() {
-  await loadPage(listPage);
-}
-
-/* ── POPULATE PROVINSI & KOTA DROPDOWNS ── */
-let allProvinsiKota = {}; // { 'Sumatera Utara': Set(['Medan','Binjai',...]), ... }
-
-async function populateProvinsiKota() {
+  gl('Memuat data institusi...');
   try {
-    // Ambil semua data (max 500) hanya kolom x_03 (kota) dan x_04 (provinsi)
-    let offset = 0, total = 999, collected = [];
-    while(collected.length < total) {
-      const res = await req(`?table=${TBL}&limit=200&offset=${offset}`);
-      total = res.total || 0;
-      const rows = res.data || [];
-      if(!rows.length) break;
-      collected = collected.concat(rows);
-      offset += rows.length;
-      if(offset >= total) break;
-    }
-
-    allProvinsiKota = {};
-    collected.forEach(d => {
-      const prov = (d.x_04||'').trim();
-      const kota = (d.x_03||'').trim();
-      if(!prov) return;
-      if(!allProvinsiKota[prov]) allProvinsiKota[prov] = new Set();
-      if(kota) allProvinsiKota[prov].add(kota);
-    });
-
-    // Deteksi duplikat dari semua data
-    checkAndShowDuplicates(collected);
-    // Update stat card jika sudah render
-    const scDup = $('scDupVal');
-    if(scDup) scDup.textContent = dupGroups.length;
-
-    const provinsiList = Object.keys(allProvinsiKota).sort();
-    const sel = $('fProvinsi');
-    sel.innerHTML = '<option value="">Semua Provinsi</option>' +
-      provinsiList.map(p => `<option value="${p}">${p}</option>`).join('');
-
-    // Populate kota awal (semua)
-    populateKota('');
-  } catch(e) { console.warn('Gagal load provinsi/kota', e); }
-}
-
-function populateKota(provinsi) {
-  const sel = $('fKota');
-  let kotaList = [];
-  if(provinsi && allProvinsiKota[provinsi]) {
-    kotaList = [...allProvinsiKota[provinsi]].sort();
-  } else {
-    const all = new Set();
-    Object.values(allProvinsiKota).forEach(s => s.forEach(k => all.add(k)));
-    kotaList = [...all].sort();
-  }
-  sel.innerHTML = '<option value="">Semua Kota</option>' +
-    kotaList.map(k => `<option value="${k}">${k}</option>`).join('');
-}
-
-function onProvinsiChange() {
-  const prov = $('fProvinsi').value;
-  $('fKota').value = ''; // reset kota
-  populateKota(prov);
-  renderList(true);
+    const res = await req(`?table=${TBL}&limit=500`);
+    allData = res.data || [];
+  } catch(e){ toast('Gagal memuat data','err'); }
+  gh();
 }
 
 /* ── SIDEBAR ── */
@@ -923,7 +771,7 @@ function showPage(id, title) {
   const titles={pgDash:'Dashboard',pgList:'Semua Institusi',pgFollowup:'Jadwal Follow Up',pgDetail:'Detail Institusi'};
   $('topbarTitle').textContent = title || titles[id] || '';
   closeSb();
-  if(id==='pgList')     renderList(true);
+  if(id==='pgList')     renderList();
   if(id==='pgFollowup') renderFollowup();
   if(id==='pgDash')     renderDash();
 }
@@ -936,378 +784,127 @@ function filterQuick(val) {
   } else {
     $('fStatus').value=val; $('fJenis').value='';
   }
-  listPage=1;
   showPage('pgList');
 }
 
-function debounceSearch() {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(()=>renderList(true), 400);
-}
-
 /* ── DASHBOARD ── */
-async function renderDash() {
-  $('dashStats').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted);font-size:13px;">⏳ Memuat statistik...</div>';
-  gl('Memuat dashboard...');
-  try {
-    const s = await loadDashStats();
-    const total = s.total;
+function renderDash() {
+  const total  = allData.length;
+  const baru   = allData.filter(d=>d.x_08==='baru').length;
+  const diproses=allData.filter(d=>d.x_08==='diproses').length;
+  const fu     = allData.filter(d=>d.x_08==='followup').length;
+  const deal   = allData.filter(d=>d.x_08==='deal').length;
+  const gagal  = allData.filter(d=>d.x_08==='gagal').length;
+  const kampus = allData.filter(d=>d.x_02==='kampus').length;
+  const sekolah= allData.filter(d=>d.x_02==='sekolah').length;
 
-    $('dashStats').innerHTML = [
-      {icon:'🏫',val:total,       lbl:'Total Institusi', bg:'#f8fafc'},
-      {icon:'✅',val:s.deal,      lbl:'Deal',            bg:'#f0fdf4'},
-      {icon:'📅',val:s.followup,  lbl:'Follow Up',       bg:'#fefce8'},
-      {icon:'🔄',val:s.diproses,  lbl:'Diproses',        bg:'#eff6ff'},
-      {icon:'🆕',val:s.baru,      lbl:'Baru',            bg:'#f8fafc'},
-      {icon:'❌',val:s.gagal,     lbl:'Gagal',           bg:'#fff1f2'},
-    ].map(c=>`<div class="sc" style="background:${c.bg}">
-      <div class="sc-icon">${c.icon}</div>
-      <div class="sc-val">${c.val}</div>
-      <div class="sc-lbl">${c.lbl}</div>
-    </div>`).join('')
-    + `<div class="sc" style="background:#fff7ed;border-color:#fed7aa;cursor:pointer;" onclick="openDupModal()">
-      <div class="sc-icon">⚠️</div>
-      <div class="sc-val" id="scDupVal" style="color:#f97316;">${dupGroups.length}</div>
-      <div class="sc-lbl" style="color:#92400e;">Grup Duplikat</div>
-    </div>`;
+  $('dashStats').innerHTML = [
+    {icon:'🏫',val:total,  lbl:'Total Institusi',   bg:'#f8fafc'},
+    {icon:'✅',val:deal,   lbl:'Deal',              bg:'#f0fdf4'},
+    {icon:'📅',val:fu,     lbl:'Follow Up',         bg:'#fefce8'},
+    {icon:'🔄',val:diproses,lbl:'Diproses',         bg:'#eff6ff'},
+    {icon:'🆕',val:baru,   lbl:'Baru',              bg:'#f8fafc'},
+    {icon:'❌',val:gagal,  lbl:'Gagal',             bg:'#fff1f2'},
+  ].map(s=>`<div class="sc" style="background:${s.bg}">
+    <div class="sc-icon">${s.icon}</div>
+    <div class="sc-val">${s.val}</div>
+    <div class="sc-lbl">${s.lbl}</div>
+  </div>`).join('');
 
-    const statuses = [{k:'baru',l:'Baru',c:'#64748b',n:s.baru},{k:'diproses',l:'Diproses',c:'#0ea5e9',n:s.diproses},{k:'followup',l:'Follow Up',c:'#f59e0b',n:s.followup},{k:'deal',l:'Deal',c:'#10b981',n:s.deal},{k:'gagal',l:'Gagal',c:'#ef4444',n:s.gagal}];
-    $('statByStatus').innerHTML = statuses.map(st=>{
-      const pct = total ? Math.round(st.n/total*100) : 0;
-      return `<div style="margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:4px;">
-          <span>${st.l}</span><span style="color:${st.c}">${st.n}</span>
-        </div>
-        <div style="background:#f1f5f9;border-radius:6px;height:8px;">
-          <div style="background:${st.c};width:${pct}%;height:8px;border-radius:6px;transition:width 0.5s;"></div>
-        </div>
-      </div>`;
-    }).join('');
-
-    $('statByJenis').innerHTML = [
-      {l:'Kampus',c:'#7c3aed',n:s.kampus},
-      {l:'Sekolah',c:'#0ea5e9',n:s.sekolah}
-    ].map(j=>{
-      const pct = total ? Math.round(j.n/total*100) : 0;
-      return `<div style="margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:4px;">
-          <span>${j.l}</span><span style="color:${j.c}">${j.n}</span>
-        </div>
-        <div style="background:#f1f5f9;border-radius:6px;height:8px;">
-          <div style="background:${j.c};width:${pct}%;height:8px;border-radius:6px;"></div>
-        </div>
-      </div>`;
-    }).join('');
-
-    const today = todayStr();
-    const fuData = s.fuRows;
-    $('fuCount').textContent = fuData.length;
-    $('dashFuTable').innerHTML = `<thead><tr><th>Institusi</th><th>Jenis</th><th>Tanggal FU</th><th>Rencana</th><th>Status</th><th></th></tr></thead><tbody>${
-      fuData.length ? fuData.map(d=>{
-        const rn=pj(d.x_10)||{};
-        const fuBadge = rn.tgl < today ? `<span class="fu-late">Terlambat</span>` : rn.tgl===today ? `<span class="fu-today">Hari Ini</span>` : `<span class="fu-ok">${fmtDate(rn.tgl)}</span>`;
-        return `<tr>
-          <td><strong>${d.x_01||'-'}</strong></td>
-          <td><span class="jbadge ${d.x_02||''}">${d.x_02||'-'}</span></td>
-          <td>${fuBadge}</td>
-          <td style="font-size:11px;color:var(--muted)">${JENIS_ICON[rn.jenis]||'📌'} ${rn.jenis||'-'} — ${rn.note||'-'}</td>
-          <td><span class="badge ${d.x_08}">${d.x_08||'-'}</span></td>
-          <td><button class="btn-row btn-detail" onclick="openDetail('${d.id_x}')">Detail</button></td>
-        </tr>`;
-      }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">Tidak ada jadwal follow up</td></tr>'
-    }</tbody>`;
-  } catch(e){ toast('Gagal memuat dashboard','err'); }
-  gh();
-}
-
-/* ══════════════════════════════════════════
-   DUPLIKAT — logika bersih, tanpa merge grup
-   Aturan:
-   - Nama+Kota KEDUANYA harus sama → duplikat
-   - Nomor WA sama → duplikat
-   - Sosmed (ig/fb/linkedin/tiktok/email) sama → duplikat
-   - Satu baris yang masuk beberapa kriteria tetap satu baris
-   - Setiap kunci unik = satu grup tersendiri (tidak digabung)
-══════════════════════════════════════════ */
-let dupGroups = [];
-
-function detectDuplicates(data) {
-  // Gunakan Map per kriteria → list row
-  const maps = {
-    namaKota: {},
-    wa:       {},
-    ig:       {},
-    fb:       {},
-    linkedin: {},
-    tiktok:   {},
-    email:    {}
-  };
-
-  data.forEach(d => {
-    const nama  = (d.x_01||'').trim().toLowerCase();
-    const kota  = (d.x_03||'').trim().toLowerCase();
-    const k     = pj(d.x_06)||{};
-
-    // Nama+Kota: KEDUANYA wajib ada dan sama
-    if(nama && kota) {
-      const key = nama + '|||' + kota;
-      (maps.namaKota[key] = maps.namaKota[key]||[]).push(d);
-    }
-
-    // WA — strip non-digit, minimal 6 digit
-    if(k.wa) {
-      const wa = String(k.wa).replace(/\D/g,'');
-      if(wa.length >= 6) (maps.wa[wa] = maps.wa[wa]||[]).push(d);
-    }
-
-    // Sosmed & email
-    ['ig','fb','linkedin','tiktok','email'].forEach(s => {
-      if(k[s]) {
-        const v = String(k[s]).trim().toLowerCase().replace(/\/+$/, '');
-        if(v.length > 3) (maps[s][v] = maps[s][v]||[]).push(d);
-      }
-    });
-  });
-
-  // Buat grup: setiap key yang punya ≥2 baris = satu grup
-  // Deduplikasi baris: satu id_x hanya masuk sekali per grup
-  // Tapi satu id_x BOLEH masuk ke BEBERAPA grup yang berbeda (karena alasan berbeda)
-  // — itu memang benar, user perlu lihat semua
-  const rawGroups = [];
-
-  const LABELS = {
-    namaKota: { label:'Nama & Kota sama', color:'#dbeafe', textColor:'#1d4ed8' },
-    wa:       { label:'Nomor WA sama',    color:'#dcfce7', textColor:'#15803d' },
-    ig:       { label:'Instagram sama',   color:'#fce7f3', textColor:'#be185d' },
-    fb:       { label:'Facebook sama',    color:'#ede9fe', textColor:'#6d28d9' },
-    linkedin: { label:'LinkedIn sama',    color:'#e0f2fe', textColor:'#0369a1' },
-    tiktok:   { label:'TikTok sama',      color:'#f5f3ff', textColor:'#4c1d95' },
-    email:    { label:'Email sama',       color:'#fef3c7', textColor:'#92400e' },
-  };
-
-  // "First-match wins": setiap id_x hanya boleh muncul di satu grup
-  const globalSeen = new Set();
-
-  Object.entries(maps).forEach(([type, map]) => {
-    Object.entries(map).forEach(([key, rows]) => {
-      if(rows.length < 2) return;
-      // Filter: hanya ambil baris yang belum masuk grup manapun
-      const uniq = [];
-      const seenInGroup = new Set();
-      rows.forEach(r => {
-        if(!globalSeen.has(r.id_x) && !seenInGroup.has(r.id_x)) {
-          uniq.push(r);
-          seenInGroup.add(r.id_x);
-        }
-      });
-      if(uniq.length < 2) return;
-
-      // Daftarkan semua id di grup ini ke globalSeen
-      uniq.forEach(r => globalSeen.add(r.id_x));
-
-      rawGroups.push({
-        type,
-        matchKey: key,
-        label: LABELS[type].label,
-        color: LABELS[type].color,
-        textColor: LABELS[type].textColor,
-        rows: uniq
-      });
-    });
-  });
-
-  // Urutkan: namaKota dulu, lalu WA, lalu sosmed
-  const order = ['namaKota','wa','ig','fb','linkedin','tiktok','email'];
-  rawGroups.sort((a,b) => order.indexOf(a.type) - order.indexOf(b.type));
-
-  dupGroups = rawGroups;
-  return dupGroups;
-}
-
-async function checkAndShowDuplicates(allRows) {
-  detectDuplicates(allRows);
-  const dc = $('dupCard');
-  const scDup = $('scDupVal');
-  if(dupGroups.length > 0) {
-    const totalRows = new Set(dupGroups.flatMap(g=>g.rows.map(r=>r.id_x))).size;
-    dc.style.display = 'flex';
-    $('dupDesc').textContent = `${dupGroups.length} grup duplikat — ${totalRows} institusi terdampak`;
-    if(scDup) scDup.textContent = dupGroups.length;
-  } else {
-    dc.style.display = 'none';
-    if(scDup) scDup.textContent = '0';
-  }
-}
-
-function openDupModal() {
-  renderDupGroups();
-  openModal('mDup');
-}
-
-function renderDupGroups() {
-  const wrap = $('dupGroupsWrap');
-  if(!dupGroups.length) {
-    wrap.innerHTML = '<div class="empty" style="padding:40px 0;"><div class="ei">✅</div><p>Tidak ada duplikat ditemukan</p></div>';
-    return;
-  }
-
-  const thStyle = 'padding:8px 12px;text-align:left;font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;border-bottom:1px solid #e2e8f0;white-space:nowrap;';
-
-  wrap.innerHTML = dupGroups.map((g, gi) => {
-    // Kumpulkan nilai match untuk highlight di baris
-    const matchVal = g.matchKey;
-
-    const rowsHtml = g.rows.map((d, ri) => {
-      const kontak = pj(d.x_06)||{};
-      const wa      = kontak.wa      || '';
-      const ig      = kontak.ig      || '';
-      const fb      = kontak.fb      || '';
-      const linkedin= kontak.linkedin|| '';
-      const tiktok  = kontak.tiktok  || '';
-      const email   = kontak.email   || '';
-
-      // Fungsi highlight: kalau nilai adalah bagian dari matchKey, beri warna
-      const hl = (val, type) => {
-        if(!val) return '<span style="color:#cbd5e1;">—</span>';
-        const norm = String(val).trim().toLowerCase().replace(/\/+$/,'');
-        const isMatch = (type === g.type) && (
-          type === 'namaKota'
-            ? (norm === ((d.x_01||'').trim().toLowerCase()) + '|||' + ((d.x_03||'').trim().toLowerCase()) || true)
-            : (norm === matchVal || String(val).replace(/\D/g,'') === matchVal)
-        );
-        const style = isMatch
-          ? `background:${g.color};color:${g.textColor};padding:1px 6px;border-radius:4px;font-weight:800;`
-          : '';
-        return `<span style="${style}">${val}</span>`;
-      };
-
-      // Apakah baris ini match kriteria grup ini?
-      let isMatchRow = false;
-      if(g.type==='namaKota') {
-        const key = (d.x_01||'').trim().toLowerCase()+'|||'+(d.x_03||'').trim().toLowerCase();
-        isMatchRow = key === matchVal;
-      } else if(g.type==='wa') {
-        isMatchRow = String(kontak.wa||'').replace(/\D/g,'') === matchVal;
-      } else {
-        const v = String(kontak[g.type]||'').trim().toLowerCase().replace(/\/+$/,'');
-        isMatchRow = v === matchVal;
-      }
-
-      const rowBg = isMatchRow ? `background:${g.color}18;` : '';
-
-      // Sosmed links
-      const sosmedHtml = [
-        ig       ? `<a href="${ig}"       target="_blank" style="color:#db2777;font-size:10px;font-weight:700;">IG</a>`       : '',
-        fb       ? `<a href="${fb}"       target="_blank" style="color:#2563eb;font-size:10px;font-weight:700;">FB</a>`       : '',
-        linkedin ? `<a href="${linkedin}" target="_blank" style="color:#0369a1;font-size:10px;font-weight:700;">LI</a>`       : '',
-        tiktok   ? `<a href="${tiktok}"   target="_blank" style="color:#4c1d95;font-size:10px;font-weight:700;">TT</a>`       : '',
-      ].filter(Boolean).join(' ');
-
-      return `<tr style="${rowBg}border-bottom:1px solid #f1f5f9;">
-        <td style="padding:10px 12px;font-size:12px;">
-          <div style="font-weight:700;${g.type==='namaKota'?'color:'+g.textColor+';':''}">${d.x_01||'-'}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;">${d.x_02||''}</div>
-        </td>
-        <td style="padding:10px 12px;font-size:12px;">
-          <div style="font-weight:600;${g.type==='namaKota'?'color:'+g.textColor+';':''}">${d.x_03||'-'}</div>
-          <div style="font-size:10px;color:var(--muted);">${d.x_04||''}</div>
-        </td>
-        <td style="padding:10px 12px;font-size:11px;color:var(--muted);">${d.x_05||'-'}</td>
-        <td style="padding:10px 12px;font-size:11px;font-family:'DM Mono',monospace;">
-          ${wa ? `<span style="${g.type==='wa'?'background:'+g.color+';color:'+g.textColor+';padding:1px 6px;border-radius:4px;font-weight:800;':''}">${wa}</span>` : '<span style="color:#cbd5e1;">—</span>'}
-        </td>
-        <td style="padding:10px 12px;font-size:11px;">
-          ${email ? `<div style="${g.type==='email'?'background:'+g.color+';color:'+g.textColor+';padding:1px 6px;border-radius:4px;font-weight:800;display:inline-block;':''}">${email}</div>` : ''}
-          ${sosmedHtml ? `<div style="margin-top:2px;">${sosmedHtml}</div>` : (!email ? '<span style="color:#cbd5e1;">—</span>' : '')}
-        </td>
-        <td style="padding:10px 12px;"><span class="badge ${d.x_08||''}">${d.x_08||'-'}</span></td>
-        <td style="padding:10px 12px;">
-          <button onclick="deleteDup(${d.id_x},${gi})"
-            style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">
-            🗑️ Hapus
-          </button>
-        </td>
-      </tr>`;
-    }).join('');
-
-    return `<div style="margin-bottom:24px;border:1.5px solid ${g.color};border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-      <div style="background:${g.color};padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span style="font-size:13px;font-weight:900;color:${g.textColor};">Grup ${gi+1}</span>
-        <span style="background:${g.textColor};color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;">${g.label}</span>
-        <span style="font-size:11px;color:${g.textColor};opacity:0.8;margin-left:auto;">${g.rows.length} data duplikat</span>
+  // Bar chart status
+  const statuses = [{k:'baru',l:'Baru',c:'#64748b'},{k:'diproses',l:'Diproses',c:'#0ea5e9'},{k:'followup',l:'Follow Up',c:'#f59e0b'},{k:'deal',l:'Deal',c:'#10b981'},{k:'gagal',l:'Gagal',c:'#ef4444'}];
+  $('statByStatus').innerHTML = statuses.map(s=>{
+    const n = allData.filter(d=>d.x_08===s.k).length;
+    const pct = total ? Math.round(n/total*100) : 0;
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:4px;">
+        <span>${s.l}</span><span style="color:${s.c}">${n}</span>
       </div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;min-width:620px;">
-          <thead>
-            <tr style="background:#fafafa;">
-              <th style="${thStyle}">Nama Institusi</th>
-              <th style="${thStyle}">Kota / Prov</th>
-              <th style="${thStyle}">PIC</th>
-              <th style="${thStyle}">WA</th>
-              <th style="${thStyle}">Email / Sosmed</th>
-              <th style="${thStyle}">Status</th>
-              <th style="${thStyle}">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
+      <div style="background:#f1f5f9;border-radius:6px;height:8px;">
+        <div style="background:${s.c};width:${pct}%;height:8px;border-radius:6px;transition:width 0.5s;"></div>
       </div>
     </div>`;
   }).join('');
-}
 
-async function deleteDup(id, groupIdx) {
-  if(!confirm('Yakin hapus data ini? Tindakan tidak bisa dibatalkan.')) return;
-  gl('Menghapus...');
-  try {
-    await fetch(`${API}?table=${TBL}&id_x=${id}`,{method:'DELETE',headers:{'X-Custom-Auth':KEY}});
-    toast('Data berhasil dihapus','ok');
-    // Hapus baris dari grup ini saja
-    dupGroups[groupIdx].rows = dupGroups[groupIdx].rows.filter(r=>r.id_x!==id);
-    // Hapus grup jika tersisa < 2 baris
-    dupGroups = dupGroups.filter(g => g.rows.length >= 2);
+  // Bar chart jenis
+  $('statByJenis').innerHTML = [
+    {k:'kampus',l:'Kampus',c:'#7c3aed',n:kampus},
+    {k:'sekolah',l:'Sekolah',c:'#0ea5e9',n:sekolah}
+  ].map(s=>{
+    const pct = total ? Math.round(s.n/total*100) : 0;
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:4px;">
+        <span>${s.l}</span><span style="color:${s.c}">${s.n}</span>
+      </div>
+      <div style="background:#f1f5f9;border-radius:6px;height:8px;">
+        <div style="background:${s.c};width:${pct}%;height:8px;border-radius:6px;"></div>
+      </div>
+    </div>`;
+  }).join('');
 
-    renderDupGroups();
-    const totalRows = new Set(dupGroups.flatMap(g=>g.rows.map(r=>r.id_x))).size;
-    const dc = $('dupCard');
-    const scDup = $('scDupVal');
-    if(dupGroups.length > 0) {
-      $('dupDesc').textContent = `${dupGroups.length} grup duplikat — ${totalRows} institusi terdampak`;
-      if(scDup) scDup.textContent = dupGroups.length;
-    } else {
-      dc.style.display='none';
-      if(scDup) scDup.textContent = '0';
-      closeModal('mDup');
-      toast('Semua duplikat sudah dibersihkan! ✅','ok');
-    }
-    renderList(true);
-    renderDash();
-    populateProvinsiKota();
-  } catch(e){ toast('Gagal menghapus','err'); }
-  gh();
-}
-
-
-async function renderList(resetPage=false) {
-  if(resetPage) listPage=1;
-  gl('Memuat data...');
-  try {
-    await loadPage(listPage);
-  } catch(e){ toast('Gagal memuat data','err'); gh(); return; }
-
-  $('listCount').textContent = `${listTotal} total`;
+  // Follow up terdekat
   const today = todayStr();
-  const offset = (listPage-1)*PAGE_SIZE;
+  const fuData = allData.filter(d=>{
+    const rn = pj(d.x_10);
+    return rn && rn.tgl;
+  }).sort((a,b)=>{
+    const ra=pj(a.x_10)||{}, rb=pj(b.x_10)||{};
+    return (ra.tgl||'').localeCompare(rb.tgl||'');
+  }).slice(0,10);
 
-  if(!allData.length) {
+  $('fuCount').textContent = fuData.length;
+  $('dashFuTable').innerHTML = `<thead><tr><th>Institusi</th><th>Jenis</th><th>Tanggal FU</th><th>Rencana</th><th>Status</th><th></th></tr></thead><tbody>${
+    fuData.length ? fuData.map(d=>{
+      const rn=pj(d.x_10)||{};
+      const fuBadge = rn.tgl < today ? `<span class="fu-late">Terlambat</span>` : rn.tgl===today ? `<span class="fu-today">Hari Ini</span>` : `<span class="fu-ok">${fmtDate(rn.tgl)}</span>`;
+      return `<tr>
+        <td><strong>${d.x_01||'-'}</strong></td>
+        <td><span class="jbadge ${d.x_02||''}">${d.x_02||'-'}</span></td>
+        <td>${fuBadge}</td>
+        <td style="font-size:11px;color:var(--muted)">${JENIS_ICON[rn.jenis]||'📌'} ${rn.jenis||'-'} — ${rn.note||'-'}</td>
+        <td><span class="badge ${d.x_08}">${d.x_08||'-'}</span></td>
+        <td><button class="btn-row btn-detail" onclick="openDetail('${d.id_x}')">Detail</button></td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">Tidak ada jadwal follow up</td></tr>'
+  }</tbody>`;
+}
+
+/* ── LIST ── */
+function renderList() {
+  const q  = ($('fSearch').value||'').toLowerCase();
+  const fj = $('fJenis').value;
+  const fs = $('fStatus').value;
+  const fp = $('fProvinsi').value;
+
+  // Populate provinsi filter
+  const provs = [...new Set(allData.map(d=>d.x_04).filter(Boolean))].sort();
+  const curProv = $('fProvinsi').value;
+  $('fProvinsi').innerHTML = `<option value="">Semua Provinsi</option>` +
+    provs.map(p=>`<option value="${p}" ${p===curProv?'selected':''}>${p}</option>`).join('');
+  if(curProv) $('fProvinsi').value=curProv;
+
+  let data = allData.filter(d=>{
+    if(fj && d.x_02 !== fj) return false;
+    if(fs && d.x_08 !== fs) return false;
+    if(fp && d.x_04 !== fp) return false;
+    if(q) {
+      const hay = `${d.x_01} ${d.x_03} ${d.x_04} ${d.x_05}`.toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  $('listCount').textContent = data.length;
+  const today = todayStr();
+
+  if(!data.length) {
     $('listBody').innerHTML='';
     $('listEmpty').style.display='block';
-    $('paginationBar').innerHTML='';
-    gh(); return;
+    return;
   }
   $('listEmpty').style.display='none';
 
-  $('listBody').innerHTML = allData.map((d,i)=>{
+  $('listBody').innerHTML = data.map((d,i)=>{
     const rn  = pj(d.x_10)||{};
     const rw  = pj(d.x_09)||[];
     let fuBadge = '-';
@@ -1317,7 +914,7 @@ async function renderList(resetPage=false) {
       else fuBadge=`<span class="fu-ok">📅 ${fmtDate(rn.tgl)}</span>`;
     }
     return `<tr class="fade-in">
-      <td style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${offset+i+1}</td>
+      <td style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${i+1}</td>
       <td>
         <div style="font-weight:700;font-size:13px;">${d.x_01||'-'}</div>
         <div style="font-size:10px;color:var(--muted);">${rw.length} aktivitas</div>
@@ -1341,58 +938,13 @@ async function renderList(resetPage=false) {
       </td>
     </tr>`;
   }).join('');
-
-  renderPagination();
-  gh();
-}
-
-function renderPagination() {
-  if(listPages <= 1) { $('paginationBar').innerHTML=''; return; }
-  const maxBtn = 7;
-  let pages = [];
-  if(listPages <= maxBtn) {
-    pages = Array.from({length:listPages},(_,i)=>i+1);
-  } else {
-    pages = [1];
-    if(listPage > 3) pages.push('...');
-    for(let p=Math.max(2,listPage-1);p<=Math.min(listPages-1,listPage+1);p++) pages.push(p);
-    if(listPage < listPages-2) pages.push('...');
-    pages.push(listPages);
-  }
-  const start = (listPage-1)*PAGE_SIZE+1;
-  const end   = Math.min(listPage*PAGE_SIZE, listTotal);
-  $('paginationBar').innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;">
-      <span style="font-size:12px;color:var(--muted);font-weight:600;">Menampilkan ${start}–${end} dari <strong>${listTotal}</strong> institusi</span>
-      <div style="display:flex;gap:5px;align-items:center;">
-        <button class="pg-btn" onclick="gotoPage(${listPage-1})" ${listPage===1?'disabled':''}>‹</button>
-        ${pages.map(p=>p==='...'
-          ? `<span style="padding:0 6px;color:var(--muted);">…</span>`
-          : `<button class="pg-btn ${p===listPage?'pg-active':''}" onclick="gotoPage(${p})">${p}</button>`
-        ).join('')}
-        <button class="pg-btn" onclick="gotoPage(${listPage+1})" ${listPage===listPages?'disabled':''}>›</button>
-      </div>
-    </div>`;
-}
-
-function gotoPage(p) {
-  if(p<1||p>listPages||p===listPage) return;
-  listPage=p;
-  renderList(false);
-  // scroll ke atas tabel
-  document.getElementById('pgList').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 /* ── FOLLOW UP PAGE ── */
-async function renderFollowup() {
-  gl('Memuat jadwal follow up...');
-  let data = [];
-  try {
-    const res = await req(`?table=${TBL}&x_10_notempty=1&limit=200&offset=0`);
-    data = (res.data||[]).filter(d=>{ const rn=pj(d.x_10)||{}; return rn.tgl; })
-      .sort((a,b)=>{ const ra=pj(a.x_10)||{},rb=pj(b.x_10)||{}; return (ra.tgl||'').localeCompare(rb.tgl||''); });
-  } catch(e){ toast('Gagal memuat follow up','err'); gh(); return; }
-  gh();
+function renderFollowup() {
+  const today = todayStr();
+  const data = allData.filter(d=>{ const rn=pj(d.x_10)||{}; return rn.tgl; })
+    .sort((a,b)=>{ const ra=pj(a.x_10)||{},rb=pj(b.x_10)||{}; return (ra.tgl||'').localeCompare(rb.tgl||''); });
 
   if(!data.length){ $('fuCards').innerHTML=''; $('fuEmpty').style.display='block'; return; }
   $('fuEmpty').style.display='none';
@@ -1602,9 +1154,8 @@ async function saveInstitusi() {
       await fetch(`${API}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':KEY},body:JSON.stringify(payload)}).then(r=>r.json());
     }
     closeModal('mAdd');
-    renderList(false);
-    renderDash();
-    populateProvinsiKota(); // refresh dropdown setelah data baru ditambah
+    await loadAllData();
+    renderList(); renderDash();
     toast(id?'Data berhasil diperbarui':'Institusi berhasil ditambahkan','ok');
     if(currentDetailId===id) openDetail(id);
   } catch(e){ toast('Gagal menyimpan','err'); }
@@ -1715,9 +1266,10 @@ async function saveUpdate() {
     }).then(r=>r.json());
 
     closeModal('mUpdate');
+    await loadAllData();
     renderDash();
     if(currentDetailId===id) openDetail(id);
-    else renderList(false);
+    else renderList();
     toast('Update berhasil disimpan','ok');
   } catch(e){ console.error(e); toast('Gagal menyimpan update','err'); }
   gh();
@@ -1894,8 +1446,7 @@ async function saveExcelData() {
       ok++;
     } catch{ fail++; }
   }
-  renderList(true); renderDash();
-  populateProvinsiKota(); // refresh dropdown setelah upload
+  await loadAllData(); renderList(); renderDash();
   toast(`Upload selesai: ${ok} berhasil${fail?', '+fail+' gagal':''}`, ok?'ok':'err');
   gh();
 }
