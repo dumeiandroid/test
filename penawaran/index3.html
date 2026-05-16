@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Penawaran — Lidan Psikologi</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1f3d;
+    --navy-mid: #1a3260;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #faf7f2;
+    --cream-dark: #f0ebe1;
+    --text: #1a1a2e;
+    --text-muted: #6b7280;
+    --white: #ffffff;
+    --shadow: 0 4px 24px rgba(15,31,61,0.10);
+    --shadow-lg: 0 12px 48px rgba(15,31,61,0.16);
+    --color-kampus:     #1a5276;
+    --color-sekolah:    #1e6641;
+    --color-video:      #7b2d8b;
+    --color-percakapan: #b7410e;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--text); min-height:100vh; }
+
+  /* HEADER */
+  header { background:var(--navy); position:sticky; top:0; z-index:100; box-shadow:0 2px 20px rgba(0,0,0,0.3); }
+  .header-inner { max-width:1200px; margin:0 auto; padding:18px 32px; display:flex; align-items:center; justify-content:space-between; }
+  .logo-area { display:flex; align-items:center; gap:14px; }
+  .logo-mark { width:44px; height:44px; background:var(--gold); border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-weight:700; font-size:20px; color:var(--navy); flex-shrink:0; }
+  .logo-name { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--white); line-height:1.1; display:block; }
+  .logo-sub { font-size:11px; color:var(--gold-light); font-weight:300; letter-spacing:0.05em; display:block; }
+  .header-contact { display:flex; align-items:center; gap:8px; background:rgba(201,168,76,0.15); border:1px solid rgba(201,168,76,0.3); border-radius:8px; padding:8px 16px; color:var(--gold-light); font-size:13px; font-weight:500; text-decoration:none; transition:all 0.2s; }
+  .header-contact:hover { background:rgba(201,168,76,0.25); color:var(--white); }
+
+  /* HERO */
+  .hero { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,#2e4a7a 100%); padding:72px 32px 80px; text-align:center; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 30% 50%,rgba(201,168,76,0.08),transparent 60%),radial-gradient(ellipse at 70% 50%,rgba(201,168,76,0.06),transparent 60%); pointer-events:none; }
+  .hero-badge { display:inline-block; background:rgba(201,168,76,0.2); border:1px solid rgba(201,168,76,0.4); color:var(--gold-light); font-size:12px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; padding:6px 16px; border-radius:100px; margin-bottom:24px; }
+  .hero h1 { font-family:'Playfair Display',serif; font-size:clamp(28px,4vw,48px); font-weight:700; color:var(--white); line-height:1.2; margin-bottom:16px; max-width:700px; margin-left:auto; margin-right:auto; }
+  .hero h1 span { color:var(--gold); }
+  .hero p { color:rgba(255,255,255,0.65); font-size:16px; font-weight:300; max-width:520px; margin:0 auto 40px; line-height:1.7; }
+  .hero-stats { display:flex; justify-content:center; gap:48px; flex-wrap:wrap; }
+  .stat { text-align:center; }
+  .stat-num { font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--gold); line-height:1; }
+  .stat-label { font-size:12px; color:rgba(255,255,255,0.5); margin-top:4px; font-weight:300; }
+
+  /* MAIN */
+  main { max-width:1200px; margin:0 auto; padding:56px 32px 80px; }
+
+  /* UPLOAD GUIDE */
+  .upload-guide { background:var(--navy); border-radius:16px; padding:32px; margin-bottom:56px; position:relative; overflow:hidden; }
+  .upload-guide::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; background:radial-gradient(circle,rgba(201,168,76,0.15),transparent 70%); pointer-events:none; }
+  .upload-guide h3 { font-family:'Playfair Display',serif; color:var(--white); font-size:18px; margin-bottom:6px; }
+  .upload-guide p { color:rgba(255,255,255,0.5); font-size:13px; margin-bottom:20px; }
+  .folder-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+  .folder-item { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:14px 16px; }
+  .folder-path { font-family:'Courier New',monospace; font-size:12px; color:var(--gold-light); margin-bottom:6px; }
+  .folder-desc { font-size:12px; color:rgba(255,255,255,0.4); }
+
+  /* SEGMENTS */
+  .segment { margin-bottom:56px; animation:fadeUp 0.5s ease both; }
+  .divider { height:1px; background:var(--cream-dark); margin:48px 0; }
+  .section-header { margin-bottom:28px; }
+  .section-label { font-size:11px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
+  .section-title { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; color:var(--navy); display:flex; align-items:center; gap:12px; }
+  .section-title::after { content:''; flex:1; height:1px; background:linear-gradient(to right,var(--cream-dark),transparent); }
+
+  /* CARDS */
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:20px; }
+  .card { background:var(--white); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; transition:transform 0.2s,box-shadow 0.2s; display:flex; flex-direction:column; }
+  .card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+  .card-stripe { height:5px; width:100%; }
+  .card-body { padding:24px; flex:1; display:flex; flex-direction:column; }
+  .card-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:16px; flex-shrink:0; }
+  .card-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:600; color:var(--navy); margin-bottom:6px; line-height:1.3; }
+  .card-desc { font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:20px; flex:1; }
+  .card-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; }
+  .tag { font-size:11px; font-weight:500; padding:3px 10px; border-radius:100px; background:var(--cream-dark); color:var(--text-muted); }
+  .card-files { display:flex; flex-direction:column; gap:8px; }
+  .file-link { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; text-decoration:none; font-size:13px; font-weight:500; transition:all 0.15s; border:1px solid transparent; }
+  .file-icon { width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+  .file-name { flex:1; line-height:1.3; }
+  .file-ext { font-size:10px; font-weight:700; opacity:0.6; letter-spacing:0.05em; }
+
+  /* FOOTER */
+  footer { background:var(--navy); color:rgba(255,255,255,0.5); text-align:center; padding:32px; font-size:13px; font-weight:300; }
+  footer strong { color:var(--gold-light); font-weight:500; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @media(max-width:640px){
+    .header-inner{padding:14px 20px}
+    .hero{padding:48px 20px 56px}
+    main{padding:40px 20px 60px}
+    .hero-stats{gap:28px}
+    .cards{grid-template-columns:1fr}
+    .folder-list{grid-template-columns:1fr}
+  }
+
+  /* BURGER MENU BUTTON */
+  .burger-btn {
+    display:flex; flex-direction:column; justify-content:center; gap:5px;
+    width:40px; height:40px; background:rgba(201,168,76,0.15);
+    border:1px solid rgba(201,168,76,0.3); border-radius:8px;
+    cursor:pointer; padding:10px; flex-shrink:0;
+  }
+  .burger-btn span {
+    display:block; width:100%; height:2px; background:var(--gold-light);
+    border-radius:2px; transition:all 0.25s;
+  }
+  .burger-btn.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+  .burger-btn.open span:nth-child(2) { opacity:0; transform:scaleX(0); }
+  .burger-btn.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+
+  /* NAV DRAWER */
+  .nav-drawer {
+    position:fixed; top:0; right:0; bottom:0; z-index:9998;
+    width:min(320px, 85vw); background:var(--navy);
+    transform:translateX(110%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    display:flex; flex-direction:column; box-shadow:-8px 0 40px rgba(0,0,0,0.4);
+    overflow-y:auto;
+  }
+  .nav-drawer.open { transform:translateX(0); }
+  .nav-drawer-backdrop {
+    display:none; position:fixed; inset:0; z-index:9997;
+    background:rgba(0,0,0,0.6); backdrop-filter:blur(2px);
+  }
+  .nav-drawer-backdrop.open { display:block; }
+  .nav-drawer-header {
+    padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.08);
+    display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+  }
+  .nav-drawer-title { font-family:'Playfair Display',serif; color:var(--white); font-size:16px; font-weight:600; }
+  .nav-drawer-close {
+    width:32px; height:32px; background:rgba(255,255,255,0.08); border:none;
+    border-radius:8px; color:rgba(255,255,255,0.6); font-size:18px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s;
+  }
+  .nav-drawer-close:hover { background:rgba(255,255,255,0.15); color:var(--white); }
+  .nav-drawer-body { padding:16px 12px; flex:1; }
+  .nav-item {
+    display:flex; align-items:center; gap:12px;
+    padding:12px 16px; border-radius:10px; text-decoration:none;
+    color:rgba(255,255,255,0.75); font-size:14px; font-weight:500;
+    transition:all 0.15s; margin-bottom:4px;
+  }
+  .nav-item:hover { background:rgba(255,255,255,0.08); color:var(--white); }
+  .nav-item-icon { font-size:18px; width:24px; text-align:center; flex-shrink:0; }
+  .nav-item-dot {
+    width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto;
+  }
+  .nav-section-divider {
+    height:1px; background:rgba(255,255,255,0.07); margin:8px 4px;
+  }
+  .nav-top-link {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 16px; border-radius:10px; text-decoration:none;
+    color:rgba(255,255,255,0.5); font-size:13px; font-weight:400;
+    transition:all 0.15s; margin-bottom:4px;
+  }
+  .nav-top-link:hover { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.8); }
+
+  /* AUDIO MODAL */
+  .audio-modal-overlay {
+    display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.75); align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .audio-modal-overlay.active { display:flex; }
+  .audio-modal {
+    background:var(--navy); border-radius:20px; overflow:hidden;
+    width:100%; max-width:480px;
+    box-shadow:0 24px 80px rgba(0,0,0,0.6);
+    border:1px solid rgba(201,168,76,0.2);
+  }
+  .audio-modal-header {
+    display:flex; align-items:center; gap:12px;
+    padding:18px 20px; border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .audio-modal-icon { font-size:28px; }
+  .audio-modal-title {
+    flex:1; font-size:14px; font-weight:500; color:var(--white);
+    line-height:1.4;
+  }
+  .audio-modal-subtitle { font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px; }
+  .audio-modal-close {
+    width:32px; height:32px; background:rgba(255,255,255,0.08); border:none;
+    border-radius:8px; color:rgba(255,255,255,0.6); font-size:18px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .audio-modal-body { padding:24px 20px; }
+  .audio-modal-body audio {
+    width:100%; border-radius:10px; outline:none;
+    accent-color:var(--gold);
+  }
+  .audio-modal-dl {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-top:16px; padding:10px; border-radius:10px;
+    background:rgba(201,168,76,0.1); color:var(--gold-light);
+    text-decoration:none; font-size:13px; font-weight:500;
+    border:1px solid rgba(201,168,76,0.2); transition:all 0.15s;
+  }
+  .audio-modal-dl:hover { background:rgba(201,168,76,0.2); }
+
+  @media(max-width:768px){
+    .header-contact { display:none; }
+  }
+  @media(min-width:769px){
+    .burger-btn { display:none; }
+    .header-contact { display:flex; }
+  }
+  .pdf-modal-overlay {
+    display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,0.85); align-items:center; justify-content:center;
+    padding:12px;
+  }
+  .pdf-modal-overlay.active { display:flex; }
+  .pdf-modal {
+    background:var(--white); border-radius:16px; overflow:hidden;
+    width:100%; max-width:860px; height:90vh; display:flex; flex-direction:column;
+    box-shadow:0 24px 80px rgba(0,0,0,0.5);
+  }
+  .pdf-modal-header {
+    display:flex; align-items:center; gap:12px;
+    padding:14px 18px; background:var(--navy); flex-shrink:0;
+  }
+  .pdf-modal-title {
+    flex:1; font-size:14px; font-weight:500; color:var(--white);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .pdf-modal-btn {
+    display:flex; align-items:center; gap:6px;
+    padding:7px 14px; border-radius:8px; font-size:13px; font-weight:500;
+    text-decoration:none; border:none; cursor:pointer; transition:all 0.15s;
+  }
+  .pdf-modal-download {
+    background:rgba(201,168,76,0.2); color:var(--gold-light);
+    border:1px solid rgba(201,168,76,0.3);
+  }
+  .pdf-modal-download:hover { background:rgba(201,168,76,0.35); }
+  .pdf-modal-close {
+    background:rgba(255,255,255,0.1); color:var(--white);
+    border:1px solid rgba(255,255,255,0.15); font-size:18px; line-height:1;
+    padding:6px 12px;
+  }
+  .pdf-modal-close:hover { background:rgba(255,255,255,0.2); }
+  .pdf-modal-body { flex:1; overflow:hidden; background:#525659; position:relative; }
+  .pdf-modal-body iframe {
+    width:100%; height:100%; border:none; display:block;
+  }
+  .pdf-modal-loading {
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:12px;
+    color:rgba(255,255,255,0.7); font-size:14px;
+  }
+  .pdf-modal-spinner {
+    width:36px; height:36px; border:3px solid rgba(255,255,255,0.2);
+    border-top-color:var(--gold); border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .pdf-modal-fallback {
+    display:none; position:absolute; inset:0;
+    align-items:center; justify-content:center; flex-direction:column;
+    gap:16px; padding:32px; text-align:center; color:var(--white);
+    background:#525659;
+  }
+  .pdf-modal-fallback.show { display:flex; }
+  .pdf-modal-fallback p { font-size:14px; opacity:0.75; line-height:1.6; }
+  .pdf-modal-fallback a {
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--gold); color:var(--navy); padding:12px 24px;
+    border-radius:10px; font-weight:600; font-size:14px; text-decoration:none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-mark">L</div>
+      <div>
+        <span class="logo-name">Lidan Psikologi</span>
+        <span class="logo-sub">PT Lidan Indah Abadi</span>
+      </div>
+    </div>
+    <a href="https://wa.me/6285159601400" class="header-contact" target="_blank">📞 0851 5960 1400</a>
+    <button class="burger-btn" id="burgerBtn" aria-label="Menu navigasi">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- NAV DRAWER BACKDROP -->
+<div class="nav-drawer-backdrop" id="navBackdrop"></div>
+
+<!-- NAV DRAWER -->
+<nav class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-header">
+    <span class="nav-drawer-title">📍 Navigasi</span>
+    <button class="nav-drawer-close" id="navClose">✕</button>
+  </div>
+  <div class="nav-drawer-body" id="navDrawerBody">
+    <!-- diisi otomatis oleh JS -->
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">Portal Internal — Materi Penawaran</div>
+  <h1>Semua Materi <span>Penawaran</span><br>dalam Satu Tempat</h1>
+  <p>Akses dokumen, konsep video, dan panduan percakapan untuk seluruh segmen layanan Lidan Psikologi.</p>
+  <div class="hero-stats" id="heroStats"></div>
+</div>
+
+<main>
+  <div class="upload-guide">
+    <h3>📁 Struktur Folder Server</h3>
+    <p>Upload file sesuai folder berikut di <strong style="color:var(--gold-light)">test.lidan.co.id/penawaran/</strong></p>
+    <div class="folder-list" id="folderList"></div>
+  </div>
+  <div id="segments"></div>
+</main>
+
+<!-- AUDIO MODAL -->
+<div class="audio-modal-overlay" id="audioModalOverlay">
+  <div class="audio-modal">
+    <div class="audio-modal-header">
+      <div class="audio-modal-icon">🎵</div>
+      <div>
+        <div class="audio-modal-title" id="audioModalTitle">Memuat audio…</div>
+        <div class="audio-modal-subtitle" id="audioModalSubtitle"></div>
+      </div>
+      <button class="audio-modal-close" id="audioModalClose">✕</button>
+    </div>
+    <div class="audio-modal-body">
+      <audio id="audioModalPlayer" controls></audio>
+      <a href="#" id="audioModalDownload" class="audio-modal-dl" download>⬇ Unduh File Audio</a>
+    </div>
+  </div>
+</div>
+
+<!-- PDF MODAL -->
+<div class="pdf-modal-overlay" id="pdfModalOverlay">
+  <div class="pdf-modal">
+    <div class="pdf-modal-header">
+      <span class="pdf-modal-title" id="pdfModalTitle">Memuat dokumen…</span>
+      <a href="#" id="pdfModalDownload" class="pdf-modal-btn pdf-modal-download" download>⬇ Unduh</a>
+      <button class="pdf-modal-btn pdf-modal-close" id="pdfModalClose">✕</button>
+    </div>
+    <div class="pdf-modal-body">
+      <div class="pdf-modal-loading" id="pdfModalLoading">
+        <div class="pdf-modal-spinner"></div>
+        <span>Memuat PDF…</span>
+      </div>
+      <iframe id="pdfModalFrame" src="" title="PDF Viewer" allow="fullscreen"></iframe>
+      <div class="pdf-modal-fallback" id="pdfModalFallback">
+        <div style="font-size:48px">📄</div>
+        <p>Browser HP Anda tidak dapat menampilkan PDF secara langsung.<br>Silakan unduh filenya untuk membuka di aplikasi PDF.</p>
+        <a href="#" id="pdfFallbackDownload" download>⬇ Unduh PDF</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>Lidan Psikologi</strong> — PT Lidan Indah Abadi &nbsp;|&nbsp;
+  WhatsApp: <strong>0851 5960 1400</strong> &nbsp;|&nbsp;
+  Portal internal — untuk penggunaan tim Lidan Psikologi
+</footer>
+
+<script>
+/* ================================================================
+   ██████╗  █████╗ ████████╗ █████╗
+   ██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
+   ██║  ██║███████║   ██║   ███████║
+   ██║  ██║██╔══██║   ██║   ██╔══██║
+   ██████╔╝██║  ██║   ██║   ██║  ██║
+   ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
+
+   EDIT BAGIAN DATA DI BAWAH INI UNTUK:
+   ✏️  Menambah kartu baru      → tambah objek di dalam cards[]
+   ✏️  Menambah segmen baru     → tambah objek di dalam segments[]
+   ✏️  Menambah folder          → tambah objek di dalam folders[]
+   ✏️  Mengubah statistik hero  → ubah nilai di dalam stats[]
+   ✏️  Menambah warna segmen    → tambah --color-{id} di CSS :root
+   ================================================================ */
+
+const DATA = {
+
+  /* ── STATISTIK HERO ─────────────────────────────────────────────
+     Angka-angka yang muncul di bawah teks hero.
+     Untuk mengubah: ganti nilai num atau label.
+  ──────────────────────────────────────────────────────────────── */
+  stats: [
+    { num: "6",  label: "Layanan"           },
+    { num: "12", label: "Dokumen Resmi"     },
+    { num: "6",  label: "Konsep Video"      },
+    { num: "6",  label: "Panduan Percakapan"},
+  ],
+
+  /* ── FOLDER SERVER ──────────────────────────────────────────────
+     Ditampilkan di kotak panduan upload bagian atas.
+     Untuk menambah folder baru: tambah objek { path, desc }.
+  ──────────────────────────────────────────────────────────────── */
+  folders: [
+    { path: "/penawaran/",            desc: "index.html — halaman ini"      },
+    { path: "/penawaran/kampus/",     desc: "Surat & TOR segmen kampus"     },
+    { path: "/penawaran/sekolah/",    desc: "Surat & TOR segmen sekolah"    },
+    { path: "/penawaran/video/",      desc: "Konsep & narasi video"         },
+    { path: "/penawaran/percakapan/", desc: "Panduan percakapan WhatsApp"   },
+  ],
+
+  /* ── SEGMEN & KARTU ─────────────────────────────────────────────
+     Setiap segmen = satu blok besar dengan judul & kumpulan kartu.
+
+     PROPERTI SEGMEN:
+       id    → unik, harus ada pasangan --color-{id} di CSS :root
+       label → teks kecil di atas judul (huruf besar otomatis)
+       icon  → emoji di depan judul
+       title → judul segmen
+       cards → array kartu dalam segmen ini
+
+     PROPERTI KARTU:
+       icon  → emoji ikon kartu
+       title → judul kartu
+       desc  → deskripsi singkat
+       tags  → array string label kecil
+       files → array file yang bisa diunduh
+                 { label, ext, type: "docx"|"pdf", href }
+
+     CARA MENAMBAH SEGMEN BARU:
+       1. Tambah objek baru di array segments[]
+       2. Tambah --color-{id} di CSS :root
+       3. Isi cards[] sesuai kebutuhan
+
+     CARA MENAMBAH KARTU KE SEGMEN YANG ADA:
+       Cukup tambah objek baru di cards[] segmen yang dituju.
+  ──────────────────────────────────────────────────────────────── */
+  segments: [
+
+    /* ╔══════════════════════════════════════════╗
+       ║  SEGMEN: KAMPUS                          ║
+       ╚══════════════════════════════════════════╝ */
+    {
+      id:    "kampus",
+      label: "Segmen Kampus",
+      icon:  "🎓",
+      title: "Layanan untuk Perguruan Tinggi",
+      cards: [
+        {
+          icon:  "🏆",
+          title: "Siapkan Mahasiswa Anda untuk Dunia Kerja",
+          desc:  "Program tes psikologi untuk mahasiswa tingkat akhir dan alumni — laporan personal + rekap institusional kampus.",
+          tags:  ["Mahasiswa Tingkat Akhir", "Alumni", "No. 001"],
+          files: [
+            { label: "Surat Penawaran",         ext: "DOCX", type: "docx", href: "kampus/Surat_Penawaran_Kampus.docx"       },
+            { label: "Surat Penawaran",         ext: "PDF",  type: "pdf",  href: "kampus/Surat_Penawaran_Kampus.pdf"        },
+            { label: "Term of Reference (TOR)", ext: "DOCX", type: "docx", href: "kampus/TOR_Kampus.docx"                   },
+            { label: "Term of Reference (TOR)", ext: "PDF",  type: "pdf",  href: "kampus/TOR_Kampus.pdf"                    },
+          ]
+        },
+        {
+          icon:  "🌱",
+          title: "Kenali Mereka Sejak Semester Pertama",
+          desc:  "Program tes psikologi orientasi diri untuk mahasiswa baru — data psikologis sejak semester 1 sebagai fondasi 4 tahun bimbingan.",
+          tags:  ["Mahasiswa Baru", "Semester 1", "No. 006"],
+          files: [
+            { label: "Surat Penawaran",         ext: "DOCX", type: "docx", href: "kampus/Surat_Penawaran_MahasiswaBaru.docx"},
+            { label: "Surat Penawaran",         ext: "PDF",  type: "pdf",  href: "kampus/Surat_Penawaran_MahasiswaBaru.pdf" },
+            { label: "Term of Reference (TOR)", ext: "DOCX", type: "docx", href: "kampus/TOR_MahasiswaBaru.docx"            },
+            { label: "Term of Reference (TOR)", ext: "PDF",  type: "pdf",  href: "kampus/TOR_MahasiswaBaru.pdf"             },
+          ]
+        },
+      ]
+    },
+
+    /* ╔══════════════════════════════════════════╗
+       ║  SEGMEN: SEKOLAH                         ║
+       ╚══════════════════════════════════════════╝ */
+    {
+      id:    "sekolah",
+      label: "Segmen Sekolah",
+      icon:  "🏫",
+      title: "Layanan untuk Sekolah Menengah",
+      cards: [
+        {
+          icon:  "🎯",
+          title: "Kenali Siswa Anda Lebih Dalam, Sebelum Terlambat",
+          desc:  "Gambaran umum 3 segmen program untuk Kepala Sekolah — siswa baru, penjurusan, dan kelas akhir.",
+          tags:  ["Kepala Sekolah", "3 Segmen", "No. 002"],
+          files: [
+            { label: "Surat Penawaran",         ext: "DOCX", type: "docx", href: "sekolah/Surat_Penawaran_KepalaSekolah.docx"},
+            { label: "Surat Penawaran",         ext: "PDF",  type: "pdf",  href: "sekolah/Surat_Penawaran_KepalaSekolah.pdf" },
+            { label: "Term of Reference (TOR)", ext: "DOCX", type: "docx", href: "sekolah/TOR_KepalaSekolah.docx"            },
+            { label: "Term of Reference (TOR)", ext: "PDF",  type: "pdf",  href: "sekolah/TOR_KepalaSekolah.pdf"             },
+          ]
+        },
+        {
+          icon:  "👋",
+          title: "Kenali Mereka Sejak Hari Pertama",
+          desc:  "Program tes psikologi orientasi diri untuk siswa baru — peta psikologis seluruh siswa sejak MPLS.",
+          tags:  ["Guru BK", "Siswa Baru", "No. 003"],
+          files: [
+            { label: "Surat Penawaran",         ext: "DOCX", type: "docx", href: "sekolah/Surat_Penawaran_SiswaBaru.docx"   },
+            { label: "Surat Penawaran",         ext: "PDF",  type: "pdf",  href: "sekolah/Surat_Penawaran_SiswaBaru.pdf"    },
+            { label: "Term of Reference (TOR)", ext: "DOCX", type: "docx", href: "sekolah/TOR_SiswaBaru.docx"               },
+            { label: "Term of Reference (TOR)", ext: "PDF",  type: "pdf",  href: "sekolah/TOR_SiswaBaru.pdf"                },
+          ]
+        },
+        {
+          icon:  "🔀",
+          title: "Jangan Biarkan Mereka Tebak-Tebakan",
+          desc:  "Program tes minat dan kemampuan untuk siswa penjurusan — rekomendasi jurusan berbasis data psikologis.",
+          tags:  ["Guru BK", "Siswa Penjurusan", "No. 004"],
+          files: [
+            { label: "Surat Penawaran",         ext: "DOCX", type: "docx", href: "sekolah/Surat_Penawaran_Penjurusan.docx"  },
+            { label: "Surat Penawaran",         ext: "PDF",  type: "pdf",  href: "sekolah/Surat_Penawaran_Penjurusan.pdf"   },
+            { label: "Term of Reference (TOR)", ext: "DOCX", type: "docx", href: "sekolah/TOR_Penjurusan.docx"              },
+            { label: "Term of Reference (TOR)", ext: "PDF",  type: "pdf",  href: "sekolah/TOR_Penjurusan.pdf"               },
+          ]
+        },
+        {
+          icon:  "🎓",
+          title: "Mereka Akan Pergi — Sudah Siapkah?",
+          desc:  "Program tes kesiapan kerja untuk siswa kelas akhir — bekal nyata sebelum memasuki dunia kerja atau perguruan tinggi.",
+          tags:  ["Guru BK", "Siswa Kelas 12", "No. 005"],
+          files: [
+            { label: "Surat Penawaran",         ext: "DOCX", type: "docx", href: "sekolah/Surat_Penawaran_SiswaTamat.docx"  },
+            { label: "Surat Penawaran",         ext: "PDF",  type: "pdf",  href: "sekolah/Surat_Penawaran_SiswaTamat.pdf"   },
+            { label: "Term of Reference (TOR)", ext: "DOCX", type: "docx", href: "sekolah/TOR_SiswaTamat.docx"              },
+            { label: "Term of Reference (TOR)", ext: "PDF",  type: "pdf",  href: "sekolah/TOR_SiswaTamat.pdf"               },
+          ]
+        },
+      ]
+    },
+
+    /* ╔══════════════════════════════════════════╗
+       ║  SEGMEN: KONSEP VIDEO                    ║
+       ╚══════════════════════════════════════════╝ */
+    {
+      id:    "video",
+      label: "Materi Produksi",
+      icon:  "🎬",
+      title: "Konsep & Narasi Video",
+      cards: [
+        {
+          icon:  "🎥",
+          title: "Siapkan Mahasiswa Anda untuk Dunia Kerja",
+          desc:  "Konsep video untuk Rektor, Dekan, Dosen, Kepala Pusat Karir — mahasiswa tingkat akhir & alumni. Durasi ±3 menit.",
+          tags:  ["Kampus", "Tingkat Akhir", "±3 Menit"],
+          files: [
+            { label: "Konsep & Narasi Video", ext: "DOCX", type: "docx", href: "video/Video_Kampus_TingkatAkhir.docx"},
+            { label: "Konsep & Narasi Video", ext: "PDF",  type: "pdf",  href: "video/Video_Kampus_TingkatAkhir.pdf" },
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Kenali Mereka Sejak Semester Pertama",
+          desc:  "Konsep video untuk Rektor, Dekan, Dosen, Kepala Pusat Karir — mahasiswa baru. Durasi ±2 menit.",
+          tags:  ["Kampus", "Mahasiswa Baru", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi Video", ext: "DOCX", type: "docx", href: "video/Video_Kampus_MahasiswaBaru.docx"},
+            { label: "Konsep & Narasi Video", ext: "PDF",  type: "pdf",  href: "video/Video_Kampus_MahasiswaBaru.pdf" },
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Kenali Siswa Anda Lebih Dalam, Sebelum Terlambat",
+          desc:  "Konsep video untuk Kepala Sekolah — gambaran umum 3 segmen program. Durasi ±2 menit.",
+          tags:  ["Sekolah", "Kepala Sekolah", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi Video", ext: "DOCX", type: "docx", href: "video/Video_Sekolah_KepalaSekolah.docx"},
+            { label: "Konsep & Narasi Video", ext: "PDF",  type: "pdf",  href: "video/Video_Sekolah_KepalaSekolah.pdf" },
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Kenali Mereka Sejak Hari Pertama",
+          desc:  "Konsep video untuk Guru BK — target siswa baru. Durasi ±2 menit.",
+          tags:  ["Sekolah", "Siswa Baru", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi Video", ext: "DOCX", type: "docx", href: "video/Video_Sekolah_SiswaBaru.docx"},
+            { label: "Konsep & Narasi Video", ext: "PDF",  type: "pdf",  href: "video/Video_Sekolah_SiswaBaru.pdf" },
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Jangan Biarkan Mereka Tebak-Tebakan",
+          desc:  "Konsep video untuk Guru BK — target siswa penjurusan. Durasi ±2 menit.",
+          tags:  ["Sekolah", "Penjurusan", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi Video", ext: "DOCX", type: "docx", href: "video/Video_Sekolah_Penjurusan.docx"},
+            { label: "Konsep & Narasi Video", ext: "PDF",  type: "pdf",  href: "video/Video_Sekolah_Penjurusan.pdf" },
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Mereka Akan Pergi — Sudah Siapkah?",
+          desc:  "Konsep video untuk Guru BK — target siswa kelas akhir. Durasi ±2 menit.",
+          tags:  ["Sekolah", "Kelas 12", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi Video", ext: "DOCX", type: "docx", href: "video/Video_Sekolah_SiswaTamat.docx"},
+            { label: "Konsep & Narasi Video", ext: "PDF",  type: "pdf",  href: "video/Video_Sekolah_SiswaTamat.pdf" },
+          ]
+        },
+      ]
+    },
+
+    /* ╔══════════════════════════════════════════╗
+       ║  SEGMEN: KONSEP audio                    ║
+       ╚══════════════════════════════════════════╝ */
+    {
+      id:    "audio",
+      label: "Materi Produksi",
+      icon:  "🎬",
+      title: "Konsep & Narasi audio",
+      cards: [
+        {
+          icon:  "🎥",
+          title: "Siapkan Mahasiswa Anda untuk Dunia Kerja",
+          desc:  "Konsep audio untuk Rektor, Dekan, Dosen, Kepala Pusat Karir — mahasiswa tingkat akhir & alumni. Durasi ±3 menit.",
+          tags:  ["Kampus", "Tingkat Akhir", "±3 Menit"],
+          files: [
+            { label: "Konsep & Narasi audio", ext: "mp3", type: "mp3", href: "audio/audio_Kampus_TingkatAkhir.mp3"},
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Kenali Mereka Sejak Semester Pertama",
+          desc:  "Konsep audio untuk Rektor, Dekan, Dosen, Kepala Pusat Karir — mahasiswa baru. Durasi ±2 menit.",
+          tags:  ["Kampus", "Mahasiswa Baru", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi audio", ext: "mp3", type: "mp3", href: "audio/audio_Kampus_MahasiswaBaru.mp3"},
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Kenali Siswa Anda Lebih Dalam, Sebelum Terlambat",
+          desc:  "Konsep audio untuk Kepala Sekolah — gambaran umum 3 segmen program. Durasi ±2 menit.",
+          tags:  ["Sekolah", "Kepala Sekolah", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi audio", ext: "mp3", type: "mp3", href: "audio/audio_Sekolah_KepalaSekolah.mp3"},
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Kenali Mereka Sejak Hari Pertama",
+          desc:  "Konsep audio untuk Guru BK — target siswa baru. Durasi ±2 menit.",
+          tags:  ["Sekolah", "Siswa Baru", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi audio", ext: "mp3", type: "mp3", href: "audio/audio_Sekolah_SiswaBaru.mp3"},
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Jangan Biarkan Mereka Tebak-Tebakan",
+          desc:  "Konsep audio untuk Guru BK — target siswa penjurusan. Durasi ±2 menit.",
+          tags:  ["Sekolah", "Penjurusan", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi audio", ext: "mp3", type: "mp3", href: "audio/audio_Sekolah_Penjurusan.mp3"},
+          ]
+        },
+        {
+          icon:  "🎥",
+          title: "Mereka Akan Pergi — Sudah Siapkah?",
+          desc:  "Konsep audio untuk Guru BK — target siswa kelas akhir. Durasi ±2 menit.",
+          tags:  ["Sekolah", "Kelas 12", "±2 Menit"],
+          files: [
+            { label: "Konsep & Narasi audio", ext: "mp3", type: "mp3", href: "audio/audio_Sekolah_SiswaTamat.mp3"},
+          ]
+        },
+      ]
+    },
+
+    /* ╔══════════════════════════════════════════╗
+       ║  SEGMEN: PANDUAN PERCAKAPAN              ║
+       ╚══════════════════════════════════════════╝ */
+    {
+      id:    "percakapan",
+      label: "Panduan Komunikasi",
+      icon:  "💬",
+      title: "Panduan Percakapan WhatsApp",
+      cards: [
+        {
+          icon:  "💬",
+          title: "Siapkan Mahasiswa Anda untuk Dunia Kerja",
+          desc:  "Panduan percakapan WA lengkap dari nomor umum hingga closing. Audiens: Rektor, Dekan, Kepala Pusat Karir.",
+          tags:  ["Kampus", "Tingkat Akhir"],
+          files: [
+            { label: "Panduan Percakapan", ext: "DOCX", type: "docx", href: "percakapan/Percakapan_Kampus_TingkatAkhir.docx"},
+            { label: "Panduan Percakapan", ext: "PDF",  type: "pdf",  href: "percakapan/Percakapan_Kampus_TingkatAkhir.pdf" },
+          ]
+        },
+        {
+          icon:  "💬",
+          title: "Kenali Mereka Sejak Semester Pertama",
+          desc:  "Panduan percakapan WA lengkap. Audiens: Rektor, Dekan, Kepala Pusat Karir. Target: Mahasiswa Baru.",
+          tags:  ["Kampus", "Mahasiswa Baru"],
+          files: [
+            { label: "Panduan Percakapan", ext: "DOCX", type: "docx", href: "percakapan/Percakapan_Kampus_MahasiswaBaru.docx"},
+            { label: "Panduan Percakapan", ext: "PDF",  type: "pdf",  href: "percakapan/Percakapan_Kampus_MahasiswaBaru.pdf" },
+          ]
+        },
+        {
+          icon:  "💬",
+          title: "Kenali Mereka Sejak Hari Pertama",
+          desc:  "Panduan percakapan WA lengkap. Audiens: Guru BK. Target: Siswa Baru.",
+          tags:  ["Sekolah", "Siswa Baru"],
+          files: [
+            { label: "Panduan Percakapan", ext: "DOCX", type: "docx", href: "percakapan/Percakapan_Sekolah_SiswaBaru.docx"},
+            { label: "Panduan Percakapan", ext: "PDF",  type: "pdf",  href: "percakapan/Percakapan_Sekolah_SiswaBaru.pdf" },
+          ]
+        },
+        {
+          icon:  "💬",
+          title: "Jangan Biarkan Mereka Tebak-Tebakan",
+          desc:  "Panduan percakapan WA lengkap. Audiens: Guru BK. Target: Siswa Penjurusan.",
+          tags:  ["Sekolah", "Penjurusan"],
+          files: [
+            { label: "Panduan Percakapan", ext: "DOCX", type: "docx", href: "percakapan/Percakapan_Sekolah_Penjurusan.docx"},
+            { label: "Panduan Percakapan", ext: "PDF",  type: "pdf",  href: "percakapan/Percakapan_Sekolah_Penjurusan.pdf" },
+          ]
+        },
+        {
+          icon:  "💬",
+          title: "Mereka Akan Pergi — Sudah Siapkah?",
+          desc:  "Panduan percakapan WA lengkap. Audiens: Guru BK. Target: Siswa Kelas Akhir.",
+          tags:  ["Sekolah", "Kelas 12"],
+          files: [
+            { label: "Panduan Percakapan", ext: "DOCX", type: "docx", href: "percakapan/Percakapan_Sekolah_SiswaTamat.docx"},
+            { label: "Panduan Percakapan", ext: "PDF",  type: "pdf",  href: "percakapan/Percakapan_Sekolah_SiswaTamat.pdf" },
+          ]
+        },
+        {
+          icon:  "💬",
+          title: "Kenali Siswa Anda Lebih Dalam, Sebelum Terlambat",
+          desc:  "Panduan percakapan WA lengkap. Audiens: Kepala Sekolah. Gambaran umum 3 segmen.",
+          tags:  ["Sekolah", "Kepala Sekolah"],
+          files: [
+            { label: "Panduan Percakapan", ext: "DOCX", type: "docx", href: "percakapan/Percakapan_Sekolah_KepalaSekolah.docx"},
+            { label: "Panduan Percakapan", ext: "PDF",  type: "pdf",  href: "percakapan/Percakapan_Sekolah_KepalaSekolah.pdf" },
+          ]
+        },
+      ]
+    },
+
+  ] // ← akhir segments[]
+
+}; // ← akhir DATA
+
+
+/* ================================================================
+   RENDER ENGINE — jangan edit bagian ini
+   ================================================================ */
+
+const COLOR_FALLBACK = {
+  kampus: { bg: 'rgba(26,82,118,0.08)',  fg: '#1a5276' },
+  sekolah:{ bg: 'rgba(30,102,65,0.08)',  fg: '#1e6641' },
+  video:  { bg: 'rgba(123,45,139,0.08)', fg: '#7b2d8b' },
+  percakapan:{ bg:'rgba(183,65,14,0.08)',fg: '#b7410e' },
+};
+
+function iconBg(segId) {
+  return COLOR_FALLBACK[segId]?.bg || 'rgba(100,100,100,0.08)';
+}
+function segColor(segId) {
+  return `var(--color-${segId}, ${COLOR_FALLBACK[segId]?.fg || '#444'})`;
+}
+function fileCls(type) {
+  return type === 'pdf' ? 'pdf' : 'docx';
+}
+function fileEmoji(type) {
+  return type === 'pdf' ? '📋' : '📄';
+}
+function fileBg(type, segId) {
+  if (type === 'pdf') return 'rgba(183,65,14,0.07)';
+  return COLOR_FALLBACK[segId] ? COLOR_FALLBACK[segId].bg : 'rgba(100,100,100,0.07)';
+}
+function fileFg(type, segId) {
+  if (type === 'pdf') return '#b7410e';
+  return COLOR_FALLBACK[segId]?.fg || '#444';
+}
+function fileBorder(type, segId) {
+  if (type === 'pdf') return 'rgba(183,65,14,0.15)';
+  const c = COLOR_FALLBACK[segId]?.fg || '100,100,100';
+  return `${c}22`;
+}
+
+function renderCard(card, segId) {
+  const color = segColor(segId);
+  const files = card.files.map(f => {
+    if (f.type === 'pdf') {
+      // PDF: buka modal, bukan download langsung
+      return `
+    <a href="${f.href}" class="file-link pdf-open-link"
+       data-href="${f.href}" data-label="${f.label}"
+       style="background:${fileBg(f.type,segId)};color:${fileFg(f.type,segId)};border-color:${fileBorder(f.type,segId)}">
+      <div class="file-icon" style="background:${fileBg(f.type,segId)}">${fileEmoji(f.type)}</div>
+      <span class="file-name">${f.label}</span>
+      <span class="file-ext">${f.ext}</span>
+    </a>`;
+    }
+    if (f.type === 'mp3' || f.type === 'wav' || f.type === 'audio') {
+      // Audio: buka modal player
+      return `
+    <a href="${f.href}" class="file-link audio-open-link"
+       data-href="${f.href}" data-label="${f.label}" data-ext="${f.ext}"
+       style="background:rgba(123,45,139,0.08);color:#7b2d8b;border-color:rgba(123,45,139,0.15)">
+      <div class="file-icon" style="background:rgba(123,45,139,0.08)">🎵</div>
+      <span class="file-name">${f.label}</span>
+      <span class="file-ext">${f.ext}</span>
+    </a>`;
+    }
+    // DOCX / lainnya: tetap download
+    return `
+    <a href="${f.href}" class="file-link" download
+       style="background:${fileBg(f.type,segId)};color:${fileFg(f.type,segId)};border-color:${fileBorder(f.type,segId)}">
+      <div class="file-icon" style="background:${fileBg(f.type,segId)}">${fileEmoji(f.type)}</div>
+      <span class="file-name">${f.label}</span>
+      <span class="file-ext">${f.ext}</span>
+    </a>`;
+  }).join('');
+
+  const tags = card.tags.map(t => `<span class="tag">${t}</span>`).join('');
+
+  return `
+    <div class="card">
+      <div class="card-stripe" style="background:${color}"></div>
+      <div class="card-body">
+        <div class="card-icon" style="background:${iconBg(segId)}">${card.icon}</div>
+        <div class="card-title">${card.title}</div>
+        <div class="card-desc">${card.desc}</div>
+        <div class="card-tags">${tags}</div>
+        <div class="card-files">${files}</div>
+      </div>
+    </div>`;
+}
+
+function renderSegment(seg, idx) {
+  const divider = idx > 0 ? '<div class="divider"></div>' : '';
+  const cards   = seg.cards.map(c => renderCard(c, seg.id)).join('');
+  return `
+    ${divider}
+    <div class="segment" id="seg-${seg.id}" style="animation-delay:${idx*0.1}s">
+      <div class="section-header">
+        <div class="section-label">${seg.label}</div>
+        <div class="section-title">${seg.icon} ${seg.title}</div>
+      </div>
+      <div class="cards">${cards}</div>
+    </div>`;
+}
+
+/* Mount */
+document.getElementById('heroStats').innerHTML  = DATA.stats.map(s=>`
+  <div class="stat">
+    <div class="stat-num">${s.num}</div>
+    <div class="stat-label">${s.label}</div>
+  </div>`).join('');
+
+document.getElementById('folderList').innerHTML = DATA.folders.map(f=>`
+  <div class="folder-item">
+    <div class="folder-path">${f.path}</div>
+    <div class="folder-desc">${f.desc}</div>
+  </div>`).join('');
+
+document.getElementById('segments').innerHTML   = DATA.segments.map(renderSegment).join('');
+
+/* ================================================================
+   BURGER MENU / NAV DRAWER
+   ================================================================ */
+(function() {
+  const btn      = document.getElementById('burgerBtn');
+  const drawer   = document.getElementById('navDrawer');
+  const backdrop = document.getElementById('navBackdrop');
+  const closeBtn = document.getElementById('navClose');
+  const body     = document.getElementById('navDrawerBody');
+
+  // Build nav items dari segments
+  const topHtml = `
+    <a href="#" class="nav-top-link" data-scroll="top">⬆ Kembali ke Atas</a>
+    <div class="nav-section-divider"></div>`;
+
+  const segHtml = DATA.segments.map(seg => {
+    const color = COLOR_FALLBACK[seg.id]?.fg || '#888';
+    return `
+    <a href="#seg-${seg.id}" class="nav-item nav-drawer-link">
+      <span class="nav-item-icon">${seg.icon}</span>
+      <span>${seg.title}</span>
+      <span class="nav-item-dot" style="background:${color}"></span>
+    </a>`;
+  }).join('');
+
+  const waHtml = `
+    <div class="nav-section-divider" style="margin-top:12px"></div>
+    <a href="https://wa.me/6285159601400" class="nav-top-link" target="_blank">📞 0851 5960 1400</a>`;
+
+  body.innerHTML = topHtml + segHtml + waHtml;
+
+  function openNav() {
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    btn.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeNav() {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    btn.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  btn.addEventListener('click', () => drawer.classList.contains('open') ? closeNav() : openNav());
+  closeBtn.addEventListener('click', closeNav);
+  backdrop.addEventListener('click', closeNav);
+
+  body.addEventListener('click', function(e) {
+    const link = e.target.closest('.nav-drawer-link');
+    const top  = e.target.closest('[data-scroll="top"]');
+    if (link) {
+      closeNav();
+      // smooth scroll ke anchor
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        setTimeout(() => {
+          const offset = 80; // header height
+          const top = target.getBoundingClientRect().top + window.scrollY - offset;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }, 280);
+      }
+      e.preventDefault();
+    }
+    if (top) {
+      closeNav();
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 280);
+      e.preventDefault();
+    }
+  });
+})();
+
+/* ================================================================
+   PDF MODAL LOGIC
+   ================================================================ */
+(function() {
+  const overlay   = document.getElementById('pdfModalOverlay');
+  const frame     = document.getElementById('pdfModalFrame');
+  const title     = document.getElementById('pdfModalTitle');
+  const dlBtn     = document.getElementById('pdfModalDownload');
+  const fbDlBtn   = document.getElementById('pdfFallbackDownload');
+  const closeBtn  = document.getElementById('pdfModalClose');
+  const loading   = document.getElementById('pdfModalLoading');
+  const fallback  = document.getElementById('pdfModalFallback');
+
+  // Deteksi apakah browser bisa render PDF inline
+  // (Chrome/Firefox desktop bisa; banyak HP Android tidak bisa)
+  function isMobile() {
+    return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  }
+
+  function openPdf(href, label) {
+    title.textContent   = label + ' — ' + href.split('/').pop();
+    dlBtn.href          = href;
+    fbDlBtn.href        = href;
+    loading.style.display = 'flex';
+    fallback.classList.remove('show');
+    frame.src           = '';
+
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Strategi: gunakan Google Docs Viewer sebagai viewer universal
+    // Ini bekerja di hampir semua HP karena PDF dirender server-side
+    const absoluteHref = new URL(href, window.location.href).href;
+    const gdocsUrl = 'https://docs.google.com/viewer?embedded=true&url=' + encodeURIComponent(absoluteHref);
+
+    frame.onload = function() {
+      loading.style.display = 'none';
+      // Coba deteksi apakah Google Docs berhasil load
+      // (jika gagal karena file lokal/CORS, tampilkan fallback)
+    };
+
+    frame.onerror = function() {
+      loading.style.display = 'none';
+      fallback.classList.add('show');
+    };
+
+    // Timeout fallback: jika 12 detik belum load, tampilkan opsi unduh
+    const timer = setTimeout(function() {
+      if (loading.style.display !== 'none') {
+        loading.style.display = 'none';
+        fallback.classList.add('show');
+      }
+    }, 12000);
+
+    frame.addEventListener('load', function clearTimer() {
+      clearTimeout(timer);
+      frame.removeEventListener('load', clearTimer);
+    }, { once: true });
+
+    frame.src = gdocsUrl;
+  }
+
+  function closePdf() {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+    frame.src = '';
+  }
+
+  // Intercept semua klik pada link PDF
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('.pdf-open-link');
+    if (!link) return;
+    e.preventDefault();
+    openPdf(link.dataset.href, link.dataset.label);
+  });
+
+  // Tutup modal
+  closeBtn.addEventListener('click', closePdf);
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closePdf();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closePdf();
+  });
+})();
+/* ================================================================
+   AUDIO MODAL LOGIC
+   ================================================================ */
+(function() {
+  const overlay  = document.getElementById('audioModalOverlay');
+  const player   = document.getElementById('audioModalPlayer');
+  const title    = document.getElementById('audioModalTitle');
+  const subtitle = document.getElementById('audioModalSubtitle');
+  const dlBtn    = document.getElementById('audioModalDownload');
+  const closeBtn = document.getElementById('audioModalClose');
+
+  function openAudio(href, label, ext) {
+    title.textContent    = label;
+    subtitle.textContent = href.split('/').pop();
+    dlBtn.href           = href;
+    dlBtn.download       = href.split('/').pop();
+    player.src           = href;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeAudio() {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+    player.pause();
+    player.src = '';
+  }
+
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('.audio-open-link');
+    if (!link) return;
+    e.preventDefault();
+    openAudio(link.dataset.href, link.dataset.label, link.dataset.ext);
+  });
+
+  closeBtn.addEventListener('click', closeAudio);
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeAudio();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAudio();
+  });
+})();
+</script>
+</body>
+</html>
