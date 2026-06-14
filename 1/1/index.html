@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Psikotes Online – Lidan Psikologi</title>
+<meta name="description" content="Ikuti tes IQ online resmi bersama Lidan Psikologi. Ukur kemampuan kognitif, penalaran, dan kecerdasan Anda secara profesional. Hasil laporan ditandatangani psikolog berlisensi.">
+<meta name="keywords" content="tes IQ online, tes kecerdasan, tes psikologi, IQ test Indonesia, Lidan Psikologi, tes kemampuan kognitif, laporan IQ, psikotes online">
+<meta name="author" content="PT. Lidan Indah Abadi – Lidan Psikologi">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://lidan.co.id/test/tes-iq">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://lidan.co.id/test/tes-iq">
+<meta property="og:title" content="Tes IQ Online Profesional – Lidan Psikologi">
+<meta property="og:description" content="Ukur tingkat kecerdasan Anda secara akurat melalui tes IQ online resmi. Didampingi psikolog berlisensi. Dapatkan laporan lengkap dengan interpretasi hasil.">
+<meta property="og:image" content="https://lidan.co.id/gambar/tes-iq-online.jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Tes IQ Online – Lidan Psikologi">
+<meta property="og:site_name" content="Lidan Psikologi">
+<meta property="og:locale" content="id_ID">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://lidan.co.id/gambar/tes-iq-online.jpeg">
+<meta name="twitter:title" content="Tes IQ Online Profesional – Lidan Psikologi">
+<meta name="twitter:description" content="Ukur tingkat kecerdasan Anda secara akurat melalui tes IQ online resmi. Didampingi psikolog berlisensi.">
+<meta name="twitter:image" content="https://lidan.co.id/gambar/tes-iq-online.jpeg">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Tes IQ Online Profesional – Lidan Psikologi",
+  "description": "Ikuti tes IQ online resmi bersama Lidan Psikologi. Ukur kemampuan kognitif, penalaran, dan kecerdasan Anda secara profesional.",
+  "url": "https://lidan.co.id/test/tes-iq",
+  "publisher": {
+    "@type": "Organization",
+    "name": "PT. Lidan Indah Abadi – Lidan Psikologi",
+    "url": "https://lidan.co.id",
+    "logo": "https://psikogram.lidan.co.id/gambar/logo1.png"
+  }
+}
+</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     KONFIGURASI FRAGMENT
+     Ganti angka di akhir nama file untuk mengganti
+     varian biodata atau penutup yang digunakan.
+     Semua file diletakkan di: https://lidan.co.id/test/
+     ─────────────────────────────────────────────
+     biodata-1.html  → tanpa radio kesediaan (corporate)
+     biodata-2.html  → dengan radio kesediaan (free/premium)
+     penutup-1.html  → ucapan terima kasih + laporan diproses
+     penutup-2.html  → pilihan paket harga berbayar
+     ═══════════════════════════════════════════ -->
+<script>
+  const FRAGMENT_BASE  = 'https://lidan.co.id/test/';
+  const BIODATA_FILE   = 'biodata-2.html';   // ← ganti angka sesuai kebutuhan
+  const PENUTUP_FILE   = 'penutup-2.html';   // ← ganti angka sesuai kebutuhan
+</script>
+
+<div id="globalLoader"><div class="spinner"></div><p id="loaderText">Memuat...</p></div>
+
+<!-- ═══ SCREEN: TES DITUTUP ═══ -->
+<div id="screenTutup" class="screen">
+  <div class="card">
+    <div class="tutup-icon" id="tutupIcon">🔒</div>
+    <div class="tutup-title" id="tutupTitle">Tes Belum Dibuka</div>
+    <p class="tutup-sub" id="tutupSub">Sesi tes belum dimulai. Harap perhatikan instruksi dari tester dan tunggu hingga tes dibuka.</p>
+    <div id="tutupCountdown" style="display:none;">
+      <div class="countdown-card">
+        <div class="cd-header">
+          <div class="cd-label">📅 Tes akan dilaksanakan pada</div>
+          <div id="cdWaktuLabel" class="cd-waktu-label"></div>
+        </div>
+        <div class="cd-divider"></div>
+        <div class="cd-countdown-label">⏳ Dimulai dalam</div>
+        <div class="cd-boxes">
+          <div class="cd-unit">
+            <div id="cdHari" class="cd-unit-num">00</div>
+            <div class="cd-unit-label">Hari</div>
+          </div>
+          <div class="cd-unit">
+            <div id="cdJam" class="cd-unit-num">00</div>
+            <div class="cd-unit-label">Jam</div>
+          </div>
+          <div class="cd-separator"><span>:</span></div>
+          <div class="cd-unit">
+            <div id="cdMenit" class="cd-unit-num">00</div>
+            <div class="cd-unit-label">Menit</div>
+          </div>
+          <div class="cd-separator"><span>:</span></div>
+          <div class="cd-unit">
+            <div id="cdDetik" class="cd-unit-num detik">00</div>
+            <div class="cd-unit-label">Detik</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="tutupLinkWrap" style="display:none;margin-top:16px;">
+      <div class="warning-box">
+        <span class="warning-box-icon">⚠️</span>
+        <div class="warning-box-text">
+          Seluruh peserta <strong>wajib bergabung ke Zoom</strong> sebelum tes dimulai dan berlangsung di bawah pengawasan tester — pastikan <strong>kamera &amp; mikrofon aktif</strong>.
+        </div>
+      </div>
+      <a id="tutupLinkBtn" href="#" target="_blank" rel="noopener" class="btn-zoom">
+        🎥 Bergabung ke Zoom
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: FORM BIODATA (diisi dari fetch) ═══ -->
+<div id="screenDaftar" class="screen">
+  <div class="card" style="max-width:520px" id="biodataContainer">
+    <!-- Konten di-inject dari BIODATA_FILE -->
+    <div style="text-align:center;padding:40px 0;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px"></div>Memuat formulir...</div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: TUNGGU KONFIRMASI ═══ -->
+<div id="screenTunggu" class="screen">
+  <div class="card">
+    <div class="tunggu-icon">🕐</div>
+    <div class="tunggu-title">Pendaftaran Berhasil!</div>
+    <p class="tunggu-sub" id="tungguSubText">Perhatikan instruksi dari tester dan tunggu konfirmasi untuk memulai tes. Jangan tutup atau muat ulang halaman ini.</p>
+    <div id="tungguIqExtra" style="display:none;margin-top:18px;">
+      <div class="info-penting-box">
+        <div class="info-penting-label">📋 Informasi Penting</div>
+        <p class="info-penting-text">
+          Layanan Tes IQ ini merupakan <strong>layanan berbayar</strong>.<br>
+          Untuk mengetahui informasi biaya dan konfirmasi lebih lanjut, silakan hubungi admin Lidan Psikologi melalui tombol di bawah ini.
+        </p>
+      </div>
+      <div class="wa-contact-box">
+        <div class="wa-contact-label">Minta tester ke <strong>Lidan Psikologi</strong></div>
+        <a id="btnWaLidan"
+           href="https://wa.me/6285159601400?text=Halo%20Lidan%20Psikologi%2C%20saya%20sudah%20mengisi%20biodata%20dan%20siap%20untuk%20memulai%20Tes%20IQ.%20Mohon%20konfirmasi%20dari%20tester.%20Saya%20ingin%20tahu%20berapa%20biayanya%3F"
+           target="_blank" rel="noopener" class="btn-wa">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Hubungi Lidan Psikologi
+        </a>
+      </div>
+    </div>
+    <div id="tungguIdBox" style="display:none;" class="id-peserta-box">
+      <div class="id-peserta-label">🪪 ID Peserta Anda</div>
+      <div class="id-peserta-num" id="tungguIdNum">—</div>
+      <div class="id-peserta-hint">Sebutkan ID ini kepada tester jika ada pertanyaan atau kendala</div>
+    </div>
+    <div class="tunggu-status" id="tungguStatus"><div class="tunggu-pulse"></div><span id="tungguStatusTxt">Menunggu konfirmasi tester...</span></div>
+    <div id="tungguZoomWrap" style="display:none;margin-top:20px;text-align:left;">
+      <div class="zoom-info-box">
+        <div class="zoom-info-content">
+          <span class="zoom-info-icon">🎥</span>
+          <div>
+            <div class="zoom-info-label">Sambil Menunggu</div>
+            <div class="zoom-info-text">
+              Silakan <strong>bergabung ke sesi Zoom</strong> terlebih dahulu dan informasikan kepada tester bahwa Anda telah siap. Tester akan segera mengonfirmasi keikutsertaan Anda.
+            </div>
+          </div>
+        </div>
+      </div>
+      <a id="tungguLinkBtn" href="#" target="_blank" rel="noopener" class="btn-zoom">
+        🎥 Bergabung ke Zoom
+      </a>
+    </div>
+    <button class="btn btn-primary" id="btnMulaiTes" onclick="mulaiTes()">▶ Mulai Tes</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: DASHBOARD SUBTES ═══ -->
+<div id="screenDash" class="screen">
+  <div class="card">
+    <div class="welcome" id="welcomeName">Halo!</div>
+    <div class="welcome-sub" id="welcomeSub">Selesaikan semua tes berikut secara berurutan.</div>
+    <div class="task-grid" id="taskGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: INSTRUKSI SUBTES ═══ -->
+<div id="screenStart" class="screen">
+  <div class="card card-wide">
+    <div class="page-title" id="startTitle" style="margin-bottom:20px"></div>
+    <div class="instr-section"><div class="instr-heading">📋 Instruksi Pengerjaan</div><p id="startInstructions"></p></div>
+    <div class="example-block" id="exampleBlock">
+      <div class="ex-heading">📖 Contoh Soal &amp; Jawaban</div>
+      <div class="example-images">
+        <img id="exImgTop" src="" alt="" oncontextmenu="return false" ondragstart="return false">
+        <img id="exImgBottom" src="" alt="" oncontextmenu="return false" ondragstart="return false">
+      </div>
+      <div class="ex-note" id="exNote"></div>
+    </div>
+    <div class="start-actions">
+      <button class="btn btn-primary" id="btnStart" onclick="startTest()">▶ Mulai Tes</button>
+      <div class="timer-note" id="timerNote"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: KREPLIN ═══ -->
+<div id="screenKreplin" class="screen">
+  <div class="card card-wide">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
+      <span class="top-title" id="krepTitle">Tes Kraepelin</span>
+      <span id="krepProgress" style="color:var(--muted);font-size:.85em"></span>
+      <span id="krepTimerDisplay" style="display:none"></span>
+    </div>
+    <div class="progress-wrap"><div id="krepProgressBar" style="height:100%;background:var(--primary);border-radius:99px;transition:width .4s;width:0%"></div></div>
+    <div id="krepContent" style="text-align:center;padding:24px 0">
+      <div style="font-size:2.8em;font-weight:800;color:var(--text);margin-bottom:24px;letter-spacing:.05em" id="krepSoalQ">? + ?</div>
+      <p style="font-size:.82em;color:var(--muted);margin-bottom:16px">Pilih <strong>angka satuan</strong> dari hasil penjumlahan</p>
+      <div id="krepOpts" style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:380px;margin:0 auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: SOAL ═══ -->
+<div id="screenTest" class="screen">
+  <div class="card card-wide card-xl" id="testCard">
+    <div id="topBar"><span class="top-title" id="testTitle"></span><span id="progressInfo"></span><span id="timerDisplay" class="hidden"></span></div>
+    <div class="progress-wrap"><div id="progressBar" style="width:0%"></div></div>
+    <div id="questionContent"></div>
+    <div class="action-bar" id="actionBar"></div>
+    <div id="bottomBar"><div class="bb-info"><span class="bb-title" id="bbTitle"></span><span class="bb-progress" id="bbProgress"></span></div></div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: TES SELESAI (intermediate) ═══ -->
+<div id="screenDone" class="screen">
+  <div class="card" style="text-align:center">
+    <div class="done-icon" id="doneIcon">✅</div>
+    <div class="page-title" id="doneTitle" style="justify-content:center">Tes Selesai!</div>
+    <p class="page-sub" id="doneDesc" style="text-align:center;margin-top:8px"></p>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: LAYAR PENUTUP (diisi dari fetch) ═══ -->
+<div id="screenUpgrade" class="screen">
+  <div id="penutupContainer">
+    <!-- Konten di-inject dari PENUTUP_FILE -->
+    <div style="text-align:center;padding:60px 0;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px"></div>Memuat...</div>
+  </div>
+</div>
+
+<button id="btnTokenFloat" onclick="bukaPopupToken()" class="btn-token-float" style="display:none;">
+  🔑 Token
+</button>
+
+<!-- ══ POPUP INPUT TOKEN ══ -->
+<div id="popupToken" style="display:none;" class="popup-token">
+  <div class="popup-token-title">🔑 Login dengan Token</div>
+  <input id="inputToken" type="text" placeholder="Masukkan token..." autocomplete="off" spellcheck="false"
+    class="popup-token-input"
+    onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#c7d2fe'"
+    onkeydown="if(event.key==='Enter')loginDenganToken()">
+  <div id="tokenErrBox" class="token-err-box"></div>
+  <div class="popup-token-actions">
+    <button onclick="tutupPopupToken()" class="btn-token-batal">Batal</button>
+    <button id="btnLoginToken" onclick="loginDenganToken()" class="btn-token-masuk">Masuk →</button>
+  </div>
+</div>
+
+<button id="btnLogoutPeserta" style="display:none;" class="btn-logout-peserta" onclick="doLogout(localStorage.getItem('db_id'))">🔓 Ganti Peserta</button>
+<div id="topBarId" style="display:none;" class="top-bar-id">ID: —</div>
+
+<!-- ══ OVERLAY PERINGATAN REFRESH ══ -->
+<div id="refreshWarningOverlay" style="display:none;" class="refresh-warning-overlay" style="display:flex;">
+  <div class="refresh-warning-box">
+    <div class="refresh-warning-icon">🚫</div>
+    <div class="refresh-warning-title">Jangan Refresh!</div>
+    <p class="refresh-warning-text">Tes sedang berlangsung.<br>Waktu tetap berjalan meski halaman di-refresh.<br><strong style="color:#1e293b">Fokus dan selesaikan soal dengan baik.</strong></p>
+    <button onclick="document.getElementById('refreshWarningOverlay').style.display='none'" style="padding:10px 28px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:.95em;font-weight:700;cursor:pointer;font-family:inherit">Oke, Lanjutkan</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
