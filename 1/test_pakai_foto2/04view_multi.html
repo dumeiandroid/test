@@ -373,7 +373,7 @@ header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;alig
 <script>
 const APP_PASSWORD='admin';
 let buckets=[
-  {id:'lidan',name:'Lidan',color:'#4f8ef7',apiUrl:'https://indahabadi.my.id/api/r2_api_lidan',publicUrl:'https://assets.indahabadi.my.id',password:'admin'},
+  {id:'lidan',name:'Lidan',color:'#4f8ef7',apiUrl:'https://mysuplier.my.id/api/r2_api_lidan',publicUrl:'https://assets.mysuplier.my.id',password:'admin'},
   {id:'tabi',name:'Tabi',color:'#3ecf8e',apiUrl:'https://tabi.my.id/api/r2_api_tabi',publicUrl:'https://file.tabi.my.id',password:'admin'},
   {id:'mobeli',name:'Mobeli',color:'#f59e0b',apiUrl:'https://mobeli.my.id/api/r2_api_mobeli',publicUrl:'https://file.mobeli.my.id',password:'admin'},
   {id:'talentmap',name:'Talentmap',color:'#f4645f',apiUrl:'https://talentmap.my.id/api/r2_api_talentmap',publicUrl:'https://file.talentmap.my.id',password:'admin'},
@@ -382,7 +382,7 @@ let buckets=[
   {id:'ciptapersada',name:'Ciptapersada',color:'#34d399',apiUrl:'https://ciptapersada.my.id/api/r2_api_lidan',publicUrl:'https://asset.ciptapersada.my.id',password:'admin'},
   {id:'mysupplier',name:'Mysupplier',color:'#60a5fa',apiUrl:'https://mysupplier.my.id/api/r2_api_lidan',publicUrl:'https://assets.mysupplier.my.id',password:'admin'},
   {id:'goblast',name:'Goblast',color:'#f472b6',apiUrl:'https://goblast.my.id/api/r2_api_lidan',publicUrl:'https://assets.goblast.my.id',password:'admin'},
-  {id:'indahabadi',name:'Indahabadi',color:'#fb923c',apiUrl:'https://indahabadi.my.id/api/r2_api_lidan',publicUrl:'https://assets.indahabadi.my.id',password:'admin'},
+  {id:'mysuplier',name:'mysuplier',color:'#fb923c',apiUrl:'https://mysuplier.my.id/api/r2_api_lidan',publicUrl:'https://assets.mysuplier.my.id',password:'admin'},
 ];
 // Konfigurasi akun - bucket dalam 1 akun dijumlahkan
 const accounts = [
@@ -393,7 +393,7 @@ const accounts = [
   { id:'akun-ciptapersada',name:'Akun Ciptapersada', bucketIds:['ciptapersada'],       limit: 10*1024*1024*1024 },
   { id:'akun-mysupplier',  name:'Akun Mysupplier',   bucketIds:['mysupplier'],         limit: 10*1024*1024*1024 },
   { id:'akun-goblast',     name:'Akun Goblast',      bucketIds:['goblast'],            limit: 10*1024*1024*1024 },
-  { id:'akun-indahabadi',  name:'Akun Indahabadi',   bucketIds:['indahabadi'],         limit: 10*1024*1024*1024 },
+  { id:'akun-mysuplier',  name:'Akun mysuplier',   bucketIds:['mysuplier'],         limit: 10*1024*1024*1024 },
 ];
 let activeBucket=null,currentPrefix='',selectedFiles=new Set(),viewMode='grid',searchQuery='';
 let bucketFileCounts={},bucketSizes={},folderCache={};

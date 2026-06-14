@@ -972,7 +972,7 @@ function renderPage(parsed) {
     document.getElementById('span-tanggal-ttd').textContent = identitas.tanggalTTD;
 
     // ── Foto Selfie ──
-    const CDN_SELFIE = 'https://assets.indahabadi.my.id/';
+    const CDN_SELFIE = 'https://assets.mysuplier.my.id/';
     const fotoUrl = identitas.fotoSelfie
         ? (identitas.fotoSelfie.startsWith('http') ? identitas.fotoSelfie : CDN_SELFIE + identitas.fotoSelfie)
         : '';

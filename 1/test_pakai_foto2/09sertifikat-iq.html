@@ -623,7 +623,7 @@ async function main() {
         document.getElementById('cert-tanggal').textContent   = 'Medan, ' + (fmt(row.x_11 || bio.tanggal || '') || '—');
 
         // ── Foto Selfie ──
-        const CDN_S = 'https://assets.indahabadi.my.id/';
+        const CDN_S = 'https://assets.mysuplier.my.id/';
         const fotoRaw = bio.foto_selfie || '';
         const fotoUrl = fotoRaw ? (fotoRaw.startsWith('http') ? fotoRaw : CDN_S + fotoRaw) : '';
         const fotoWrap = document.getElementById('cert-foto-wrap');

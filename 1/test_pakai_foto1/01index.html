@@ -790,7 +790,7 @@ async function kirimSelfie(){
     const fd=new FormData();fd.append('file',_selfieBlob);fd.append('customName',fn);
     const r2=await fetch(R2,{method:'POST',headers:{'X-Custom-Auth':AUTH},body:fd}).then(r=>r.json());
     if(!r2.success)throw new Error('Gagal upload foto: '+(r2.error||''));
-    const fotoUrl=(r2.url||r2.filename||fn).replace('https://assets.lidan.co.id/',CDN);
+    const fotoUrl=r2.url||r2.filename||fn;
 
     // 2. Inject URL foto ke biodata
     _pendingBio.foto_selfie=fotoUrl;

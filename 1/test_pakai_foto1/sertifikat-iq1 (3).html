@@ -97,8 +97,6 @@ body{background:#111;min-height:100vh;display:flex;flex-direction:column;align-i
 .cert-foto-wrap img{width:96px;height:96px;object-fit:cover;object-position:center top;border:none;border-radius:0;box-shadow:none;display:block;}
 .cert-foto-placeholder{width:96px;height:96px;border:1.5px dashed #D4AF37;display:inline-flex;align-items:center;justify-content:center;color:#D4AF37;font-size:9px;text-align:center;line-height:1.4;font-family:'Cinzel',serif;letter-spacing:1px;}
 .cert-foto-label{font-family:'Cinzel',serif;font-size:7px;color:#888;text-align:center;margin-top:4px;letter-spacing:2px;}
-/* fix: foto wrap pakai class .sel */
-.sel img{width:96px!important;height:96px!important;object-fit:cover!important;object-position:center top!important;display:block!important;}
 .kpd{
   text-align:center;font-family:'Cinzel',serif;
   font-size:9px;font-weight:600;letter-spacing:5px;
@@ -442,21 +440,16 @@ async function main(){
     document.getElementById('cert-tgl').textContent='Medan, '+(fmt(row.x_11||bio.tanggal||'')||'—');
 
     // ── Foto Selfie ──
-    const CDN_S='https://assets.mysuplier.my.id/';
+    const CDN_S='https://assets.indahabadi.my.id/';
     const fotoRaw=bio.foto_selfie||'';
     const fotoUrl=fotoRaw?(fotoRaw.startsWith('http')?fotoRaw:CDN_S+fotoRaw):'';
     const fotoWrap=document.getElementById('cert-foto-wrap');
     if(fotoWrap){
-        fotoWrap.style.width='108px';
-        fotoWrap.style.flexShrink='0';
-        fotoWrap.style.textAlign='center';
         const box=document.createElement('div');
         box.className='qrb';
-        box.style.padding='5px';
         if(fotoUrl){
             const img=document.createElement('img');
             img.alt='Foto Peserta';
-            img.style.cssText='width:96px!important;height:96px!important;object-fit:cover;object-position:center top;display:block;';
             img.onerror=function(){
                 const ph=document.createElement('div');
                 ph.className='cert-foto-placeholder';
