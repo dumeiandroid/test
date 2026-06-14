@@ -1211,7 +1211,6 @@ function makeRowData(row) {
     return {
         id_x:   makeIdLink(idX, token),
         x_01:   makeTokenClickable(token),
-        selfie: renderTodaySelfie(row.x_02),
         x_02:   renderJsonBio(row.x_02),
         x_05:   renderSkorField(row.x_05),
         x_04:   renderTimer(row.id_x, row.x_04 || ''),
@@ -1230,7 +1229,6 @@ function makeRowData(row) {
 const DT_STD_COLS = [
     { data:'id_x', orderable:true },
     { data:'x_01' },
-    { data:'selfie', orderable:false },
     { data:'x_02' },
     { data:'x_05' },
     { data:'x_04', orderable:false },
@@ -1239,7 +1237,7 @@ const DT_STD_COLS = [
     { data:'x_09', title:'🔄 Tab', orderable:false, defaultContent:'—' },
     { data:'tgl',  orderable:false }
 ];
-const DT_STD_HEADS = '<th>ID</th><th>Token</th><th>Selfie</th><th>Biodata</th><th>Skor</th><th>⏱ Timer</th><th>Skor 1</th><th>Skor 2</th><th>🔄 Tab</th><th>Tgl Tes</th>';
+const DT_STD_HEADS = '<th>ID</th><th>Token</th><th>Biodata</th><th>Skor</th><th>⏱ Timer</th><th>Skor 1</th><th>Skor 2</th><th>🔄 Tab</th><th>Tgl Tes</th>';
 
 function makeDT(containerId, tableId, heads, cols, rows, opts = {}) {
     document.getElementById(containerId).innerHTML = `
@@ -2295,7 +2293,6 @@ function todayUpdateFromCache() {
         d.logout = logoutAktif
             ? `<button class="btn-aktifkan" style="background:#f59e0b;font-size:11px;padding:4px 8px;" onclick="toggleLogout('${idX}', false)">🔓 Nonaktifkan Logout</button>`
             : `<button class="btn-aktifkan" style="background:#6366f1;font-size:11px;padding:4px 8px;" onclick="toggleLogout('${idX}', true)">🔓 Aktifkan Logout</button>`;
-        d.selfie      = renderTodaySelfie(row.x_02);
         d.paket       = renderTodayPaket(row.x_02);
         d.harga       = renderTodayHarga(row.x_02);
         d.bayar       = renderBayar(idX, row.x_02);
@@ -2337,40 +2334,6 @@ function todayUpdateFromCache() {
 // Tombol refresh manual
 async function todayRefresh() {
     await allUpdate();
-}
-
-// ── Selfie (dari x_02.foto_selfie) ──
-const CDN_SELFIE = 'https://assets.indahabadi.my.id/';
-function renderTodaySelfie(x02Raw) {
-    if (!x02Raw) return '<span style="color:#ccc;font-size:12px">—</span>';
-    try {
-        const obj = JSON.parse(x02Raw);
-        const foto = obj.foto_selfie || '';
-        if (!foto) return '<span style="color:#ccc;font-size:12px">—</span>';
-        const url = foto.startsWith('http') ? foto : CDN_SELFIE + foto;
-        return `<img src="${url}" alt="Selfie" onclick="bukaPopupSelfie('${url}')"
-            style="width:36px;height:46px;object-fit:cover;object-position:center top;border-radius:6px;border:1.5px solid #e2e8f0;cursor:pointer;transition:transform .15s;"
-            onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"
-            title="Klik untuk perbesar">`;
-    } catch(e) { return '<span style="color:#ccc;font-size:12px">—</span>'; }
-}
-
-function bukaPopupSelfie(url) {
-    let overlay = document.getElementById('selfieFotoModal');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'selfieFotoModal';
-        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
-        overlay.onclick = () => overlay.style.display = 'none';
-        overlay.innerHTML = `
-            <button onclick="event.stopPropagation();document.getElementById('selfieFotoModal').style.display='none'"
-                style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-            <img id="selfieFotoModalImg" src="" alt="Foto Selfie"
-                style="max-width:88vw;max-height:88vh;border-radius:12px;object-fit:contain;box-shadow:0 10px 40px rgba(0,0,0,.5);">`;
-        document.body.appendChild(overlay);
-    }
-    document.getElementById('selfieFotoModalImg').src = url;
-    overlay.style.display = 'flex';
 }
 
 // ── Paket & Harga (dari x_02) ──

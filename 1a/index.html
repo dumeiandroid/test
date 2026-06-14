@@ -260,22 +260,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .cd-box{display:flex;flex-direction:column;align-items:center;background:#f1f5f9;border:2px solid var(--border);border-radius:10px;padding:12px 14px;min-width:60px;}
 .cd-box span{font-size:1.8em;font-weight:800;color:var(--primary);line-height:1;font-variant-numeric:tabular-nums}
 .cd-box small{font-size:.65em;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
-/* ── SELFIE SCREEN ── */
-#screenSelfie .card{max-width:520px;text-align:center}
-.selfie-title{font-size:1.25em;font-weight:800;color:var(--text);margin-bottom:6px}
-.selfie-sub{font-size:.88em;color:var(--muted);margin-bottom:20px;line-height:1.6}
-#selfieVideoWrap{position:relative;width:100%;max-width:360px;margin:0 auto 18px;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3}
-#selfieVideo{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
-#selfieCanvas{display:none}
-#selfiePreviewWrap{display:none;width:100%;max-width:360px;margin:0 auto 18px}
-#selfiePreviewWrap img{width:100%;border-radius:16px;border:3px solid var(--success)}
-.selfie-actions{display:flex;gap:10px;flex-direction:column;max-width:360px;margin:0 auto}
-.selfie-actions button{padding:13px;border:none;border-radius:10px;font-weight:800;font-size:.95em;cursor:pointer;font-family:inherit;transition:all .2s}
-#btnAmbilSelfie{background:var(--primary);color:#fff}
-#btnUlangSelfie{background:#f1f5f9;color:var(--text);display:none}
-#btnKirimSelfie{background:var(--success);color:#fff;display:none}
-.selfie-loading{display:none;flex-direction:column;align-items:center;gap:12px;padding:24px 0}
-.selfie-loading p{color:var(--muted);font-size:.88em}
 </style>
 </head>
 <body>
@@ -365,37 +349,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div style="text-align:center;padding:40px 0;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px"></div>Memuat formulir...</div>
   </div>
 
-</div>
-
-<!-- ═══ SCREEN: SELFIE VERIFIKASI ═══ -->
-<div id="screenSelfie" class="screen">
-  <div class="card">
-    <div class="selfie-title">📸 Foto Selfie Verifikasi</div>
-    <p class="selfie-sub">Ambil foto selfie untuk memverifikasi identitas Anda.<br>Pastikan wajah Anda terlihat jelas dan pencahayaan cukup.</p>
-
-    <!-- Kamera -->
-    <div id="selfieVideoWrap">
-      <video id="selfieVideo" autoplay playsinline muted></video>
-    </div>
-    <canvas id="selfieCanvas"></canvas>
-
-    <!-- Preview setelah capture -->
-    <div id="selfiePreviewWrap">
-      <img id="selfiePreviewImg" src="" alt="Preview Selfie">
-    </div>
-
-    <!-- Loading -->
-    <div class="selfie-loading" id="selfieLoading">
-      <div class="spinner"></div>
-      <p id="selfieLoadingText">Mengunggah foto...</p>
-    </div>
-
-    <div class="selfie-actions" id="selfieActions">
-      <button id="btnAmbilSelfie" onclick="ambilSelfie()">📷 Ambil Foto</button>
-      <button id="btnUlangSelfie" onclick="ulangSelfie()">🔄 Foto Ulang</button>
-      <button id="btnKirimSelfie" onclick="kirimSelfie()">✅ Gunakan Foto Ini & Lanjutkan</button>
-    </div>
-  </div>
 </div>
 
 <!-- ═══ SCREEN: TUNGGU KONFIRMASI ═══ -->
@@ -576,7 +529,6 @@ const ALL_CONFIG=[
 const API_W='https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6';
 const API_R='https://lidan-co-id.pages.dev/api/contacts_filter_dinamis7';
 const TBL='nilai1_json',TBL_P='alat_tes',TBL_K='admin_kontrol',AUTH='admin',WHO_B='https://cipta.my.id/who2/';
-const R2='https://indahabadi.my.id/api/upload_r2_lidan',CDN='https://assets.indahabadi.my.id/';
 const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 let cu=null,cfg=null,qs=[],qi=0,ua=[],sc=0,tl=0,ti=null;
@@ -588,11 +540,6 @@ const $=id=>document.getElementById(id);
 const sl=t=>{$('loaderText').innerText=t||'Memuat...';$('globalLoader').classList.remove('hidden')};
 const hl=()=>$('globalLoader').classList.add('hidden');
 const ss=id=>{
-  // Jika meninggalkan screenSelfie, hentikan kamera
-  const curSel=document.querySelector('.screen.active');
-  if(curSel&&curSel.id==='screenSelfie'&&id!=='screenSelfie'){
-    if(typeof tutupKameraSelfie==='function')tutupKameraSelfie();
-  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
   // Tombol token hanya muncul di screenDaftar
@@ -721,108 +668,6 @@ function syncRadioStyle(){
   ln.style.background=(n&&n.checked)?'#eff6ff':'';
 }
 
-// ── SELFIE VERIFIKASI ──
-let _pendingBio=null,_pendingPid=null,_pendingPnm=null;
-let _selfieStream=null,_selfieBlob=null;
-
-function bukaKameraSelfie(){
-  // Reset state selfie
-  _selfieBlob=null;
-  $('selfieVideoWrap').style.display='block';
-  $('selfiePreviewWrap').style.display='none';
-  $('selfieLoading').style.display='none';
-  $('selfieActions').style.display='flex';
-  $('btnAmbilSelfie').style.display='block';
-  $('btnUlangSelfie').style.display='none';
-  $('btnKirimSelfie').style.display='none';
-  ss('screenSelfie');
-  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:960}}})
-    .then(s=>{_selfieStream=s;$('selfieVideo').srcObject=s;})
-    .catch(()=>{
-      alert('Gagal mengakses kamera. Pastikan izin kamera diberikan lalu coba lagi.');
-      ss('screenDaftar');
-    });
-}
-
-function tutupKameraSelfie(){
-  if(_selfieStream){_selfieStream.getTracks().forEach(t=>t.stop());_selfieStream=null;}
-}
-
-function ambilSelfie(){
-  const vid=$('selfieVideo'),cvs=$('selfieCanvas');
-  const vw=vid.videoWidth||640,vh=vid.videoHeight||480;
-  cvs.width=vw;cvs.height=vh;
-  const ctx=cvs.getContext('2d');
-  // Mirror untuk hasil alami (kamera depan)
-  ctx.translate(vw,0);ctx.scale(-1,1);
-  ctx.drawImage(vid,0,0,vw,vh);
-  cvs.toBlob(blob=>{
-    _selfieBlob=blob;
-    const url=URL.createObjectURL(blob);
-    $('selfiePreviewImg').src=url;
-    $('selfieVideoWrap').style.display='none';
-    $('selfiePreviewWrap').style.display='block';
-    $('btnAmbilSelfie').style.display='none';
-    $('btnUlangSelfie').style.display='block';
-    $('btnKirimSelfie').style.display='block';
-  },'image/jpeg',0.88);
-}
-
-function ulangSelfie(){
-  _selfieBlob=null;
-  $('selfiePreviewImg').src='';
-  $('selfiePreviewWrap').style.display='none';
-  $('selfieVideoWrap').style.display='block';
-  $('btnAmbilSelfie').style.display='block';
-  $('btnUlangSelfie').style.display='none';
-  $('btnKirimSelfie').style.display='none';
-}
-
-async function kirimSelfie(){
-  if(!_selfieBlob){alert('Silakan ambil foto terlebih dahulu.');return;}
-  $('selfieActions').style.display='none';
-  const loadEl=$('selfieLoading');loadEl.style.display='flex';
-  const stTxt=$('selfieLoadingText');
-  try{
-    // 1. Upload selfie ke R2
-    stTxt.textContent='Mengunggah foto selfie...';
-    const fn=`psikotes/selfie_${Date.now()}.jpg`;
-    const fd=new FormData();fd.append('file',_selfieBlob);fd.append('customName',fn);
-    const r2=await fetch(R2,{method:'POST',headers:{'X-Custom-Auth':AUTH},body:fd}).then(r=>r.json());
-    if(!r2.success)throw new Error('Gagal upload foto: '+(r2.error||''));
-    const fotoUrl=r2.url||r2.filename||fn;
-
-    // 2. Inject URL foto ke biodata
-    _pendingBio.foto_selfie=fotoUrl;
-
-    // 3. Simpan ke API (POST biodata + foto)
-    stTxt.textContent='Membuat token...';
-    const tok=await genTok(_pendingPid);
-    const bio=JSON.stringify(_pendingBio);
-    stTxt.textContent='Menyimpan data...';
-    const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tok,x_02:bio})});
-    if(!res.success)throw new Error(res.message||'Gagal menyimpan data.');
-
-    // 4. Tutup kamera & lanjutkan alur normal
-    tutupKameraSelfie();
-    localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',_pendingPnm);
-    cu={id_x:res.id_x,x_01:tok,x_02:bio};
-    stTxt.textContent='Memuat tes...';
-    await loadAC();
-    if(IS_AUTO_AKTIF){hl();startGlobalPolling();await goNext2();}
-    else{
-      hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
-      const idBox=document.getElementById('tungguIdBox');
-      const idNum=document.getElementById('tungguIdNum');
-      if(idBox&&idNum){idNum.textContent=String(res.id_x);idBox.style.display='block';}
-    }
-  }catch(e){
-    loadEl.style.display='none';
-    $('selfieActions').style.display='flex';
-    alert('⚠ '+e.message);
-  }
-}
-
 async function handleDaftar(){
   const eb=$('daftarErrBox');eb.classList.remove('show');
   for(const[id,lb]of[['bioNama','Nama'],['bioUsia','Usia'],['bioPend','Pendidikan'],['bioGender','Jenis Kelamin']]){
@@ -842,21 +687,34 @@ async function handleDaftar(){
     return;
   }
   if(!sPaket){eb.textContent='⚠ Paket tes tidak ditemukan. Hubungi administrator.';eb.classList.add('show');return}
-  // Simpan biodata sementara, lalu pindah ke screen selfie
-  const pid=String(sPaket.id_x).trim(),pnm=(sPaket.x_01||'').trim();
-  _pendingBio={
-    nama:$('bioNama').value.trim(),
-    usia:$('bioUsia').value.trim(),
-    pendidikan:$('bioPend').value.trim(),
-    jenis_kelamin:$('bioGender').value.trim(),
-    telepon:telpVal,
-    kesediaan_dihubungi:kesediaanEl?kesediaanEl.value:'tidak_berlaku',
-    tgl_tes:td(),
-    status:IS_AUTO_AKTIF?'aktif':'nonaktif'
-  };
-  _pendingPid=pid; _pendingPnm=pnm;
-  // Buka kamera selfie
-  bukaKameraSelfie();
+  const btn=$('btnDaftar');sLoad(btn,true);sl('Membuat token...');
+  try{
+    const pid=String(sPaket.id_x).trim(),pnm=(sPaket.x_01||'').trim();
+    const tok=await genTok(pid);
+    const bio=JSON.stringify({
+      nama:$('bioNama').value.trim(),
+      usia:$('bioUsia').value.trim(),
+      pendidikan:$('bioPend').value.trim(),
+      jenis_kelamin:$('bioGender').value.trim(),
+      telepon:telpVal,
+      kesediaan_dihubungi:kesediaanEl?kesediaanEl.value:'tidak_berlaku',
+      tgl_tes:td(),
+      status:IS_AUTO_AKTIF?'aktif':'nonaktif'
+    });
+    sl('Menyimpan data...');
+    const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tok,x_02:bio})});
+    if(!res.success)throw new Error(res.message||'Gagal.');
+    localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',pnm);
+    cu={id_x:res.id_x,x_01:tok,x_02:bio};sl('Memuat tes...');await loadAC();
+    if(IS_AUTO_AKTIF){hl();startGlobalPolling();await goNext2();}
+    else{
+      hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
+      // Tampilkan ID peserta
+      const idBox=document.getElementById('tungguIdBox');
+      const idNum=document.getElementById('tungguIdNum');
+      if(idBox&&idNum){idNum.textContent=String(res.id_x);idBox.style.display='block';}
+    }
+  }catch(e){hl();eb.textContent='⚠ '+e.message;eb.classList.add('show');sLoad(btn,false)}
 }
 
 async function loadAC(){
@@ -1423,7 +1281,7 @@ let _globalPollInterval=null;
 let _globalPollBusy=false;
 
 function getActiveScreen(){
-  const screens=['screenTutup','screenDaftar','screenSelfie','screenTunggu','screenStart','screenTest','screenDash','screenDone','screenUpgrade'];
+  const screens=['screenTutup','screenDaftar','screenTunggu','screenStart','screenTest','screenDash','screenDone','screenUpgrade'];
   for(const id of screens){const el=$(id);if(el&&el.classList.contains('active'))return id;}
   return null;
 }

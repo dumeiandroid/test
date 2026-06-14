@@ -604,40 +604,6 @@ function renderViolation(x09Raw) {
     return `<div title="Total: ${total}x &#10;${tooltip}" style="cursor:default;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${summary}</div>`;
 }
 
-// ── Selfie (dari x_02.foto_selfie) ──
-const CDN_SELFIE = 'https://assets.indahabadi.my.id/';
-function renderTodaySelfie(x02Raw) {
-    if (!x02Raw) return '<span style="color:#ccc;font-size:12px">—</span>';
-    try {
-        const obj = JSON.parse(x02Raw);
-        const foto = obj.foto_selfie || '';
-        if (!foto) return '<span style="color:#ccc;font-size:12px">—</span>';
-        const url = foto.startsWith('http') ? foto : CDN_SELFIE + foto;
-        return `<img src="${url}" alt="Selfie" onclick="bukaPopupSelfie('${url}')"
-            style="width:36px;height:46px;object-fit:cover;object-position:center top;border-radius:6px;border:1.5px solid #e2e8f0;cursor:pointer;transition:transform .15s;"
-            onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"
-            title="Klik untuk perbesar">`;
-    } catch(e) { return '<span style="color:#ccc;font-size:12px">—</span>'; }
-}
-
-function bukaPopupSelfie(url) {
-    let overlay = document.getElementById('selfieFotoModal');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'selfieFotoModal';
-        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
-        overlay.onclick = () => overlay.style.display = 'none';
-        overlay.innerHTML = `
-            <button onclick="event.stopPropagation();document.getElementById('selfieFotoModal').style.display='none'"
-                style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-            <img id="selfieFotoModalImg" src="" alt="Foto Selfie"
-                style="max-width:88vw;max-height:88vh;border-radius:12px;object-fit:contain;box-shadow:0 10px 40px rgba(0,0,0,.5);">`;
-        document.body.appendChild(overlay);
-    }
-    document.getElementById('selfieFotoModalImg').src = url;
-    overlay.style.display = 'flex';
-}
-
 // Status aktif — readonly badge, tidak bisa diklik
 function renderStatusAktif(x02Raw) {
     let status = 'nonaktif';
@@ -708,26 +674,36 @@ function buildRows(data) {
     return data
         .filter(row => getDateFromX02(row.x_02) === dateVal)
         .map(row => ({
-            id_x:   String(row.id_x || ''),
-            selfie: renderTodaySelfie(row.x_02),
-            x_02:   renderJsonBio(row.x_02),
-            x_05:   renderSkorField(row.x_05),
-            x_06:   renderJsonField(row.x_06),
-            x_09:   renderViolation(row.x_09 || ''),
-            tgl:    `<span style="font-size:12px;color:var(--muted)">${getDateFromX02(row.x_02)}</span>`
+            id_x:     String(row.id_x || ''),
+            x_02:     renderJsonBio(row.x_02),
+            x_05:     renderSkorField(row.x_05),
+            x_04:     renderTimer(row.x_04 || ''),
+            x_06:     renderJsonField(row.x_06),
+            x_09:     renderViolation(row.x_09 || ''),
+            tgl:      `<span style="font-size:12px;color:var(--muted)">${getDateFromX02(row.x_02)}</span>`,
+            aktif:    renderStatusAktif(row.x_02),
+            paket:     renderPaket(row.x_02),
+            bayar:     renderStatusBayar(row.x_02),
+            insentif:  renderInsentif(row.x_02),
+            _hargaNum: parseHargaNum(row.x_02),
+            _sudahBayar: isSudahBayar(row.x_02)
         }));
 }
 
 function initTable(rows) {
-    const heads = `<th>ID</th><th>Selfie</th><th>Biodata</th><th>Skor</th><th>Skor 1</th><th>🔄 Tab</th><th>Tgl Tes</th>`;
+    const heads = `<th>ID</th><th>Biodata</th><th>Skor</th><th>⏱ Timer</th><th>Skor 1</th><th>🔄 Tab</th><th>Tgl Tes</th><th>Status</th><th>Paket</th><th>Sudah Bayar</th><th>Insentif (10%)</th>`;
     const cols  = [
-        { data: 'id_x',   orderable: true },
-        { data: 'selfie', orderable: false },
+        { data: 'id_x',     orderable: true },
         { data: 'x_02' },
         { data: 'x_05' },
+        { data: 'x_04',     orderable: false },
         { data: 'x_06' },
-        { data: 'x_09',   orderable: false, defaultContent: '—' },
-        { data: 'tgl',    orderable: false }
+        { data: 'x_09',     orderable: false, defaultContent: '—' },
+        { data: 'tgl',      orderable: false },
+        { data: 'aktif',    orderable: false },
+        { data: 'paket',    orderable: false },
+        { data: 'bayar',    orderable: false },
+        { data: 'insentif', orderable: false }
     ];
     document.getElementById('todayContainer').innerHTML = `
         <table id="testerTable" class="display nowrap" style="width:100%">
