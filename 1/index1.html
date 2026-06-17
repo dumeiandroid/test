@@ -363,28 +363,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   </div>
 </div>
 
-<!-- ═══ SCREEN: LOGIN / BIODATA ═══ -->
+<!-- ═══ SCREEN: FORM BIODATA (diisi dari fetch) ═══ -->
 <div id="screenDaftar" class="screen">
-  <div id="tokenLoginBox" class="card" style="max-width:440px;margin-top:32px;">
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:2.6em;margin-bottom:10px;">🔑</div>
-      <div class="page-title" style="font-size:1.3em;">Masuk dengan Token</div>
-      <p class="page-sub" style="margin-bottom:0;">Masukkan token yang telah diberikan oleh tester untuk memulai tes.</p>
-    </div>
-    <div class="form-group">
-      <label for="inputTokenMain">Token Peserta</label>
-      <input id="inputTokenMain" type="text" placeholder="Contoh: ABC123XYZ"
-        autocomplete="off" spellcheck="false"
-        style="font-family:'Courier New',monospace;font-size:1.05em;letter-spacing:.05em;"
-        onkeydown="if(event.key==='Enter')loginDenganTokenMain()">
-    </div>
-    <div id="tokenErrBoxMain" style="display:none;padding:9px 12px;background:#fee2e2;color:#dc2626;border-radius:8px;font-size:.875em;font-weight:600;margin-bottom:12px;"></div>
-    <button id="btnLoginTokenMain" class="btn btn-primary" onclick="loginDenganTokenMain()">
-      Masuk →
-    </button>
+  <div class="card" style="max-width:520px" id="biodataContainer">
+    <!-- Konten di-inject dari BIODATA_FILE -->
+    <div style="text-align:center;padding:40px 0;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px"></div>Memuat formulir...</div>
   </div>
-  <!-- Container biodata: diinject dari fragment (sama seperti file asli), ditampilkan hanya jika biodata token masih kosong -->
-  <div id="biodataContainer" class="card" style="display:none;"></div>
+
 </div>
 
 <!-- ═══ SCREEN: SELFIE VERIFIKASI ═══ -->
@@ -555,9 +540,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 function shortTitle(t){ return (t||'').split(' — ')[0].split(' \u2014 ')[0]; }
 
 // ============================================================
-// KONFIGURASI PAKET — hardcoded (tidak perlu ?p= di URL)
+// KONFIGURASI PAKET — diambil dari query string ?p=nama-paket
 // ============================================================
-const AUTO_PAKET = 'karakter';
+const _urlParams = new URLSearchParams(window.location.search);
+const AUTO_PAKET = (_urlParams.get('p') || '').trim();
 
 // Paket yang langsung aktif tanpa konfirmasi manual tester
 const PAKET_AUTO_AKTIF = ['asmara','potensi','karakter','karir'];
@@ -602,7 +588,6 @@ const R2='https://indahabadi.my.id/api/upload_r2_lidan',CDN='https://assets.inda
 const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 let cu=null,cfg=null,qs=[],qi=0,ua=[],sc=0,tl=0,ti=null;
-let _updateExistingId=null; // id_x yang harus di-UPDATE saat biodata token masih kosong
 let tStarted=false,fEnd=false,swEl=0,vCnt=0,rSel=[],uNum=[],skip=[],ans=[];
 let AC=[],WTL=[],UT=[],pList=[],sPaket=null,vMap={};
 let wBL=[],wBI=0,wQs=[],wQi=0,wUA=[],wSkip=[],wAns=[];
@@ -618,6 +603,11 @@ const ss=id=>{
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
+  // Tombol token hanya muncul di screenDaftar
+  const btnTF=document.getElementById('btnTokenFloat');
+  const popupTF=document.getElementById('popupToken');
+  if(btnTF) btnTF.style.display=(id==='screenDaftar')?'block':'none';
+  if(popupTF && id!=='screenDaftar') popupTF.style.display='none';
 };
 function sLoad(btn,on){btn.disabled=on;if(on){btn.dataset.t=btn.innerHTML;btn.innerHTML='<span class="spinner" style="width:18px;height:18px;border-width:3px;display:inline-block"></span>'}else btn.innerHTML=btn.dataset.t}
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -728,68 +718,7 @@ function showPaketNotFoundScreen(){
 }
 function renderPaket(){}
 
-// ─── LOGIN TOKEN UTAMA (form di screenDaftar) ───
-async function loginDenganTokenMain() {
-  const inp = document.getElementById('inputTokenMain');
-  const errBox = document.getElementById('tokenErrBoxMain');
-  const btn = document.getElementById('btnLoginTokenMain');
-  const tok = (inp.value || '').trim();
-  errBox.style.display = 'none';
-  if (!tok) { errBox.textContent = '⚠ Masukkan token terlebih dahulu.'; errBox.style.display = 'block'; inp.focus(); return; }
-  btn.disabled = true; btn.innerHTML = '<span class="spinner-sm"></span> Memeriksa...';
-  sl('Memeriksa token...');
-  try {
-    const res = await aF(`${API_R}?table=${TBL}&x_01_eq=${tok}`, { headers: { 'X-Custom-Auth': AUTH } });
-    if (!res.success || !res.count) {
-      hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
-      errBox.textContent = '❌ Token tidak ditemukan. Periksa kembali token Anda.';
-      errBox.style.display = 'block'; return;
-    }
-    cu = res.data[0];
-    const paketToken = (cu.x_04 || '').trim().toLowerCase();
-    if (paketToken && paketToken !== AUTO_PAKET.toLowerCase()) {
-      hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
-      errBox.textContent = '❌ Token ini bukan untuk paket ' + AUTO_PAKET + '.';
-      errBox.style.display = 'block'; return;
-    }
-    // ── Cek apakah biodata sudah terisi (field 'nama') ──
-    let bioCek = {}; try { bioCek = JSON.parse(cu.x_02 || '{}'); } catch {}
-    if (!bioCek.nama) {
-      // Biodata masih kosong → tampilkan form biodata (fragment yang sudah diinject),
-      // token TETAP yang sudah ada (tidak generate token baru, tidak insert baru — nanti di-UPDATE).
-      hl();
-      _updateExistingId = String(cu.id_x); // tandai mode update untuk handleDaftar/kirimSelfie
-      localStorage.setItem('token', tok);
-      localStorage.setItem('db_id', String(cu.id_x));
-      localStorage.setItem('_p', AUTO_PAKET);
-      tampilTopBarId();
-      $('tokenLoginBox').style.display = 'none';
-      $('biodataContainer').style.display = 'block';
-      return;
-    }
-
-    localStorage.setItem('token', tok);
-    localStorage.setItem('db_id', String(cu.id_x));
-    localStorage.setItem('_p', AUTO_PAKET);
-    tampilTopBarId();
-    vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
-    await loadAC();
-    let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
-    hl(); startGlobalPolling();
-    if (IS_AUTO_AKTIF || status === 'aktif') {
-      await goNext2();
-    } else {
-      ss('screenTunggu'); showZoomTunggu();
-    }
-  } catch (e) {
-    hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
-    errBox.textContent = '⚠ Terjadi kesalahan. Coba lagi.';
-    errBox.style.display = 'block';
-  }
-}
-
-// Diset saat biodata token masih kosong: id_x yang harus di-UPDATE (bukan insert baru)
-
+// ─── Fungsi biodata (dipakai oleh biodata-2, tersedia global) ───
 function syncRadioStyle(){
   const y=$('bioKesediaanY'),n=$('bioKesediaanN');
   const ly=$('radioLabelBersedia'),ln=$('radioLabelTidak');
@@ -874,32 +803,7 @@ async function kirimSelfie(){
     // 2. Inject URL foto ke biodata
     _pendingBio.foto_selfie=fotoUrl;
 
-    if(_updateExistingId){
-      // ── MODE UPDATE: token sudah ada (dari login token), biodata diisi pertama kali ──
-      stTxt.textContent='Menyimpan data...';
-      const bio=JSON.stringify(_pendingBio);
-      const tok=localStorage.getItem('token');
-      const resU=await aP(_updateExistingId,{x_02:bio}).then(r=>r.json());
-      if(!resU.success)throw new Error(resU.message||'Gagal menyimpan data.');
-
-      tutupKameraSelfie();
-      localStorage.setItem('db_id',_updateExistingId);
-      cu={id_x:_updateExistingId,x_01:tok,x_02:bio};
-      _updateExistingId=null;
-      stTxt.textContent='Memuat tes...';
-      await loadAC();
-      let status='nonaktif';try{status=JSON.parse(bio||'{}').status||'nonaktif'}catch{}
-      if(IS_AUTO_AKTIF||status==='aktif'){hl();startGlobalPolling();await goNext2();}
-      else{
-        hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
-        const idBox=document.getElementById('tungguIdBox');
-        const idNum=document.getElementById('tungguIdNum');
-        if(idBox&&idNum){idNum.textContent=String(cu.id_x);idBox.style.display='block';}
-      }
-      return;
-    }
-
-    // 3. Simpan ke API (POST biodata + foto) — jalur lama (insert baru)
+    // 3. Simpan ke API (POST biodata + foto)
     stTxt.textContent='Membuat token...';
     const tok=await genTok(_pendingPid);
     const bio=JSON.stringify(_pendingBio);
@@ -1421,7 +1325,7 @@ async function wOpen(idx){
     hl();$('startTitle').innerText=shortTitle(cfg.title);$('startInstructions').innerText=cfg.instructions||cfg.desc;$('exNote').innerText=cfg.exNote;
     const it=$('exImgTop'),ib=$('exImgBottom');it.style.display=cfg.exImgTop?'':'none';ib.style.display=cfg.exImgBottom?'':'none';
     if(cfg.exImgTop)it.src=cfg.exImgTop;if(cfg.exImgBottom)ib.src=cfg.exImgBottom;
-    $('exampleBlock').style.display=(cfg.exImgTop||cfg.exImgBottom||cfg.exNote)?'':'none';ss('screenStart');tampilTopBarId();
+    $('exampleBlock').style.display=(cfg.exImgTop||cfg.exImgBottom||cfg.exNote)?'':'none';ss('screenStart');
   }catch(e){alert('Gagal: '+e.message);hl();if(wBL.length>1)wDash()}
 }
 async function wDash(){
@@ -1436,7 +1340,7 @@ async function wDash(){
     div.innerHTML=`<div class="task-num">${done?'✓':i+1}</div><div class="task-name">${d.title||('Tes '+b.fileKey)}</div><span class="task-badge ${done?'badge-done':cur?'badge-current':'badge-locked'}">${done?'Selesai':cur?'▶ Mulai':'Terkunci'}</span>`;
     if(cur)div.onclick=()=>{wBI=i;wOpen(i)};g.appendChild(div);
   });
-  $('welcomeSub').innerText=fp===null?'🎉 Semua selesai!':'Klik tes bertanda ▶ Mulai.';ss('screenDash');tampilTopBarId();
+  $('welcomeSub').innerText=fp===null?'🎉 Semua selesai!':'Klik tes bertanda ▶ Mulai.';ss('screenDash');
 }
 async function wStart(){
   sl('Memuat soal...');
@@ -1653,11 +1557,6 @@ async function doLogout(dbId){
   }catch(e){console.warn('[logout] gagal reset flag:',e)}
   // Bersihkan sesi lokal
   localStorage.clear();
-  _updateExistingId=null;
-  const tlb=$('tokenLoginBox'),bc=$('biodataContainer');
-  if(tlb)tlb.style.display='block';
-  if(bc)bc.style.display='none';
-  const inpT=$('inputTokenMain');if(inpT)inpT.value='';
   stopGlobalPolling();
   stopLogoutPoll();
   hl();
@@ -1775,6 +1674,32 @@ async function loadFragment(url, containerId) {
 // INIT
 // ═══════════════════════════════════════════
 window.onload = async () => {
+  // ── Cek ?p= lebih awal, sebelum apapun dijalankan ──
+  if (!AUTO_PAKET) {
+    hl();
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    let errScreen = $('screenNoPacket');
+    if (!errScreen) {
+      errScreen = document.createElement('div');
+      errScreen.id = 'screenNoPacket';
+      errScreen.className = 'screen active';
+      errScreen.innerHTML = `
+        <div class="card" style="text-align:center;margin-top:40px">
+          <div style="font-size:3em;margin-bottom:12px">📦</div>
+          <div style="font-size:1.25em;font-weight:700;color:var(--danger);margin-bottom:10px">Paket Belum Dimasukkan</div>
+          <p style="color:var(--muted);font-size:.9em;line-height:1.7">
+            Halaman ini memerlukan parameter paket pada URL.<br>
+            Tambahkan <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:.9em">?p=nama-paket</code> di akhir URL Anda.<br><br>
+            Contoh: <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:.9em">tes-template.html?p=tes-iq</code>
+          </p>
+        </div>`;
+      document.body.appendChild(errScreen);
+    } else {
+      errScreen.classList.add('active');
+    }
+    return; // hentikan init
+  }
+
   sl('Memeriksa paket...');
 
   // Cek paket di server SEBELUM apapun (termasuk sebelum cek token)
@@ -1860,19 +1785,6 @@ window.onload = async () => {
       const res = await aF(`${API_R}?table=${TBL}&x_01_eq=${tok}`, { headers: { 'X-Custom-Auth': AUTH } });
       if (!res.success || !res.count) { localStorage.clear(); hl(); ss('screenDaftar'); return; }
       cu = res.data[0]; localStorage.setItem('db_id', cu.id_x);
-
-      // ── Cek apakah biodata sudah terisi (field 'nama') ──
-      let bioCekR = {}; try { bioCekR = JSON.parse(cu.x_02 || '{}'); } catch {}
-      if (!bioCekR.nama) {
-        hl();
-        _updateExistingId = String(cu.id_x);
-        tampilTopBarId();
-        ss('screenDaftar');
-        $('tokenLoginBox').style.display = 'none';
-        $('biodataContainer').style.display = 'block';
-        return;
-      }
-
       vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
       await loadAC();
       let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
@@ -2163,7 +2075,7 @@ async function kreplinSelesai(){
 <!-- ══ TOMBOL TOKEN MENGAMBANG ══ -->
 <button id="btnTokenFloat"
   onclick="bukaPopupToken()"
-  style="display:none !important;position:fixed;bottom:80px;right:12px;z-index:2147483647;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:'Segoe UI',sans-serif;">
+  style="position:fixed;bottom:80px;right:12px;z-index:2147483647;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:'Segoe UI',sans-serif;display:none;">
   🔑 Token
 </button>
 

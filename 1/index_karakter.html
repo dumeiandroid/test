@@ -363,9 +363,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   </div>
 </div>
 
-<!-- ═══ SCREEN: LOGIN / BIODATA ═══ -->
+<!-- ═══ SCREEN: LOGIN TOKEN ═══ -->
 <div id="screenDaftar" class="screen">
-  <div id="tokenLoginBox" class="card" style="max-width:440px;margin-top:32px;">
+  <div class="card" style="max-width:440px;margin-top:32px;">
     <div style="text-align:center;margin-bottom:24px;">
       <div style="font-size:2.6em;margin-bottom:10px;">🔑</div>
       <div class="page-title" style="font-size:1.3em;">Masuk dengan Token</div>
@@ -383,8 +383,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       Masuk →
     </button>
   </div>
-  <!-- Container biodata: diinject dari fragment (sama seperti file asli), ditampilkan hanya jika biodata token masih kosong -->
-  <div id="biodataContainer" class="card" style="display:none;"></div>
+  <!-- Container biodata tetap ada (tersembunyi) untuk keperluan internal -->
+  <div id="biodataContainer" style="display:none;"></div>
 </div>
 
 <!-- ═══ SCREEN: SELFIE VERIFIKASI ═══ -->
@@ -602,7 +602,6 @@ const R2='https://indahabadi.my.id/api/upload_r2_lidan',CDN='https://assets.inda
 const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 let cu=null,cfg=null,qs=[],qi=0,ua=[],sc=0,tl=0,ti=null;
-let _updateExistingId=null; // id_x yang harus di-UPDATE saat biodata token masih kosong
 let tStarted=false,fEnd=false,swEl=0,vCnt=0,rSel=[],uNum=[],skip=[],ans=[];
 let AC=[],WTL=[],UT=[],pList=[],sPaket=null,vMap={};
 let wBL=[],wBI=0,wQs=[],wQi=0,wUA=[],wSkip=[],wAns=[];
@@ -752,22 +751,6 @@ async function loginDenganTokenMain() {
       errBox.textContent = '❌ Token ini bukan untuk paket ' + AUTO_PAKET + '.';
       errBox.style.display = 'block'; return;
     }
-    // ── Cek apakah biodata sudah terisi (field 'nama') ──
-    let bioCek = {}; try { bioCek = JSON.parse(cu.x_02 || '{}'); } catch {}
-    if (!bioCek.nama) {
-      // Biodata masih kosong → tampilkan form biodata (fragment yang sudah diinject),
-      // token TETAP yang sudah ada (tidak generate token baru, tidak insert baru — nanti di-UPDATE).
-      hl();
-      _updateExistingId = String(cu.id_x); // tandai mode update untuk handleDaftar/kirimSelfie
-      localStorage.setItem('token', tok);
-      localStorage.setItem('db_id', String(cu.id_x));
-      localStorage.setItem('_p', AUTO_PAKET);
-      tampilTopBarId();
-      $('tokenLoginBox').style.display = 'none';
-      $('biodataContainer').style.display = 'block';
-      return;
-    }
-
     localStorage.setItem('token', tok);
     localStorage.setItem('db_id', String(cu.id_x));
     localStorage.setItem('_p', AUTO_PAKET);
@@ -788,7 +771,6 @@ async function loginDenganTokenMain() {
   }
 }
 
-// Diset saat biodata token masih kosong: id_x yang harus di-UPDATE (bukan insert baru)
 
 function syncRadioStyle(){
   const y=$('bioKesediaanY'),n=$('bioKesediaanN');
@@ -874,32 +856,7 @@ async function kirimSelfie(){
     // 2. Inject URL foto ke biodata
     _pendingBio.foto_selfie=fotoUrl;
 
-    if(_updateExistingId){
-      // ── MODE UPDATE: token sudah ada (dari login token), biodata diisi pertama kali ──
-      stTxt.textContent='Menyimpan data...';
-      const bio=JSON.stringify(_pendingBio);
-      const tok=localStorage.getItem('token');
-      const resU=await aP(_updateExistingId,{x_02:bio}).then(r=>r.json());
-      if(!resU.success)throw new Error(resU.message||'Gagal menyimpan data.');
-
-      tutupKameraSelfie();
-      localStorage.setItem('db_id',_updateExistingId);
-      cu={id_x:_updateExistingId,x_01:tok,x_02:bio};
-      _updateExistingId=null;
-      stTxt.textContent='Memuat tes...';
-      await loadAC();
-      let status='nonaktif';try{status=JSON.parse(bio||'{}').status||'nonaktif'}catch{}
-      if(IS_AUTO_AKTIF||status==='aktif'){hl();startGlobalPolling();await goNext2();}
-      else{
-        hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
-        const idBox=document.getElementById('tungguIdBox');
-        const idNum=document.getElementById('tungguIdNum');
-        if(idBox&&idNum){idNum.textContent=String(cu.id_x);idBox.style.display='block';}
-      }
-      return;
-    }
-
-    // 3. Simpan ke API (POST biodata + foto) — jalur lama (insert baru)
+    // 3. Simpan ke API (POST biodata + foto)
     stTxt.textContent='Membuat token...';
     const tok=await genTok(_pendingPid);
     const bio=JSON.stringify(_pendingBio);
@@ -1653,11 +1610,6 @@ async function doLogout(dbId){
   }catch(e){console.warn('[logout] gagal reset flag:',e)}
   // Bersihkan sesi lokal
   localStorage.clear();
-  _updateExistingId=null;
-  const tlb=$('tokenLoginBox'),bc=$('biodataContainer');
-  if(tlb)tlb.style.display='block';
-  if(bc)bc.style.display='none';
-  const inpT=$('inputTokenMain');if(inpT)inpT.value='';
   stopGlobalPolling();
   stopLogoutPoll();
   hl();
@@ -1860,19 +1812,6 @@ window.onload = async () => {
       const res = await aF(`${API_R}?table=${TBL}&x_01_eq=${tok}`, { headers: { 'X-Custom-Auth': AUTH } });
       if (!res.success || !res.count) { localStorage.clear(); hl(); ss('screenDaftar'); return; }
       cu = res.data[0]; localStorage.setItem('db_id', cu.id_x);
-
-      // ── Cek apakah biodata sudah terisi (field 'nama') ──
-      let bioCekR = {}; try { bioCekR = JSON.parse(cu.x_02 || '{}'); } catch {}
-      if (!bioCekR.nama) {
-        hl();
-        _updateExistingId = String(cu.id_x);
-        tampilTopBarId();
-        ss('screenDaftar');
-        $('tokenLoginBox').style.display = 'none';
-        $('biodataContainer').style.display = 'block';
-        return;
-      }
-
       vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
       await loadAC();
       let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
