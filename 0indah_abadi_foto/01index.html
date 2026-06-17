@@ -111,19 +111,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .action-bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
 .action-bar .btn{width:auto}
 #deskripsiBox{margin-bottom:18px;padding:14px 18px;background:#f8fafc;border-left:4px solid var(--primary);border-radius:4px;line-height:1.6;color:var(--muted);font-size:.88em}
-.ranking-table{width:100%;border-collapse:collapse;table-layout:auto}
+.ranking-table{width:100%;border-collapse:collapse}
 .ranking-table th,.ranking-table td{border:1px solid var(--border);padding:9px 12px;text-align:left;font-size:.88em}
 .ranking-table th{background:var(--primary);color:#fff;font-weight:600}
 .ranking-table tr:nth-child(even) td{background:#f8fafc}
-.ranking-table td:last-child{width:1%;white-space:nowrap}
-.btn-container{display:flex;flex-wrap:nowrap;gap:4px;transition:all .2s}
-.btn-rank{width:34px;height:34px;cursor:pointer;border:1px solid var(--border);background:#fff;border-radius:6px;font-weight:600;font-size:.82em;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;overflow:hidden;flex-shrink:0}
-.btn-rank:hover:not(:disabled){background:#eff6ff;border-color:var(--primary)}
-.btn-rank.gone{width:0!important;min-width:0!important;padding:0!important;border:none!important;overflow:hidden;opacity:0;pointer-events:none;transition:width .25s,opacity .2s,padding .25s}
-.rank-no-cell{width:44px;text-align:center;vertical-align:middle}
-.rank-no-badge{width:32px;height:32px;border-radius:50%;background:var(--success);color:#fff;font-weight:700;font-size:.88em;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-family:inherit;box-shadow:0 2px 6px rgba(22,163,74,.35);transition:transform .15s,box-shadow .15s}
-.rank-no-badge:hover{transform:scale(1.12);box-shadow:0 4px 12px rgba(22,163,74,.45)}
-.rank-no-empty{width:32px;height:32px;display:inline-block}
+.btn-container{display:flex;flex-wrap:wrap;gap:4px}
+.btn-rank{width:34px;height:34px;cursor:pointer;border:1px solid var(--border);background:#fff;border-radius:6px;font-weight:600;font-size:.82em;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;font-family:inherit}
+.btn-rank:hover{background:#eff6ff;border-color:var(--primary)}
+.btn-rank.sel{background:var(--success);color:#fff;border-color:#15803d}
+.btn-rank.gone{display:none!important}
 #screenDone{text-align:center}.done-icon{font-size:3.5em;margin-bottom:12px}
 .tis-pair{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
 .tis-word{padding:10px 22px;background:#eff6ff;border:2px solid var(--primary);border-radius:10px;font-size:1.1em;font-weight:700;color:var(--primary)}
@@ -535,9 +531,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 
 <script>
-// Sembunyikan bagian " — XYZ" dari judul subtes
-function shortTitle(t){ return (t||'').split(' — ')[0].split(' \u2014 ')[0]; }
-
 // ============================================================
 // KONFIGURASI PAKET — diambil dari query string ?p=nama-paket
 // ============================================================
@@ -1040,7 +1033,7 @@ async function openById(tid){
       if(raw&&!Array.isArray(raw)&&raw.meta&&raw.soal){for(const k of Object.keys(raw.meta)){if(cfg[k]==null||cfg[k]==='')cfg[k]=raw.meta[k]}cfg._cs=raw.soal}}catch(e){console.warn(e)}
   }
   if(cfg.showInstructionsOnce&&cfg.kolom>1){rSel=Array(12).fill(null);uNum=[];sl('Memuat soal...');setTimeout(()=>startTest(),100);return}
-  $('startTitle').innerText=shortTitle(cfg.title||cfg.id);$('startInstructions').innerText=cfg.instructions||cfg.desc||'';$('exNote').innerText=cfg.exNote||'';
+  $('startTitle').innerText=cfg.title||cfg.id;$('startInstructions').innerText=cfg.instructions||cfg.desc||'';$('exNote').innerText=cfg.exNote||'';
   const hi=cfg.exImgTop||cfg.exImgBottom,hn=cfg.exNote&&cfg.exNote.trim();
   $('exampleBlock').style.display=(hi||hn)?'':'none';
   const iw=document.querySelector('#exampleBlock .example-images');if(iw)iw.style.display=hi?'':'none';
@@ -1062,7 +1055,7 @@ async function startTest(){
       if(rr.filter(n=>n!==null).length<12){qi=s.qIndex||0;ua=s.userAnswers||[];sc=s.correctScore||0;tl=s.timeLeft||cfg.timer;rSel=rr;uNum=s.usedNumbers||[];skip=s.skippedIndices||[];ans=s.answeredIndices||[]}
       else{localStorage.removeItem('_st_'+cfg._taskId);resetSt()}}
     else resetSt();
-    $('testTitle').innerText=shortTitle(cfg.title);ss('screenTest');$('timerDisplay').classList.add('hidden');tStarted=false;tampilTopBarId();
+    $('testTitle').innerText=cfg.title;ss('screenTest');$('timerDisplay').classList.add('hidden');tStarted=false;tampilTopBarId();
     if(cfg.timer>0){updTimer();startTimer()}else startSW();
     vCnt=0;fEnd=false;renderQ();
   }catch(e){alert('Gagal: '+e.message);ss('screenDash')}finally{hl()}
@@ -1208,8 +1201,8 @@ function rAB(q){
 }
 function subAB(c){ua.push(c);saveSt();goNx()}
 function renderRank(){
-  const rows=qs.map((q,r)=>`<tr><td class="rank-no-cell"><div id="rno-${r}"></div></td><td>${q.text}</td><td><div class="btn-container" id="brc-${r}">${[1,2,3,4,5,6,7,8,9,10,11,12].map(n=>`<button class="btn-rank" id="br-${r}-${n}" onclick="rSl(${r},${n})">${n}</button>`).join('')}</div></td></tr>`).join('');
-  $('questionContent').innerHTML=`<div id="deskripsiBox">${cfg._pem||''}</div><div style="overflow-x:auto"><table class="ranking-table"><thead><tr><th class="rank-no-cell">No</th><th>Pernyataan</th><th>Pilihan Ranking</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  const rows=qs.map((q,r)=>`<tr><td class="col-no" style="width:36px">${r+1}</td><td>${q.text}</td><td><div class="btn-container">${[1,2,3,4,5,6,7,8,9,10,11,12].map(n=>`<button class="btn-rank" id="br-${r}-${n}" onclick="rSl(${r},${n})">${n}</button>`).join('')}</div></td></tr>`).join('');
+  $('questionContent').innerHTML=`<div id="deskripsiBox">${cfg._pem||''}</div><div style="overflow-x:auto"><table class="ranking-table"><thead><tr><th class="col-no" style="width:36px">No</th><th>Pernyataan</th><th style="width:480px">Pilihan Ranking</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   $('actionBar').innerHTML='';updRankUI();
 }
 function rSl(r,v){
@@ -1217,34 +1210,7 @@ function rSl(r,v){
   else{if(uNum.includes(v))return;if(rSel[r]!==null)uNum=uNum.filter(n=>n!==rSel[r]);rSel[r]=v;uNum.push(v)}
   updRankUI();saveSt();if(rSel.filter(n=>n!==null).length===12)saveRank(rSel.join(';'));
 }
-function updRankUI(){
-  for(let r=0;r<12;r++){
-    const s=rSel[r];
-    // ── Kolom No ──
-    const noCell=$('rno-'+r);
-    if(noCell){
-      if(s!==null){
-        noCell.innerHTML=`<button class="rank-no-badge" onclick="rSl(${r},${s})" title="Klik untuk batalkan">${s}</button>`;
-      } else {
-        noCell.innerHTML=`<span class="rank-no-empty"></span>`;
-      }
-    }
-    // ── Kolom Ranking ──
-    for(let v=1;v<=12;v++){
-      const b=$('br-'+r+'-'+v);
-      if(!b)continue;
-      b.classList.remove('gone');
-      b.disabled=false;
-      if(s!==null){
-        // Baris sudah dipilih → semua tombol hilang
-        b.classList.add('gone');
-      } else if(uNum.includes(v)){
-        // Angka sudah dipakai baris lain → hilang
-        b.classList.add('gone');
-      }
-    }
-  }
-}
+function updRankUI(){for(let r=0;r<12;r++){const s=rSel[r];for(let v=1;v<=12;v++){const b=$('br-'+r+'-'+v);if(!b)continue;b.classList.remove('sel','gone');if(s!==null){v===s?b.classList.add('sel'):b.classList.add('gone')}else if(uNum.includes(v))b.classList.add('gone')}}}
 async function saveRank(ds){
   sl('Menyimpan...');const id=localStorage.getItem('db_id');
   try{let o={};try{o=JSON.parse(cu[cfg.saveField]||'{}')}catch{}o[cfg._taskId]=ds;const v=JSON.stringify(o);await aP(id,{[cfg.saveField]:v});cu[cfg.saveField]=v;localStorage.removeItem('_st_'+cfg._taskId);localStorage.removeItem('_activeTask');rSel=Array(12).fill(null);uNum=[];await goNext2()}
@@ -1321,7 +1287,7 @@ async function wOpen(idx){
       dataUrl:b.dataUrl,_isWho:true,
       _whoDual:(d.type||'')==='who_dual'  // ← tandai mode dual
     };
-    hl();$('startTitle').innerText=shortTitle(cfg.title);$('startInstructions').innerText=cfg.instructions||cfg.desc;$('exNote').innerText=cfg.exNote;
+    hl();$('startTitle').innerText=cfg.title;$('startInstructions').innerText=cfg.instructions||cfg.desc;$('exNote').innerText=cfg.exNote;
     const it=$('exImgTop'),ib=$('exImgBottom');it.style.display=cfg.exImgTop?'':'none';ib.style.display=cfg.exImgBottom?'':'none';
     if(cfg.exImgTop)it.src=cfg.exImgTop;if(cfg.exImgBottom)ib.src=cfg.exImgBottom;
     $('exampleBlock').style.display=(cfg.exImgTop||cfg.exImgBottom||cfg.exNote)?'':'none';ss('screenStart');
@@ -1352,7 +1318,7 @@ async function wStart(){
       wDualFirst=s.dualFirst||null;  // resume state dual
     }
     else{wQi=0;wUA=[];wSkip=[];wAns=[];wDualFirst=null;}
-    $('testTitle').innerText=shortTitle(cfg.title);ss('screenTest');wRQ();
+    $('testTitle').innerText=cfg.title;ss('screenTest');wRQ();
   }catch(e){alert('Gagal: '+e.message);if(wBL.length>1)wDash()}finally{hl()}
 }
 
@@ -1869,7 +1835,7 @@ async function kreplinStart(ref){
 
   // Intro hanya ditampilkan pertama kali
   cfg={title,instructions,desc,exNote,exImgTop:'',exImgBottom:'',timer:0,_taskId:'kreplin'};
-  $('startTitle').innerText=shortTitle(title);
+  $('startTitle').innerText=title;
   $('startInstructions').innerText=instructions||desc||'';
   $('exNote').innerText=exNote||'';
   $('exampleBlock').style.display=exNote?'':'none';
