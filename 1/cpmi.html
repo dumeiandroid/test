@@ -298,7 +298,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
      ═══════════════════════════════════════════ -->
 <script>
   const FRAGMENT_BASE  = 'https://lidan.co.id/test/';
-  const BIODATA_FILE   = 'biodata-2.html';   // ← ganti angka sesuai kebutuhan
+  const BIODATA_FILE   = 'biodata-cpmi.html'; // ← ganti angka sesuai kebutuhan
   const PENUTUP_FILE   = 'penutup-2.html';   // ← ganti angka sesuai kebutuhan
 </script>
 
@@ -1659,11 +1659,176 @@ async function loadFragment(url, containerId) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const html = await res.text();
     document.getElementById(containerId).innerHTML = html;
+    if (url.includes('biodata-cpmi')) initBiodataCpmi();
   } catch (e) {
     console.error('[FRAGMENT] Gagal memuat', url, e);
     document.getElementById(containerId).innerHTML =
       '<p style="color:var(--danger);padding:16px;text-align:center">⚠ Gagal memuat konten. Coba muat ulang halaman.</p>';
   }
+}
+
+// ═══════════════════════════════════════════
+// BIODATA CPMI — CSS + JS inline
+// ═══════════════════════════════════════════
+(function(){
+  const style = document.createElement('style');
+  style.textContent = `
+    .cpmi-section{margin:24px 0 8px;padding:8px 12px;background:var(--primary,#2563eb);color:#fff;border-radius:6px;font-weight:600;font-size:14px;letter-spacing:.3px}
+    .cpmi-section-sub{margin:16px 0 6px;font-weight:600;font-size:13px;color:var(--primary,#2563eb);border-bottom:1.5px solid var(--primary,#2563eb);padding-bottom:3px}
+    .note-help{font-size:11.5px;color:var(--muted,#888);margin-top:3px}
+    .multi-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:13px}
+    .multi-table th{background:var(--primary,#2563eb);color:#fff;padding:6px 8px;text-align:left;font-weight:500;font-size:12px}
+    .multi-table td{padding:4px 4px;vertical-align:top}
+    .multi-table td input,.multi-table td select{width:100%;box-sizing:border-box;padding:6px 7px;border:1px solid var(--border,#ccc);border-radius:4px;font-size:13px;background:#fff;color:var(--text,#222)}
+    .multi-table td.td-del{width:32px;text-align:center}
+    .btn-del{background:none;border:none;cursor:pointer;color:#e53935;font-size:18px;line-height:1;padding:2px 4px}
+    .btn-del:hover{color:#b71c1c}
+    .btn-add{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:var(--primary,#2563eb);color:#fff;border:none;border-radius:5px;font-size:13px;cursor:pointer;margin-top:2px}
+    .btn-add:hover{opacity:.88}
+    .btn-add svg{width:14px;height:14px;fill:#fff}
+    .kondisi-block{border:1px solid var(--border,#ddd);border-radius:6px;padding:12px 14px;margin-bottom:10px;background:#fafafa}
+    .kondisi-block .kondisi-toggle{display:flex;gap:20px;margin-bottom:8px}
+    .kondisi-detail{display:none}
+    .kondisi-detail.visible{display:block}
+  `;
+  document.head.appendChild(style);
+})();
+
+function initBiodataCpmi() {
+  const rowTemplates = {
+    pendidikan: () => `
+      <td><input type="text" placeholder="Nama sekolah/universitas" data-key="lembaga"></td>
+      <td><input type="text" placeholder="Jurusan / bidang studi" data-key="jurusan"></td>
+      <td><input type="text" placeholder="Kota" data-key="lokasi"></td>
+      <td><input type="text" placeholder="2018 \u2013 2022" data-key="periode"></td>
+      <td><input type="text" placeholder="Lulus/Putus" data-key="keterangan"></td>`,
+    kursus: () => `
+      <td><input type="text" placeholder="Nama lembaga" data-key="lembaga"></td>
+      <td><input type="text" placeholder="Nama pelatihan" data-key="nama_pelatihan"></td>
+      <td><input type="text" placeholder="Kota" data-key="lokasi"></td>
+      <td><input type="text" placeholder="2022 \u2013 2023" data-key="periode"></td>`,
+    kerja: () => `
+      <td><input type="text" placeholder="Nama instansi/perusahaan" data-key="instansi"></td>
+      <td><input type="text" placeholder="Jabatan dan status" data-key="jabatan"></td>
+      <td><input type="text" placeholder="Kota" data-key="lokasi"></td>
+      <td><input type="text" placeholder="Jan 2020 \u2013 Des 2022" data-key="periode"></td>`,
+    organisasi: () => `
+      <td><input type="text" placeholder="Nama organisasi" data-key="nama_organisasi"></td>
+      <td><input type="text" placeholder="Jabatan" data-key="jabatan"></td>
+      <td><input type="text" placeholder="Tempat" data-key="tempat"></td>
+      <td><input type="text" placeholder="Contoh: 2 tahun" data-key="lamanya"></td>`,
+    keterampilan: () => `
+      <td><input type="text" placeholder="Keterampilan" data-key="keterampilan"></td>
+      <td><input type="text" placeholder="Spesifikasi" data-key="spesifikasi"></td>
+      <td><input type="text" placeholder="Nama sertifikasi" data-key="sertifikasi"></td>
+      <td><select data-key="tingkat">
+        <option value="">\u2014 Pilih \u2014</option>
+        <option value="baik">Baik</option>
+        <option value="cukup">Cukup</option>
+        <option value="kurang">Kurang</option>
+      </select></td>`,
+    olahraga: () => `
+      <td><input type="text" placeholder="Jenis olahraga" data-key="jenis"></td>
+      <td><select data-key="status"><option value="aktif">Aktif</option><option value="pasif">Pasif</option></select></td>`,
+    kesenian: () => `
+      <td><input type="text" placeholder="Jenis kesenian" data-key="jenis"></td>
+      <td><select data-key="status"><option value="aktif">Aktif</option><option value="pasif">Pasif</option></select></td>`,
+    keluarga: () => `
+      <td><input type="text" placeholder="Nama" data-key="nama"></td>
+      <td><select data-key="gender"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></td>
+      <td><input type="number" placeholder="Usia" min="0" max="120" data-key="usia" style="width:60px"></td>
+      <td><select data-key="hubungan">
+        <option value="">\u2014 Pilih \u2014</option>
+        <option value="Ayah">Ayah</option><option value="Ibu">Ibu</option>
+        <option value="Suami">Suami</option><option value="Istri">Istri</option>
+        <option value="Anak">Anak</option><option value="Kakak">Kakak</option>
+        <option value="Adik">Adik</option><option value="Lainnya">Lainnya</option>
+      </select></td>
+      <td><input type="text" placeholder="Pekerjaan / Sekolah" data-key="pekerjaan"></td>`,
+  };
+
+  window.addRow = function(type) {
+    const tbody = document.getElementById('tbody' + type.charAt(0).toUpperCase() + type.slice(1));
+    if (!tbody) { console.warn('tbody tidak ditemukan: tbody' + type); return; }
+    const tr = document.createElement('tr');
+    tr.innerHTML = rowTemplates[type]() +
+      '<td class="td-del"><button class="btn-del" onclick="this.closest(\'tr\').remove()" title="Hapus">✕</button></td>';
+    tbody.appendChild(tr);
+  };
+
+  window.toggleKondisi = function(id, val) {
+    const el = document.getElementById('detail' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (el) el.classList.toggle('visible', val === 'ya');
+  };
+
+  window.getBiodataCpmi = function() {
+    function tableToArray(tbodyId) {
+      return Array.from(document.querySelectorAll('#' + tbodyId + ' tr')).map(tr => {
+        const obj = {};
+        tr.querySelectorAll('[data-key]').forEach(el => { obj[el.dataset.key] = el.value; });
+        return obj;
+      }).filter(o => Object.values(o).some(v => v && v.toString().trim() !== ''));
+    }
+    const pendidikanArr = tableToArray('tbodyPendidikan');
+    const bioPendVal = pendidikanArr.length ? (pendidikanArr[pendidikanArr.length-1].lembaga || '') : '';
+    const bioPendEl = document.getElementById('bioPend');
+    if (bioPendEl) bioPendEl.value = bioPendVal;
+    return {
+      bioNama: document.getElementById('bioNama')?.value||'',
+      bioUsia: document.getElementById('bioUsia')?.value||'',
+      bioPend: bioPendVal,
+      bioGender: document.getElementById('bioGender')?.value||'',
+      bioTelp: document.getElementById('bioTelp')?.value||'',
+      bioNIK: document.getElementById('bioNIK')?.value||'',
+      bioTTLKota: document.getElementById('bioTTLKota')?.value||'',
+      bioTTLTgl: document.getElementById('bioTTLTgl')?.value||'',
+      bioStatusKawin: document.getElementById('bioStatusKawin')?.value||'',
+      bioSuku: document.getElementById('bioSuku')?.value||'',
+      bioAgama: document.getElementById('bioAgama')?.value||'',
+      bioAlamat: document.getElementById('bioAlamat')?.value||'',
+      bioEmail: document.getElementById('bioEmail')?.value||'',
+      bioHobi: document.getElementById('bioHobi')?.value||'',
+      bioCitaCita: document.getElementById('bioCitaCita')?.value||'',
+      bioSosmed: {
+        linkedin: document.getElementById('bioSosmedLinkedin')?.value||'',
+        instagram: document.getElementById('bioSosmedInstagram')?.value||'',
+        facebook: document.getElementById('bioSosmedFacebook')?.value||'',
+        twitter: document.getElementById('bioSosmedTwitter')?.value||'',
+        lainnya: document.getElementById('bioSosmedLainnya')?.value||'',
+      },
+      pendidikan: pendidikanArr,
+      kursus: tableToArray('tbodyKursus'),
+      pengalamanKerja: tableToArray('tbodyKerja'),
+      organisasi: tableToArray('tbodyOrganisasi'),
+      keterampilan: tableToArray('tbodyKeterampilan'),
+      olahraga: tableToArray('tbodyOlahraga'),
+      kesenian: tableToArray('tbodyKesenian'),
+      keluarga: tableToArray('tbodyKeluarga'),
+      riwayatSakit: {
+        pernah: document.querySelector('[name=bioSakitKeras]:checked')?.value||'',
+        penyakit: document.getElementById('bioSakitPenyakit')?.value||'',
+        kapan: document.getElementById('bioSakitKapan')?.value||'',
+        akibat: document.getElementById('bioSakitAkibat')?.value||'',
+      },
+      riwayatKecelakaan: {
+        pernah: document.querySelector('[name=bioKecelakaan]:checked')?.value||'',
+        jenis: document.getElementById('bioKecelakaanJenis')?.value||'',
+        kapan: document.getElementById('bioKecelakaanKapan')?.value||'',
+        akibat: document.getElementById('bioKecelakaanAkibat')?.value||'',
+      },
+      riwayatPsikotest: {
+        pernah: document.querySelector('[name=bioPsikotest]:checked')?.value||'',
+        kapan: document.getElementById('bioPsikotestKapan')?.value||'',
+        tempat: document.getElementById('bioPsikotestTempat')?.value||'',
+        tujuan: document.getElementById('bioPsikotestTujuan')?.value||'',
+      },
+    };
+  };
+
+  ['pendidikan','kursus','kerja','organisasi','keterampilan','olahraga','kesenian','keluarga']
+    .forEach(t => window.addRow(t));
+
+  console.log('\u2705 initBiodataCpmi selesai');
 }
 
 // ═══════════════════════════════════════════
