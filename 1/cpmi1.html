@@ -298,7 +298,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
      ═══════════════════════════════════════════ -->
 <script>
   const FRAGMENT_BASE  = 'https://lidan.co.id/test/';
-  const BIODATA_FILE   = 'biodata-2.html';   // ← ganti angka sesuai kebutuhan
+  const BIODATA_FILE   = 'biodata-cpmi.html'; // ← ganti angka sesuai kebutuhan
   const PENUTUP_FILE   = 'penutup-2.html';   // ← ganti angka sesuai kebutuhan
 </script>
 
@@ -363,28 +363,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   </div>
 </div>
 
-<!-- ═══ SCREEN: LOGIN / BIODATA ═══ -->
+<!-- ═══ SCREEN: FORM BIODATA (diisi dari fetch) ═══ -->
 <div id="screenDaftar" class="screen">
-  <div id="tokenLoginBox" class="card" style="max-width:440px;margin-top:32px;">
-    <div style="text-align:center;margin-bottom:24px;">
-      <div style="font-size:2.6em;margin-bottom:10px;">🔑</div>
-      <div class="page-title" style="font-size:1.3em;">Masuk dengan Token</div>
-      <p class="page-sub" style="margin-bottom:0;">Masukkan token yang telah diberikan oleh tester untuk memulai tes.</p>
-    </div>
-    <div class="form-group">
-      <label for="inputTokenMain">Token Peserta</label>
-      <input id="inputTokenMain" type="text" placeholder="Contoh: ABC123XYZ"
-        autocomplete="off" spellcheck="false"
-        style="font-family:'Courier New',monospace;font-size:1.05em;letter-spacing:.05em;"
-        onkeydown="if(event.key==='Enter')loginDenganTokenMain()">
-    </div>
-    <div id="tokenErrBoxMain" style="display:none;padding:9px 12px;background:#fee2e2;color:#dc2626;border-radius:8px;font-size:.875em;font-weight:600;margin-bottom:12px;"></div>
-    <button id="btnLoginTokenMain" class="btn btn-primary" onclick="loginDenganTokenMain()">
-      Masuk →
-    </button>
+  <div class="card" style="max-width:520px" id="biodataContainer">
+    <!-- Konten di-inject dari BIODATA_FILE -->
+    <div style="text-align:center;padding:40px 0;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px"></div>Memuat formulir...</div>
   </div>
-  <!-- Container biodata: diinject dari fragment (sama seperti file asli), ditampilkan hanya jika biodata token masih kosong -->
-  <div id="biodataContainer" class="card" style="display:none;"></div>
+
 </div>
 
 <!-- ═══ SCREEN: SELFIE VERIFIKASI ═══ -->
@@ -507,6 +492,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ═══ SCREEN: KREPLIN ═══ -->
 <div id="screenKreplin" class="screen">
   <div class="card card-wide">
+    <div id="krepTestingBanner" style="display:none;background:#fff3cd;border:1px solid #ffc107;color:#7a5b00;padding:10px 14px;border-radius:10px;margin-bottom:12px;font-size:.85em;font-weight:700;text-align:center">
+      ⚠️ MODE TESTING AKTIF — waktu per kolom di-override. Cari <code>WAKTU_KREPLIN_OVERRIDE</code> di kode dan set kembali ke <code>null</code> sebelum launching!
+    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
       <span class="top-title" id="krepTitle">Tes Kraepelin</span>
       <span id="krepProgress" style="color:var(--muted);font-size:.85em"></span>
@@ -555,12 +543,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 function shortTitle(t){ return (t||'').split(' — ')[0].split(' \u2014 ')[0]; }
 
 // ============================================================
-// KONFIGURASI PAKET — hardcoded (tidak perlu ?p= di URL)
+// KONFIGURASI PAKET — diambil dari query string ?p=nama-paket
 // ============================================================
-const AUTO_PAKET = 'karakter';
+// p tidak lagi diambil dari URL — dihardcode ke paket "cpmi"
+const AUTO_PAKET = 'cpmi';
 
 // Paket yang langsung aktif tanpa konfirmasi manual tester
-const PAKET_AUTO_AKTIF = ['asmara','potensi','karakter','karir'];
+const PAKET_AUTO_AKTIF = ['asmara','potensi','karakter','karir','cpmi'];
 const IS_AUTO_AKTIF = PAKET_AUTO_AKTIF.includes(AUTO_PAKET.toLowerCase());
 
 const BASE='https://cipta.my.id/psikotest/simpel/';
@@ -602,7 +591,6 @@ const R2='https://indahabadi.my.id/api/upload_r2_lidan',CDN='https://assets.inda
 const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 let cu=null,cfg=null,qs=[],qi=0,ua=[],sc=0,tl=0,ti=null;
-let _updateExistingId=null; // id_x yang harus di-UPDATE saat biodata token masih kosong
 let tStarted=false,fEnd=false,swEl=0,vCnt=0,rSel=[],uNum=[],skip=[],ans=[];
 let AC=[],WTL=[],UT=[],pList=[],sPaket=null,vMap={};
 let wBL=[],wBI=0,wQs=[],wQi=0,wUA=[],wSkip=[],wAns=[];
@@ -618,6 +606,11 @@ const ss=id=>{
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
+  // Tombol token hanya muncul di screenDaftar
+  const btnTF=document.getElementById('btnTokenFloat');
+  const popupTF=document.getElementById('popupToken');
+  if(btnTF) btnTF.style.display=(id==='screenDaftar')?'block':'none';
+  if(popupTF && id!=='screenDaftar') popupTF.style.display='none';
 };
 function sLoad(btn,on){btn.disabled=on;if(on){btn.dataset.t=btn.innerHTML;btn.innerHTML='<span class="spinner" style="width:18px;height:18px;border-width:3px;display:inline-block"></span>'}else btn.innerHTML=btn.dataset.t}
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -629,9 +622,11 @@ const aG=id=>aF(`${API_R}?table=${TBL}&id_x=${id}`,{headers:{'X-Custom-Auth':AUT
 const aP=(id,b)=>fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify(b)});
 const gBio=f=>{try{const o=JSON.parse(cu.x_02||'{}');return o[f.replace(/^bio/,'').toLowerCase()]||''}catch{return''}};
 
-function bukaPopupToken(){
+function bukaPopupToken(wajib){
   const popup=document.getElementById('popupToken');
-  popup.style.display='block';
+  popup.style.display='flex';
+  const btnBatal=document.getElementById('btnBatalToken');
+  if(btnBatal) btnBatal.style.display=wajib?'none':'flex';
   setTimeout(()=>document.getElementById('inputToken').focus(),50);
 }
 function tutupPopupToken(){
@@ -728,68 +723,7 @@ function showPaketNotFoundScreen(){
 }
 function renderPaket(){}
 
-// ─── LOGIN TOKEN UTAMA (form di screenDaftar) ───
-async function loginDenganTokenMain() {
-  const inp = document.getElementById('inputTokenMain');
-  const errBox = document.getElementById('tokenErrBoxMain');
-  const btn = document.getElementById('btnLoginTokenMain');
-  const tok = (inp.value || '').trim();
-  errBox.style.display = 'none';
-  if (!tok) { errBox.textContent = '⚠ Masukkan token terlebih dahulu.'; errBox.style.display = 'block'; inp.focus(); return; }
-  btn.disabled = true; btn.innerHTML = '<span class="spinner-sm"></span> Memeriksa...';
-  sl('Memeriksa token...');
-  try {
-    const res = await aF(`${API_R}?table=${TBL}&x_01_eq=${tok}`, { headers: { 'X-Custom-Auth': AUTH } });
-    if (!res.success || !res.count) {
-      hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
-      errBox.textContent = '❌ Token tidak ditemukan. Periksa kembali token Anda.';
-      errBox.style.display = 'block'; return;
-    }
-    cu = res.data[0];
-    const paketToken = (cu.x_04 || '').trim().toLowerCase();
-    if (paketToken && paketToken !== AUTO_PAKET.toLowerCase()) {
-      hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
-      errBox.textContent = '❌ Token ini bukan untuk paket ' + AUTO_PAKET + '.';
-      errBox.style.display = 'block'; return;
-    }
-    // ── Cek apakah biodata sudah terisi (field 'nama') ──
-    let bioCek = {}; try { bioCek = JSON.parse(cu.x_02 || '{}'); } catch {}
-    if (!bioCek.nama) {
-      // Biodata masih kosong → tampilkan form biodata (fragment yang sudah diinject),
-      // token TETAP yang sudah ada (tidak generate token baru, tidak insert baru — nanti di-UPDATE).
-      hl();
-      _updateExistingId = String(cu.id_x); // tandai mode update untuk handleDaftar/kirimSelfie
-      localStorage.setItem('token', tok);
-      localStorage.setItem('db_id', String(cu.id_x));
-      localStorage.setItem('_p', AUTO_PAKET);
-      tampilTopBarId();
-      $('tokenLoginBox').style.display = 'none';
-      $('biodataContainer').style.display = 'block';
-      return;
-    }
-
-    localStorage.setItem('token', tok);
-    localStorage.setItem('db_id', String(cu.id_x));
-    localStorage.setItem('_p', AUTO_PAKET);
-    tampilTopBarId();
-    vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
-    await loadAC();
-    let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
-    hl(); startGlobalPolling();
-    if (IS_AUTO_AKTIF || status === 'aktif') {
-      await goNext2();
-    } else {
-      ss('screenTunggu'); showZoomTunggu();
-    }
-  } catch (e) {
-    hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
-    errBox.textContent = '⚠ Terjadi kesalahan. Coba lagi.';
-    errBox.style.display = 'block';
-  }
-}
-
-// Diset saat biodata token masih kosong: id_x yang harus di-UPDATE (bukan insert baru)
-
+// ─── Fungsi biodata (dipakai oleh biodata-2, tersedia global) ───
 function syncRadioStyle(){
   const y=$('bioKesediaanY'),n=$('bioKesediaanN');
   const ly=$('radioLabelBersedia'),ln=$('radioLabelTidak');
@@ -874,52 +808,32 @@ async function kirimSelfie(){
     // 2. Inject URL foto ke biodata
     _pendingBio.foto_selfie=fotoUrl;
 
-    if(_updateExistingId){
-      // ── MODE UPDATE: token sudah ada (dari login token), biodata diisi pertama kali ──
-      stTxt.textContent='Menyimpan data...';
-      const bio=JSON.stringify(_pendingBio);
-      const tok=localStorage.getItem('token');
-      const resU=await aP(_updateExistingId,{x_02:bio}).then(r=>r.json());
-      if(!resU.success)throw new Error(resU.message||'Gagal menyimpan data.');
-
-      tutupKameraSelfie();
-      localStorage.setItem('db_id',_updateExistingId);
-      cu={id_x:_updateExistingId,x_01:tok,x_02:bio};
-      _updateExistingId=null;
-      stTxt.textContent='Memuat tes...';
-      await loadAC();
-      let status='nonaktif';try{status=JSON.parse(bio||'{}').status||'nonaktif'}catch{}
-      if(IS_AUTO_AKTIF||status==='aktif'){hl();startGlobalPolling();await goNext2();}
-      else{
-        hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
-        const idBox=document.getElementById('tungguIdBox');
-        const idNum=document.getElementById('tungguIdNum');
-        if(idBox&&idNum){idNum.textContent=String(cu.id_x);idBox.style.display='block';}
-      }
-      return;
-    }
-
-    // 3. Simpan ke API (POST biodata + foto) — jalur lama (insert baru)
-    stTxt.textContent='Membuat token...';
-    const tok=await genTok(_pendingPid);
-    const bio=JSON.stringify(_pendingBio);
+    // 3. Simpan ke API (POST biodata + foto) — pakai token sementara dulu
+    //    karena id_x baru terbentuk SETELAH record disimpan di database.
     stTxt.textContent='Menyimpan data...';
-    const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tok,x_02:bio})});
+    const tokSementara='tmp-'+Date.now()+'-'+rs(6);
+    const bio=JSON.stringify(_pendingBio);
+    const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tokSementara,x_02:bio})});
     if(!res.success)throw new Error(res.message||'Gagal menyimpan data.');
 
-    // 4. Tutup kamera & lanjutkan alur normal
+    // 3b. Ambil id_x yang baru terbentuk, lalu susun token final: namaDepan_id_x
+    stTxt.textContent='Membuat token...';
+    const lookup=await aF(`${API_W}?table=${TBL}&x_01_eq=${encodeURIComponent(tokSementara)}`,{headers:{'X-Custom-Auth':AUTH}});
+    const rowBaru=lookup&&lookup.data?(Array.isArray(lookup.data)?lookup.data[0]:lookup.data):null;
+    if(!rowBaru||!rowBaru.id_x)throw new Error('Gagal mengambil ID peserta baru.');
+    const namaDepan=(( _pendingBio.nama||'').trim().split(/\s+/)[0]||'peserta').replace(/[^a-zA-Z0-9]/g,'')||'peserta';
+    const tok=`${namaDepan}_${rowBaru.id_x}`;
+    const upd=await aP(rowBaru.id_x,{x_01:tok});
+    const updJson=await upd.json().catch(()=>({}));
+    if(updJson&&updJson.success===false)throw new Error('Gagal menyimpan token akhir.');
+
+    // 4. Tutup kamera — JANGAN auto-login. Kembali ke screenDaftar
+    //    dan minta peserta memasukkan token secara manual untuk mulai tes.
     tutupKameraSelfie();
-    localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',_pendingPnm);
-    cu={id_x:res.id_x,x_01:tok,x_02:bio};
-    stTxt.textContent='Memuat tes...';
-    await loadAC();
-    if(IS_AUTO_AKTIF){hl();startGlobalPolling();await goNext2();}
-    else{
-      hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
-      const idBox=document.getElementById('tungguIdBox');
-      const idNum=document.getElementById('tungguIdNum');
-      if(idBox&&idNum){idNum.textContent=String(res.id_x);idBox.style.display='block';}
-    }
+    hl();
+    ss('screenDaftar');
+    alert('✅ Pendaftaran berhasil!\nSilakan masukkan token Anda untuk login dan memulai tes.');
+    bukaPopupToken(true);
   }catch(e){
     loadEl.style.display='none';
     $('selfieActions').style.display='flex';
@@ -929,6 +843,9 @@ async function kirimSelfie(){
 
 async function handleDaftar(){
   const eb=$('daftarErrBox');eb.classList.remove('show');
+  // Sinkronkan field tersembunyi (bioPend dari tabel Riwayat Pendidikan) SEBELUM validasi.
+  // Tanpa ini, bioPend selalu kosong karena baru diisi saat getBiodataCpmi() dipanggil.
+  if(typeof window.getBiodataCpmi==='function'){ try{ window.getBiodataCpmi(); }catch(e){} }
   for(const[id,lb]of[['bioNama','Nama'],['bioUsia','Usia'],['bioPend','Pendidikan'],['bioGender','Jenis Kelamin']]){
     const el=$(id);el.classList.remove('error');if(!el.value.trim()){el.classList.add('error');el.focus();eb.textContent='Mohon isi: '+lb;eb.classList.add('show');return}
   }
@@ -948,7 +865,24 @@ async function handleDaftar(){
   if(!sPaket){eb.textContent='⚠ Paket tes tidak ditemukan. Hubungi administrator.';eb.classList.add('show');return}
   // Simpan biodata sementara, lalu pindah ke screen selfie
   const pid=String(sPaket.id_x).trim(),pnm=(sPaket.x_01||'').trim();
+  // Ambil struktur biodata LENGKAP (bioNama, bioNIK, kursus[], kerja[], keluarga[], dst)
+  // dari form biodata-cpmi.html — supaya x_02 yang tersimpan berisi seluruh data,
+  // bukan hanya ringkasan. Field ringkas (nama, telepon, pendidikan, status, dst)
+  // TETAP dipertahankan karena masih dipakai gBio() dan fungsi lain di file ini.
+  // Catatan: key "pendidikan" pada getBiodataCpmi() adalah ARRAY riwayat pendidikan,
+  // sedangkan key "pendidikan" ringkas adalah STRING (sekolah terakhir, dari bioPend).
+  // Supaya keduanya tetap tersimpan tanpa saling timpa, array lengkapnya disalin
+  // ke key baru "riwayatPendidikan" sebelum digabung.
+  let bioLengkap={};
+  if(typeof window.getBiodataCpmi==='function'){
+    try{ bioLengkap=window.getBiodataCpmi()||{}; }catch(e){ console.warn('[handleDaftar] getBiodataCpmi gagal:',e); }
+  }
+  if(bioLengkap.pendidikan!==undefined){
+    bioLengkap.riwayatPendidikan=bioLengkap.pendidikan;
+    delete bioLengkap.pendidikan;
+  }
   _pendingBio={
+    ...bioLengkap,
     nama:$('bioNama').value.trim(),
     usia:$('bioUsia').value.trim(),
     pendidikan:$('bioPend').value.trim(),
@@ -1421,7 +1355,7 @@ async function wOpen(idx){
     hl();$('startTitle').innerText=shortTitle(cfg.title);$('startInstructions').innerText=cfg.instructions||cfg.desc;$('exNote').innerText=cfg.exNote;
     const it=$('exImgTop'),ib=$('exImgBottom');it.style.display=cfg.exImgTop?'':'none';ib.style.display=cfg.exImgBottom?'':'none';
     if(cfg.exImgTop)it.src=cfg.exImgTop;if(cfg.exImgBottom)ib.src=cfg.exImgBottom;
-    $('exampleBlock').style.display=(cfg.exImgTop||cfg.exImgBottom||cfg.exNote)?'':'none';ss('screenStart');tampilTopBarId();
+    $('exampleBlock').style.display=(cfg.exImgTop||cfg.exImgBottom||cfg.exNote)?'':'none';ss('screenStart');
   }catch(e){alert('Gagal: '+e.message);hl();if(wBL.length>1)wDash()}
 }
 async function wDash(){
@@ -1436,7 +1370,7 @@ async function wDash(){
     div.innerHTML=`<div class="task-num">${done?'✓':i+1}</div><div class="task-name">${d.title||('Tes '+b.fileKey)}</div><span class="task-badge ${done?'badge-done':cur?'badge-current':'badge-locked'}">${done?'Selesai':cur?'▶ Mulai':'Terkunci'}</span>`;
     if(cur)div.onclick=()=>{wBI=i;wOpen(i)};g.appendChild(div);
   });
-  $('welcomeSub').innerText=fp===null?'🎉 Semua selesai!':'Klik tes bertanda ▶ Mulai.';ss('screenDash');tampilTopBarId();
+  $('welcomeSub').innerText=fp===null?'🎉 Semua selesai!':'Klik tes bertanda ▶ Mulai.';ss('screenDash');
 }
 async function wStart(){
   sl('Memuat soal...');
@@ -1653,11 +1587,6 @@ async function doLogout(dbId){
   }catch(e){console.warn('[logout] gagal reset flag:',e)}
   // Bersihkan sesi lokal
   localStorage.clear();
-  _updateExistingId=null;
-  const tlb=$('tokenLoginBox'),bc=$('biodataContainer');
-  if(tlb)tlb.style.display='block';
-  if(bc)bc.style.display='none';
-  const inpT=$('inputTokenMain');if(inpT)inpT.value='';
   stopGlobalPolling();
   stopLogoutPoll();
   hl();
@@ -1764,6 +1693,7 @@ async function loadFragment(url, containerId) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const html = await res.text();
     document.getElementById(containerId).innerHTML = html;
+    if (url.includes('biodata-cpmi')) initBiodataCpmi();
   } catch (e) {
     console.error('[FRAGMENT] Gagal memuat', url, e);
     document.getElementById(containerId).innerHTML =
@@ -1772,9 +1702,299 @@ async function loadFragment(url, containerId) {
 }
 
 // ═══════════════════════════════════════════
+// BIODATA CPMI — CSS + JS inline
+// ═══════════════════════════════════════════
+(function(){
+  const style = document.createElement('style');
+  style.textContent = `
+    .cpmi-section{margin:24px 0 8px;padding:8px 12px;background:var(--primary,#2563eb);color:#fff;border-radius:6px;font-weight:600;font-size:14px;letter-spacing:.3px}
+    .cpmi-section-sub{margin:16px 0 6px;font-weight:600;font-size:13px;color:var(--primary,#2563eb);border-bottom:1.5px solid var(--primary,#2563eb);padding-bottom:3px}
+    .note-help{font-size:11.5px;color:var(--muted,#888);margin-top:3px}
+    .multi-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:13px}
+    .multi-table th{background:var(--primary,#2563eb);color:#fff;padding:6px 8px;text-align:left;font-weight:500;font-size:12px}
+    .multi-table td{padding:4px 4px;vertical-align:top}
+    .multi-table td input,.multi-table td select{width:100%;box-sizing:border-box;padding:6px 7px;border:1px solid var(--border,#ccc);border-radius:4px;font-size:13px;background:#fff;color:var(--text,#222)}
+    .multi-table td.td-del{width:32px;text-align:center}
+    .btn-del{background:none;border:none;cursor:pointer;color:#e53935;font-size:18px;line-height:1;padding:2px 4px}
+    .btn-del:hover{color:#b71c1c}
+    .btn-add{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:var(--primary,#2563eb);color:#fff;border:none;border-radius:5px;font-size:13px;cursor:pointer;margin-top:2px}
+    .btn-add:hover{opacity:.88}
+    .btn-add svg{width:14px;height:14px;fill:#fff}
+    .kondisi-block{border:1px solid var(--border,#ddd);border-radius:6px;padding:12px 14px;margin-bottom:10px;background:#fafafa}
+    .kondisi-block .kondisi-toggle{display:flex;gap:20px;margin-bottom:8px}
+    .kondisi-detail{display:none}
+    .kondisi-detail.visible{display:block}
+  `;
+  document.head.appendChild(style);
+})();
+
+function initBiodataCpmi() {
+  const rowTemplates = {
+    pendidikan: () => `
+      <td><input type="text" placeholder="Nama sekolah/universitas" data-key="lembaga"></td>
+      <td><input type="text" placeholder="Jurusan / bidang studi" data-key="jurusan"></td>
+      <td><input type="text" placeholder="Kota" data-key="lokasi"></td>
+      <td><input type="text" placeholder="2018 \u2013 2022" data-key="periode"></td>
+      <td><input type="text" placeholder="Lulus/Putus" data-key="keterangan"></td>`,
+    kursus: () => `
+      <td><input type="text" placeholder="Nama lembaga" data-key="lembaga"></td>
+      <td><input type="text" placeholder="Nama pelatihan" data-key="nama_pelatihan"></td>
+      <td><input type="text" placeholder="Kota" data-key="lokasi"></td>
+      <td><input type="text" placeholder="2022 \u2013 2023" data-key="periode"></td>`,
+    kerja: () => `
+      <td><input type="text" placeholder="Nama instansi/perusahaan" data-key="instansi"></td>
+      <td><input type="text" placeholder="Jabatan dan status" data-key="jabatan"></td>
+      <td><input type="text" placeholder="Kota" data-key="lokasi"></td>
+      <td><input type="text" placeholder="Jan 2020 \u2013 Des 2022" data-key="periode"></td>`,
+    organisasi: () => `
+      <td><input type="text" placeholder="Nama organisasi" data-key="nama_organisasi"></td>
+      <td><input type="text" placeholder="Jabatan" data-key="jabatan"></td>
+      <td><input type="text" placeholder="Tempat" data-key="tempat"></td>
+      <td><input type="text" placeholder="Contoh: 2 tahun" data-key="lamanya"></td>`,
+    keterampilan: () => `
+      <td><input type="text" placeholder="Keterampilan" data-key="keterampilan"></td>
+      <td><input type="text" placeholder="Spesifikasi" data-key="spesifikasi"></td>
+      <td><input type="text" placeholder="Nama sertifikasi" data-key="sertifikasi"></td>
+      <td><select data-key="tingkat">
+        <option value="">\u2014 Pilih \u2014</option>
+        <option value="baik">Baik</option>
+        <option value="cukup">Cukup</option>
+        <option value="kurang">Kurang</option>
+      </select></td>`,
+    olahraga: () => `
+      <td><input type="text" placeholder="Jenis olahraga" data-key="jenis"></td>
+      <td><select data-key="status"><option value="aktif">Aktif</option><option value="pasif">Pasif</option></select></td>`,
+    kesenian: () => `
+      <td><input type="text" placeholder="Jenis kesenian" data-key="jenis"></td>
+      <td><select data-key="status"><option value="aktif">Aktif</option><option value="pasif">Pasif</option></select></td>`,
+    keluarga: () => `
+      <td><input type="text" placeholder="Nama" data-key="nama"></td>
+      <td><select data-key="gender"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></td>
+      <td><input type="number" placeholder="Usia" min="0" max="120" data-key="usia" style="width:60px"></td>
+      <td><select data-key="hubungan">
+        <option value="">\u2014 Pilih \u2014</option>
+        <option value="Ayah">Ayah</option><option value="Ibu">Ibu</option>
+        <option value="Suami">Suami</option><option value="Istri">Istri</option>
+        <option value="Anak">Anak</option><option value="Kakak">Kakak</option>
+        <option value="Adik">Adik</option><option value="Lainnya">Lainnya</option>
+      </select></td>
+      <td><input type="text" placeholder="Pekerjaan / Sekolah" data-key="pekerjaan"></td>`,
+  };
+
+  window.addRow = function(type) {
+    const tbody = document.getElementById('tbody' + type.charAt(0).toUpperCase() + type.slice(1));
+    if (!tbody) { console.warn('tbody tidak ditemukan: tbody' + type); return; }
+    const tr = document.createElement('tr');
+    tr.innerHTML = rowTemplates[type]() +
+      '<td class="td-del"><button class="btn-del" onclick="this.closest(\'tr\').remove()" title="Hapus">✕</button></td>';
+    tbody.appendChild(tr);
+  };
+
+  window.toggleKondisi = function(id, val) {
+    const el = document.getElementById('detail' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (el) el.classList.toggle('visible', val === 'ya');
+  };
+
+  window.getBiodataCpmi = function() {
+    function tableToArray(tbodyId) {
+      return Array.from(document.querySelectorAll('#' + tbodyId + ' tr')).map(tr => {
+        const obj = {};
+        tr.querySelectorAll('[data-key]').forEach(el => { obj[el.dataset.key] = el.value; });
+        return obj;
+      }).filter(o => Object.values(o).some(v => v && v.toString().trim() !== ''));
+    }
+    const pendidikanArr = tableToArray('tbodyPendidikan');
+    const bioPendVal = pendidikanArr.length ? (pendidikanArr[pendidikanArr.length-1].lembaga || '') : '';
+    const bioPendEl = document.getElementById('bioPend');
+    if (bioPendEl) bioPendEl.value = bioPendVal;
+    return {
+      bioNama: document.getElementById('bioNama')?.value||'',
+      bioUsia: document.getElementById('bioUsia')?.value||'',
+      bioPend: bioPendVal,
+      bioGender: document.getElementById('bioGender')?.value||'',
+      bioTelp: document.getElementById('bioTelp')?.value||'',
+      bioNIK: document.getElementById('bioNIK')?.value||'',
+      bioTTLKota: document.getElementById('bioTTLKota')?.value||'',
+      bioTTLTgl: document.getElementById('bioTTLTgl')?.value||'',
+      bioStatusKawin: document.getElementById('bioStatusKawin')?.value||'',
+      bioSuku: document.getElementById('bioSuku')?.value||'',
+      bioAgama: document.getElementById('bioAgama')?.value||'',
+      bioAlamat: document.getElementById('bioAlamat')?.value||'',
+      bioEmail: document.getElementById('bioEmail')?.value||'',
+      bioHobi: document.getElementById('bioHobi')?.value||'',
+      bioCitaCita: document.getElementById('bioCitaCita')?.value||'',
+      bioSosmed: {
+        linkedin: document.getElementById('bioSosmedLinkedin')?.value||'',
+        instagram: document.getElementById('bioSosmedInstagram')?.value||'',
+        facebook: document.getElementById('bioSosmedFacebook')?.value||'',
+        twitter: document.getElementById('bioSosmedTwitter')?.value||'',
+        lainnya: document.getElementById('bioSosmedLainnya')?.value||'',
+      },
+      pendidikan: pendidikanArr,
+      kursus: tableToArray('tbodyKursus'),
+      pengalamanKerja: tableToArray('tbodyKerja'),
+      organisasi: tableToArray('tbodyOrganisasi'),
+      keterampilan: tableToArray('tbodyKeterampilan'),
+      olahraga: tableToArray('tbodyOlahraga'),
+      kesenian: tableToArray('tbodyKesenian'),
+      keluarga: tableToArray('tbodyKeluarga'),
+      riwayatSakit: {
+        pernah: document.querySelector('[name=bioSakitKeras]:checked')?.value||'',
+        penyakit: document.getElementById('bioSakitPenyakit')?.value||'',
+        kapan: document.getElementById('bioSakitKapan')?.value||'',
+        akibat: document.getElementById('bioSakitAkibat')?.value||'',
+      },
+      riwayatKecelakaan: {
+        pernah: document.querySelector('[name=bioKecelakaan]:checked')?.value||'',
+        jenis: document.getElementById('bioKecelakaanJenis')?.value||'',
+        kapan: document.getElementById('bioKecelakaanKapan')?.value||'',
+        akibat: document.getElementById('bioKecelakaanAkibat')?.value||'',
+      },
+      riwayatPsikotest: {
+        pernah: document.querySelector('[name=bioPsikotest]:checked')?.value||'',
+        kapan: document.getElementById('bioPsikotestKapan')?.value||'',
+        tempat: document.getElementById('bioPsikotestTempat')?.value||'',
+        tujuan: document.getElementById('bioPsikotestTujuan')?.value||'',
+      },
+    };
+  };
+
+  ['pendidikan','kursus','kerja','organisasi','keterampilan','olahraga','kesenian','keluarga']
+    .forEach(t => window.addRow(t));
+
+  // ===================== ISI CONTOH (ACAK) =====================
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const randDigits = n => { let s=''; for(let i=0;i<n;i++) s+=randInt(0,9); return s; };
+
+  const NAMA_DEPAN = ['Budi','Siti','Andi','Rina','Dewi','Agus','Putri','Fajar','Nia','Hendra','Yusuf','Bayu','Wulan','Rizki','Maya','Doni','Sri','Joko','Ani','Rudi'];
+  const NAMA_BELAKANG = ['Santoso','Wijaya','Pratama','Saputra','Hidayat','Permata','Kusuma','Setiawan','Hartono','Susanti','Nababan','Sembiring','Simatupang','Hutapea','Tarigan'];
+  const KOTA = ['Medan','Binjai','Pematangsiantar','Tebing Tinggi','Lubuk Pakam','Kabanjahe','Sibolga','Padang Sidempuan','Rantau Prapat','Tanjung Balai'];
+  const SUKU = ['Batak Toba','Karo','Melayu','Jawa','Minang','Tionghoa','Mandailing'];
+  const SEKOLAH = ['SMA Negeri 1 Medan','SMK Negeri 2 Medan','Universitas Sumatera Utara','Universitas Negeri Medan','Politeknik Negeri Medan'];
+  const JURUSAN = ['IPA','IPS','Teknik Komputer','Akuntansi','Keperawatan','Manajemen'];
+  const LEMBAGA_KURSUS = ['LPK Maju Jaya','Lembaga Bahasa Korea Medan','LKP Mitra Karya','Balai Latihan Kerja Medan'];
+  const PELATIHAN = ['Caregiver / Perawat Lansia','Bahasa Korea Dasar','Tata Boga','Komputer Perkantoran'];
+  const INSTANSI = ['PT Maju Bersama','CV Sukses Mandiri','RS Permata Bunda','Toko Sumber Rejeki'];
+  const JABATAN = ['Staff Admin','Perawat','Kasir','Operator Produksi'];
+  const ORGANISASI = ['Karang Taruna','OSIS','Remaja Gereja','Ikatan Mahasiswa'];
+  const KETERAMPILAN = ['Bahasa Inggris','Bahasa Korea','Memasak','Komputer (MS Office)','Mengemudi'];
+  const OLAHRAGA = ['Badminton','Futsal','Voli','Lari'];
+  const KESENIAN = ['Vokal / Menyanyi','Tari Tradisional','Musik'];
+  const HOBI = ['Membaca','Olahraga','Memasak','Berkebun','Menyanyi'];
+  const CITA = ['Menjadi perawat profesional','Bekerja di luar negeri untuk membantu keluarga','Membuka usaha sendiri','Menjadi guru'];
+
+  function setVal(id, val){ const el=document.getElementById(id); if(el) el.value=val; }
+  function setRandomSelect(id){
+    const el=document.getElementById(id); if(!el) return;
+    const opts=[...el.options].filter(o=>o.value!=='');
+    if(opts.length) el.value=opts[randInt(0,opts.length-1)].value;
+  }
+  function setRandomRadio(name){
+    const radios=[...document.querySelectorAll(`input[name="${name}"]`)];
+    if(!radios.length) return '';
+    const chosen=radios[randInt(0,radios.length-1)];
+    chosen.checked=true;
+    chosen.dispatchEvent(new Event('change'));
+    return chosen.value;
+  }
+  function fillRow(type, tbodyId, data){
+    let tr=document.querySelector('#'+tbodyId+' tr');
+    if(!tr){ window.addRow(type); tr=document.querySelector('#'+tbodyId+' tr'); }
+    if(!tr) return;
+    tr.querySelectorAll('[data-key]').forEach(el=>{
+      const v=data[el.dataset.key];
+      if(v!==undefined) el.value=v;
+    });
+  }
+
+  window.isiContohCpmi = function(){
+    const namaDepan=pick(NAMA_DEPAN), namaBelakang=pick(NAMA_BELAKANG);
+    const usia=randInt(20,40);
+    const tahunLahir=new Date().getFullYear()-usia;
+    const bulan=String(randInt(1,12)).padStart(2,'0'), tgl=String(randInt(1,28)).padStart(2,'0');
+
+    // 5 field utama (wajib) — acak
+    setVal('bioNama', `${namaDepan} ${namaBelakang}`);
+    setVal('bioUsia', usia);
+    setRandomSelect('bioGender');
+    setVal('bioTelp', '08' + randDigits(9));
+    setVal('bioNIK', randDigits(16));
+
+    // Field lainnya — ikut diacak juga
+    setVal('bioTTLKota', pick(KOTA));
+    setVal('bioTTLTgl', `${tahunLahir}-${bulan}-${tgl}`);
+    setRandomSelect('bioStatusKawin');
+    setVal('bioSuku', pick(SUKU));
+    setRandomSelect('bioAgama');
+    setVal('bioAlamat', `Jl. Contoh No. ${randInt(1,99)}, ${pick(KOTA)}`);
+    setVal('bioEmail', `${namaDepan}.${namaBelakang}${randInt(1,99)}@gmail.com`.toLowerCase());
+    setVal('bioHobi', pick(HOBI));
+    setVal('bioCitaCita', pick(CITA));
+
+    setVal('bioSosmedLinkedin', `linkedin.com/in/${namaDepan.toLowerCase()}${namaBelakang.toLowerCase()}`);
+    setVal('bioSosmedInstagram', `@${namaDepan.toLowerCase()}${randInt(1,99)}`);
+    setVal('bioSosmedFacebook', `${namaDepan} ${namaBelakang}`);
+    setVal('bioSosmedTwitter', `@${namaDepan.toLowerCase()}`);
+    setVal('bioSosmedLainnya', '');
+
+    // Riwayat (tabel) — isi baris pertama tiap tabel dengan data acak
+    fillRow('pendidikan','tbodyPendidikan',{lembaga:pick(SEKOLAH),jurusan:pick(JURUSAN),lokasi:pick(KOTA),periode:`${tahunLahir+12} \u2013 ${tahunLahir+15}`,keterangan:'Lulus'});
+    fillRow('kursus','tbodyKursus',{lembaga:pick(LEMBAGA_KURSUS),nama_pelatihan:pick(PELATIHAN),lokasi:pick(KOTA),periode:'2022 \u2013 2023'});
+    fillRow('kerja','tbodyKerja',{instansi:pick(INSTANSI),jabatan:pick(JABATAN),lokasi:pick(KOTA),periode:'Jan 2021 \u2013 Des 2022'});
+    fillRow('organisasi','tbodyOrganisasi',{nama_organisasi:pick(ORGANISASI),jabatan:'Anggota',tempat:pick(KOTA),lamanya:randInt(1,3)+' tahun'});
+    fillRow('keterampilan','tbodyKeterampilan',{keterampilan:pick(KETERAMPILAN),spesifikasi:'Mahir',sertifikasi:'-',tingkat:pick(['baik','cukup'])});
+    fillRow('olahraga','tbodyOlahraga',{jenis:pick(OLAHRAGA),status:'aktif'});
+    fillRow('kesenian','tbodyKesenian',{jenis:pick(KESENIAN),status:'aktif'});
+    fillRow('keluarga','tbodyKeluarga',{nama:`${pick(NAMA_DEPAN)} ${pick(NAMA_BELAKANG)}`,gender:pick(['L','P']),usia:String(randInt(40,65)),hubungan:pick(['Ayah','Ibu']),pekerjaan:pick(['Wiraswasta','Petani','Ibu Rumah Tangga','PNS'])});
+
+    // Riwayat kesehatan — acak ya/tidak, isi detail bila "ya"
+    const sakit=setRandomRadio('bioSakitKeras'); window.toggleKondisi('sakit', sakit);
+    if(sakit==='ya'){ setVal('bioSakitPenyakit','Asma'); setVal('bioSakitKapan','2019'); setVal('bioSakitAkibat','Sudah sembuh total'); }
+
+    const kecelakaan=setRandomRadio('bioKecelakaan'); window.toggleKondisi('kecelakaan', kecelakaan);
+    if(kecelakaan==='ya'){ setVal('bioKecelakaanJenis','Kecelakaan motor'); setVal('bioKecelakaanKapan','2020'); setVal('bioKecelakaanAkibat','Luka ringan, sudah sembuh'); }
+
+    const psikotest=setRandomRadio('bioPsikotest'); window.toggleKondisi('psikotest', psikotest);
+    if(psikotest==='ya'){ setVal('bioPsikotestKapan','2022'); setVal('bioPsikotestTempat','Lidan Psikologi'); setVal('bioPsikotestTujuan','Seleksi kerja'); }
+
+    // Sinkronkan bioPend (hidden) dari baris pendidikan yang baru diisi
+    window.getBiodataCpmi();
+  };
+
+  console.log('\u2705 initBiodataCpmi selesai');
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 window.onload = async () => {
+  // ── Cek ?p= lebih awal, sebelum apapun dijalankan ──
+  if (!AUTO_PAKET) {
+    hl();
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    let errScreen = $('screenNoPacket');
+    if (!errScreen) {
+      errScreen = document.createElement('div');
+      errScreen.id = 'screenNoPacket';
+      errScreen.className = 'screen active';
+      errScreen.innerHTML = `
+        <div class="card" style="text-align:center;margin-top:40px">
+          <div style="font-size:3em;margin-bottom:12px">📦</div>
+          <div style="font-size:1.25em;font-weight:700;color:var(--danger);margin-bottom:10px">Paket Belum Dimasukkan</div>
+          <p style="color:var(--muted);font-size:.9em;line-height:1.7">
+            Halaman ini memerlukan parameter paket pada URL.<br>
+            Tambahkan <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:.9em">?p=nama-paket</code> di akhir URL Anda.<br><br>
+            Contoh: <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:.9em">tes-template.html?p=tes-iq</code>
+          </p>
+        </div>`;
+      document.body.appendChild(errScreen);
+    } else {
+      errScreen.classList.add('active');
+    }
+    return; // hentikan init
+  }
+
   sl('Memeriksa paket...');
 
   // Cek paket di server SEBELUM apapun (termasuk sebelum cek token)
@@ -1860,19 +2080,6 @@ window.onload = async () => {
       const res = await aF(`${API_R}?table=${TBL}&x_01_eq=${tok}`, { headers: { 'X-Custom-Auth': AUTH } });
       if (!res.success || !res.count) { localStorage.clear(); hl(); ss('screenDaftar'); return; }
       cu = res.data[0]; localStorage.setItem('db_id', cu.id_x);
-
-      // ── Cek apakah biodata sudah terisi (field 'nama') ──
-      let bioCekR = {}; try { bioCekR = JSON.parse(cu.x_02 || '{}'); } catch {}
-      if (!bioCekR.nama) {
-        hl();
-        _updateExistingId = String(cu.id_x);
-        tampilTopBarId();
-        ss('screenDaftar');
-        $('tokenLoginBox').style.display = 'none';
-        $('biodataContainer').style.display = 'block';
-        return;
-      }
-
       vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
       await loadAC();
       let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
@@ -1899,6 +2106,9 @@ window.onload = async () => {
 
 <script>
 // ═══ KREPLIN ENGINE ═══
+// ⚙️ WAKTU_KREPLIN_OVERRIDE = override detik per kolom untuk testing cepat.
+// Isi angka (misal 5) untuk override waktu dari kreplin.txt. Set null untuk pakai setting asli.
+const WAKTU_KREPLIN_OVERRIDE = null;
 let _kCfg={},_kKolom=0,_kSoalIdx=0,_kBenar=0,_kSalah=0,_kTimer=null,_kTL=0,_kLog=[],_kA=0,_kB=0,_kDone=false;
 const _kSK='_krep_state';
 
@@ -1932,6 +2142,10 @@ async function kreplinStart(ref){
         if(m.kreplin)Object.assign(meta,m.kreplin);
       }
     }catch(e){console.warn('[kreplin] gagal load config:',e)}
+  }
+  if(WAKTU_KREPLIN_OVERRIDE!=null){
+    meta.detikPerKolom=WAKTU_KREPLIN_OVERRIDE; // override tetap berlaku untuk angka apa pun
+    if(WAKTU_KREPLIN_OVERRIDE!==30)meta._testingActive=true; // tapi banner hanya muncul kalau beda dari 30
   }
   _kCfg=meta;_kDone=false;
 
@@ -1983,6 +2197,8 @@ function kreplinRenderKolom(){
   $('krepTitle').innerText='Tes Kraepelin';
   $('krepProgress').innerText='Kolom '+_kKolom+' / '+(_kCfg.totalKolom||45);
   $('krepProgressBar').style.width=Math.round(((_kKolom-1)/(_kCfg.totalKolom||45))*100)+'%';
+  const banner=$('krepTestingBanner');
+  if(banner)banner.style.display=_kCfg._testingActive?'':'none';
 }
 
 function kreplinNextKolom(){
@@ -2123,12 +2339,8 @@ async function kreplinSelesai(){
       cu=cur.data;cu[sf]=upd[sf];
     }catch(e){console.warn('[kreplin] gagal simpan:',e)}
   }
-  hl();
-  $('doneIcon').innerText='✅';
-  $('doneTitle').innerText='Tes Kraepelin Selesai!';
-  $('doneDesc').innerText='Hasil telah tersimpan.';
-  ss('screenDone');
-  setTimeout(()=>{sl('Memuat tes berikutnya...');goNext2()},2000);
+  sl('Memuat tes berikutnya...');
+  await goNext2();
 }
 </script>
 
@@ -2163,32 +2375,36 @@ async function kreplinSelesai(){
 <!-- ══ TOMBOL TOKEN MENGAMBANG ══ -->
 <button id="btnTokenFloat"
   onclick="bukaPopupToken()"
-  style="display:none !important;position:fixed;bottom:80px;right:12px;z-index:2147483647;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:'Segoe UI',sans-serif;">
+  style="position:fixed;bottom:80px;right:12px;z-index:2147483647;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:'Segoe UI',sans-serif;display:none;">
   🔑 Token
 </button>
 
-<!-- ══ POPUP INPUT TOKEN ══ -->
-<div id="popupToken" style="display:none;position:fixed;bottom:116px;right:12px;z-index:2147483647;background:white;border-radius:14px;padding:18px;box-shadow:0 8px 32px rgba(0,0,0,.2);width:280px;border:2px solid #c7d2fe;">
-  <div style="font-size:13px;font-weight:700;color:#4338ca;margin-bottom:10px;">🔑 Login dengan Token</div>
-  <input id="inputToken" type="text" placeholder="Masukkan token..." autocomplete="off" spellcheck="false"
-    style="width:100%;padding:9px 12px;border:2px solid #c7d2fe;border-radius:8px;font-size:13px;font-family:'Courier New',monospace;outline:none;box-sizing:border-box;margin-bottom:8px;"
-    onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#c7d2fe'"
-    onkeydown="if(event.key==='Enter')loginDenganToken()">
-  <div id="tokenErrBox" style="display:none;padding:7px 10px;background:#fee2e2;color:#dc2626;border-radius:7px;font-size:12px;font-weight:600;margin-bottom:8px;"></div>
-  <div style="display:flex;gap:8px;">
-    <button onclick="tutupPopupToken()"
-      style="flex:1;padding:8px;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
-      Batal
-    </button>
-    <button id="btnLoginToken" onclick="loginDenganToken()"
-      style="flex:2;padding:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
-      Masuk →
-    </button>
+<!-- ══ OVERLAY LOGIN TOKEN (modal layar penuh — menutupi form pendaftaran) ══ -->
+<div id="popupToken" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#f1f5f9;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:16px;padding:28px 26px;box-shadow:0 12px 40px rgba(0,0,0,.18);width:320px;max-width:90%;border:2px solid #c7d2fe;">
+    <div style="font-size:16px;font-weight:700;color:#4338ca;margin-bottom:6px;">🔑 Login dengan Token</div>
+    <p style="font-size:12.5px;color:#64748b;line-height:1.5;margin-bottom:14px;">Masukkan token yang sudah Anda dapatkan untuk melanjutkan ke pengerjaan tes.</p>
+    <input id="inputToken" type="text" placeholder="Masukkan token..." autocomplete="off" spellcheck="false"
+      style="width:100%;padding:12px 14px;border:2px solid #c7d2fe;border-radius:10px;font-size:14px;font-family:'Courier New',monospace;outline:none;box-sizing:border-box;margin-bottom:10px;"
+      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#c7d2fe'"
+      onkeydown="if(event.key==='Enter')loginDenganToken()">
+    <div id="tokenErrBox" style="display:none;padding:8px 11px;background:#fee2e2;color:#dc2626;border-radius:8px;font-size:12.5px;font-weight:600;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button id="btnBatalToken" onclick="tutupPopupToken()"
+        style="flex:1;padding:10px;background:#f1f5f9;color:#64748b;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">
+        Batal
+      </button>
+      <button id="btnLoginToken" onclick="loginDenganToken()"
+        style="flex:2;padding:10px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">
+        Masuk →
+      </button>
+    </div>
   </div>
 </div>
 
 <button id="btnLogoutPeserta" style="display:none;position:fixed;bottom:46px;right:12px;z-index:2147483647;background:#dc2626;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);font-family:'Segoe UI',sans-serif;" onclick="doLogout(localStorage.getItem('db_id'))">🔓 Ganti Peserta</button>
 <div id="topBarId" style="display:none;position:fixed;bottom:12px;right:12px;z-index:2147483647;font-size:.78em;font-weight:700;color:#4338ca;background:#e0e7ff;border:2px solid #6366f1;border-radius:8px;padding:4px 12px;font-family:'Courier New',monospace;box-shadow:0 2px 8px rgba(0,0,0,.2);pointer-events:none;">ID: —</div>
+
 
 <!-- ══ OVERLAY PERINGATAN REFRESH ══ -->
 <div id="refreshWarningOverlay" style="display:none;position:fixed;inset:0;z-index:2147483646;background:rgba(15,23,42,.82);backdrop-filter:blur(4px);align-items:center;justify-content:center;">

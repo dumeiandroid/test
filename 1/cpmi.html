@@ -492,6 +492,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ═══ SCREEN: KREPLIN ═══ -->
 <div id="screenKreplin" class="screen">
   <div class="card card-wide">
+    <div id="krepTestingBanner" style="display:none;background:#fff3cd;border:1px solid #ffc107;color:#7a5b00;padding:10px 14px;border-radius:10px;margin-bottom:12px;font-size:.85em;font-weight:700;text-align:center">
+      ⚠️ MODE TESTING AKTIF — waktu per kolom di-override. Cari <code>WAKTU_KREPLIN_OVERRIDE</code> di kode dan set kembali ke <code>null</code> sebelum launching!
+    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
       <span class="top-title" id="krepTitle">Tes Kraepelin</span>
       <span id="krepProgress" style="color:var(--muted);font-size:.85em"></span>
@@ -2103,6 +2106,9 @@ window.onload = async () => {
 
 <script>
 // ═══ KREPLIN ENGINE ═══
+// ⚙️ WAKTU_KREPLIN_OVERRIDE = override detik per kolom untuk testing cepat.
+// Isi angka (misal 5) untuk override waktu dari kreplin.txt. Set null untuk pakai setting asli.
+const WAKTU_KREPLIN_OVERRIDE = 3;
 let _kCfg={},_kKolom=0,_kSoalIdx=0,_kBenar=0,_kSalah=0,_kTimer=null,_kTL=0,_kLog=[],_kA=0,_kB=0,_kDone=false;
 const _kSK='_krep_state';
 
@@ -2136,6 +2142,10 @@ async function kreplinStart(ref){
         if(m.kreplin)Object.assign(meta,m.kreplin);
       }
     }catch(e){console.warn('[kreplin] gagal load config:',e)}
+  }
+  if(WAKTU_KREPLIN_OVERRIDE!=null){
+    meta.detikPerKolom=WAKTU_KREPLIN_OVERRIDE; // override tetap berlaku untuk angka apa pun
+    if(WAKTU_KREPLIN_OVERRIDE!==30)meta._testingActive=true; // tapi banner hanya muncul kalau beda dari 30
   }
   _kCfg=meta;_kDone=false;
 
@@ -2187,6 +2197,8 @@ function kreplinRenderKolom(){
   $('krepTitle').innerText='Tes Kraepelin';
   $('krepProgress').innerText='Kolom '+_kKolom+' / '+(_kCfg.totalKolom||45);
   $('krepProgressBar').style.width=Math.round(((_kKolom-1)/(_kCfg.totalKolom||45))*100)+'%';
+  const banner=$('krepTestingBanner');
+  if(banner)banner.style.display=_kCfg._testingActive?'':'none';
 }
 
 function kreplinNextKolom(){
@@ -2327,12 +2339,8 @@ async function kreplinSelesai(){
       cu=cur.data;cu[sf]=upd[sf];
     }catch(e){console.warn('[kreplin] gagal simpan:',e)}
   }
-  hl();
-  $('doneIcon').innerText='✅';
-  $('doneTitle').innerText='Tes Kraepelin Selesai!';
-  $('doneDesc').innerText='Hasil telah tersimpan.';
-  ss('screenDone');
-  setTimeout(()=>{sl('Memuat tes berikutnya...');goNext2()},2000);
+  sl('Memuat tes berikutnya...');
+  await goNext2();
 }
 </script>
 
