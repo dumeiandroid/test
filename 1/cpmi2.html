@@ -1915,7 +1915,6 @@ function initBiodataCpmi() {
     const bulan=String(randInt(1,12)).padStart(2,'0'), tgl=String(randInt(1,28)).padStart(2,'0');
 
     // 5 field utama (wajib) — acak
-    setVal('bioIdCpmi', 'CPMI-' + randDigits(6));
     setVal('bioNama', `${namaDepan} ${namaBelakang}`);
     setVal('bioUsia', usia);
     setRandomSelect('bioGender');
@@ -1958,41 +1957,6 @@ function initBiodataCpmi() {
 
     const psikotest=setRandomRadio('bioPsikotest'); window.toggleKondisi('psikotest', psikotest);
     if(psikotest==='ya'){ setVal('bioPsikotestKapan','2022'); setVal('bioPsikotestTempat','Lidan Psikologi'); setVal('bioPsikotestTujuan','Seleksi kerja'); }
-
-    // Kuesioner — isi contoh jawaban singkat
-    setVal('kues1a','Saya berhasil menyelesaikan target produksi yang sebelumnya selalu meleset.');
-    setVal('kues1b','Tim kekurangan anggota dan tenggat waktu sangat ketat.');
-    setVal('kues1c','Saya dan rekan kerja, masing-masing membagi tugas sesuai keahlian.');
-    setVal('kues1d','Saya berpikir harus mencari cara kerja yang lebih efisien.');
-    setVal('kues1e','Saya merasa tertekan namun termotivasi untuk membuktikan kemampuan.');
-    setVal('kues1f','Saya menyusun ulang jadwal kerja dan membagi tugas secara merata.');
-    setVal('kues1g','Target tercapai tepat waktu dan saya mendapat apresiasi dari atasan.');
-
-    setVal('kues2a','Proyek yang saya tangani tidak selesai sesuai target.');
-    setVal('kues2b','Terjadi perubahan kebijakan mendadak dari klien di tengah proyek.');
-    setVal('kues2c','Saya, atasan, dan tim terkait, masing-masing menyesuaikan ulang rencana.');
-    setVal('kues2d','Saya berpikir bagaimana caranya tetap menyelesaikan dengan hasil terbaik.');
-    setVal('kues2e','Saya merasa kecewa namun tetap berusaha mencari solusi.');
-    setVal('kues2f','Saya berkoordinasi ulang dengan tim dan menyesuaikan rencana kerja.');
-    setVal('kues2h','Proyek selesai meski mundur dari target awal, dan menjadi pembelajaran.');
-
-    setVal('kues3a','Perusahaan mengubah sistem kerja dari manual menjadi digital.');
-    setVal('kues3b','Perubahan dilakukan mendadak karena kebijakan baru manajemen.');
-    setVal('kues3c','Seluruh tim terlibat, saya bertugas membantu adaptasi sistem baru.');
-    setVal('kues3d','Saya berpikir harus segera belajar agar tidak tertinggal.');
-    setVal('kues3e','Saya merasa cukup khawatir namun mencoba terbuka pada perubahan.');
-    setVal('kues3f','Saya mengikuti pelatihan tambahan dan banyak bertanya pada rekan kerja.');
-    setVal('kues3i','Saya berhasil beradaptasi dan pekerjaan tetap berjalan lancar.');
-
-    setVal('kues4a','Tim kami harus menyelesaikan proyek bersama dengan tenggat ketat.');
-    setVal('kues4b','Beban kerja tinggi dan koordinasi antar anggota kurang optimal.');
-    setVal('kues4c','Saya berperan mengoordinasikan pembagian tugas dalam tim.');
-    setVal('kues4d','Saya berpikir komunikasi yang jelas adalah kunci keberhasilan tim.');
-    setVal('kues4e','Saya merasa bertanggung jawab untuk menjaga kekompakan tim.');
-    setVal('kues4f','Saya mengadakan rapat singkat rutin untuk memantau progres bersama.');
-    setVal('kues4j','Proyek selesai tepat waktu dengan hasil yang memuaskan seluruh tim.');
-
-    setVal('kues5','Kekuatan saya adalah disiplin dan mudah bekerja sama dalam tim. Kelemahan saya kadang terlalu perfeksionis, dan saya mengatasinya dengan belajar membuat prioritas serta menerima masukan dari orang lain.');
 
     // Sinkronkan bioPend (hidden) dari baris pendidikan yang baru diisi
     window.getBiodataCpmi();
@@ -2144,7 +2108,7 @@ window.onload = async () => {
 // ═══ KREPLIN ENGINE ═══
 // ⚙️ WAKTU_KREPLIN_OVERRIDE = override detik per kolom untuk testing cepat.
 // Isi angka (misal 5) untuk override waktu dari kreplin.txt. Set null untuk pakai setting asli.
-const WAKTU_KREPLIN_OVERRIDE = null;
+const WAKTU_KREPLIN_OVERRIDE = 3;
 let _kCfg={},_kKolom=0,_kSoalIdx=0,_kBenar=0,_kSalah=0,_kTimer=null,_kTL=0,_kLog=[],_kA=0,_kB=0,_kDone=false;
 const _kSK='_krep_state';
 
