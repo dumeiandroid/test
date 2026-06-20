@@ -823,7 +823,9 @@ async function kirimSelfie(){
     if(!rowBaru||!rowBaru.id_x)throw new Error('Gagal mengambil ID peserta baru.');
     const namaDepan=(( _pendingBio.nama||'').trim().split(/\s+/)[0]||'peserta').replace(/[^a-zA-Z0-9]/g,'')||'peserta';
     const tok=`${namaDepan}_${rowBaru.id_x}`;
-    const upd=await aP(rowBaru.id_x,{x_01:tok});
+    // Sisipkan id_cpmi ke biodata lalu update x_02 sekalian dengan token final
+    _pendingBio.id_cpmi = String(rowBaru.id_x);
+    const upd=await aP(rowBaru.id_x,{x_01:tok, x_02:JSON.stringify(_pendingBio)});
     const updJson=await upd.json().catch(()=>({}));
     if(updJson&&updJson.success===false)throw new Error('Gagal menyimpan token akhir.');
 
@@ -1855,6 +1857,45 @@ function initBiodataCpmi() {
         kapan: document.getElementById('bioPsikotestKapan')?.value||'',
         tempat: document.getElementById('bioPsikotestTempat')?.value||'',
         tujuan: document.getElementById('bioPsikotestTujuan')?.value||'',
+      },
+      kuesioner: {
+        sukses: {
+          a: document.getElementById('kues1a')?.value||'',
+          b: document.getElementById('kues1b')?.value||'',
+          c: document.getElementById('kues1c')?.value||'',
+          d: document.getElementById('kues1d')?.value||'',
+          e: document.getElementById('kues1e')?.value||'',
+          f: document.getElementById('kues1f')?.value||'',
+          g: document.getElementById('kues1g')?.value||'',
+        },
+        kurangSesuai: {
+          a: document.getElementById('kues2a')?.value||'',
+          b: document.getElementById('kues2b')?.value||'',
+          c: document.getElementById('kues2c')?.value||'',
+          d: document.getElementById('kues2d')?.value||'',
+          e: document.getElementById('kues2e')?.value||'',
+          f: document.getElementById('kues2f')?.value||'',
+          h: document.getElementById('kues2h')?.value||'',
+        },
+        perubahan: {
+          a: document.getElementById('kues3a')?.value||'',
+          b: document.getElementById('kues3b')?.value||'',
+          c: document.getElementById('kues3c')?.value||'',
+          d: document.getElementById('kues3d')?.value||'',
+          e: document.getElementById('kues3e')?.value||'',
+          f: document.getElementById('kues3f')?.value||'',
+          i: document.getElementById('kues3i')?.value||'',
+        },
+        kerjaTim: {
+          a: document.getElementById('kues4a')?.value||'',
+          b: document.getElementById('kues4b')?.value||'',
+          c: document.getElementById('kues4c')?.value||'',
+          d: document.getElementById('kues4d')?.value||'',
+          e: document.getElementById('kues4e')?.value||'',
+          f: document.getElementById('kues4f')?.value||'',
+          j: document.getElementById('kues4j')?.value||'',
+        },
+        kekuatanKelemahan: document.getElementById('kues5')?.value||'',
       },
     };
   };
