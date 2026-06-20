@@ -778,6 +778,7 @@ function buildRows(data) {
         .map(row => ({
             id_x:   String(row.id_x || ''),
             selfie: renderTodaySelfie(row.x_02),
+            x_01:   String(row.x_01 || ''),
             x_02:   renderJsonBio(row.x_02),
             progres: renderProgresGabung(row.x_05, row.x_06, row.x_07),
             x_09:   renderViolation(row.x_09 || ''),
@@ -786,10 +787,11 @@ function buildRows(data) {
 }
 
 function initTable(rows) {
-    const heads = `<th>ID</th><th>Selfie</th><th>Biodata</th><th>Progres</th><th>🔄 Tab</th><th>Tgl Tes</th>`;
+    const heads = `<th>ID</th><th>Selfie</th><th>Token</th><th>Biodata</th><th>Progres</th><th>🔄 Tab</th><th>Tgl Tes</th>`;
     const cols  = [
         { data: 'id_x',   orderable: true },
         { data: 'selfie', orderable: false },
+        { data: 'x_01' },
         { data: 'x_02' },
         { data: 'progres', orderable: false },
         { data: 'x_09',   orderable: false, defaultContent: '—' },
