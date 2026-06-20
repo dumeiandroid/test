@@ -805,13 +805,24 @@ async function kirimSelfie(){
     // 2. Inject URL foto ke biodata
     _pendingBio.foto_selfie=fotoUrl;
 
-    // 3. Simpan ke API (POST biodata + foto)
-    stTxt.textContent='Membuat token...';
-    const tok=await genTok(_pendingPid);
-    const bio=JSON.stringify(_pendingBio);
+    // 3. Simpan ke API (POST biodata + foto) — pakai token sementara dulu
+    //    karena id_x baru terbentuk SETELAH record disimpan di database.
     stTxt.textContent='Menyimpan data...';
-    const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tok,x_02:bio})});
+    const tokSementara='tmp-'+Date.now()+'-'+rs(6);
+    const bio=JSON.stringify(_pendingBio);
+    const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tokSementara,x_02:bio})});
     if(!res.success)throw new Error(res.message||'Gagal menyimpan data.');
+
+    // 3b. Ambil id_x yang baru terbentuk, lalu susun token final: namaDepan_id_x
+    stTxt.textContent='Membuat token...';
+    const lookup=await aF(`${API_W}?table=${TBL}&x_01_eq=${encodeURIComponent(tokSementara)}`,{headers:{'X-Custom-Auth':AUTH}});
+    const rowBaru=lookup&&lookup.data?(Array.isArray(lookup.data)?lookup.data[0]:lookup.data):null;
+    if(!rowBaru||!rowBaru.id_x)throw new Error('Gagal mengambil ID peserta baru.');
+    const namaDepan=(( _pendingBio.nama||'').trim().split(/\s+/)[0]||'peserta').replace(/[^a-zA-Z0-9]/g,'')||'peserta';
+    const tok=`${namaDepan}_${rowBaru.id_x}`;
+    const upd=await aP(rowBaru.id_x,{x_01:tok});
+    const updJson=await upd.json().catch(()=>({}));
+    if(updJson&&updJson.success===false)throw new Error('Gagal menyimpan token akhir.');
 
     // 4. Tutup kamera — JANGAN auto-login. Kembali ke screenDaftar
     //    dan minta peserta memasukkan token secara manual untuk mulai tes.
@@ -829,6 +840,9 @@ async function kirimSelfie(){
 
 async function handleDaftar(){
   const eb=$('daftarErrBox');eb.classList.remove('show');
+  // Sinkronkan field tersembunyi (bioPend dari tabel Riwayat Pendidikan) SEBELUM validasi.
+  // Tanpa ini, bioPend selalu kosong karena baru diisi saat getBiodataCpmi() dipanggil.
+  if(typeof window.getBiodataCpmi==='function'){ try{ window.getBiodataCpmi(); }catch(e){} }
   for(const[id,lb]of[['bioNama','Nama'],['bioUsia','Usia'],['bioPend','Pendidikan'],['bioGender','Jenis Kelamin']]){
     const el=$(id);el.classList.remove('error');if(!el.value.trim()){el.classList.add('error');el.focus();eb.textContent='Mohon isi: '+lb;eb.classList.add('show');return}
   }
@@ -1827,6 +1841,106 @@ function initBiodataCpmi() {
 
   ['pendidikan','kursus','kerja','organisasi','keterampilan','olahraga','kesenian','keluarga']
     .forEach(t => window.addRow(t));
+
+  // ===================== ISI CONTOH (ACAK) =====================
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const randDigits = n => { let s=''; for(let i=0;i<n;i++) s+=randInt(0,9); return s; };
+
+  const NAMA_DEPAN = ['Budi','Siti','Andi','Rina','Dewi','Agus','Putri','Fajar','Nia','Hendra','Yusuf','Bayu','Wulan','Rizki','Maya','Doni','Sri','Joko','Ani','Rudi'];
+  const NAMA_BELAKANG = ['Santoso','Wijaya','Pratama','Saputra','Hidayat','Permata','Kusuma','Setiawan','Hartono','Susanti','Nababan','Sembiring','Simatupang','Hutapea','Tarigan'];
+  const KOTA = ['Medan','Binjai','Pematangsiantar','Tebing Tinggi','Lubuk Pakam','Kabanjahe','Sibolga','Padang Sidempuan','Rantau Prapat','Tanjung Balai'];
+  const SUKU = ['Batak Toba','Karo','Melayu','Jawa','Minang','Tionghoa','Mandailing'];
+  const SEKOLAH = ['SMA Negeri 1 Medan','SMK Negeri 2 Medan','Universitas Sumatera Utara','Universitas Negeri Medan','Politeknik Negeri Medan'];
+  const JURUSAN = ['IPA','IPS','Teknik Komputer','Akuntansi','Keperawatan','Manajemen'];
+  const LEMBAGA_KURSUS = ['LPK Maju Jaya','Lembaga Bahasa Korea Medan','LKP Mitra Karya','Balai Latihan Kerja Medan'];
+  const PELATIHAN = ['Caregiver / Perawat Lansia','Bahasa Korea Dasar','Tata Boga','Komputer Perkantoran'];
+  const INSTANSI = ['PT Maju Bersama','CV Sukses Mandiri','RS Permata Bunda','Toko Sumber Rejeki'];
+  const JABATAN = ['Staff Admin','Perawat','Kasir','Operator Produksi'];
+  const ORGANISASI = ['Karang Taruna','OSIS','Remaja Gereja','Ikatan Mahasiswa'];
+  const KETERAMPILAN = ['Bahasa Inggris','Bahasa Korea','Memasak','Komputer (MS Office)','Mengemudi'];
+  const OLAHRAGA = ['Badminton','Futsal','Voli','Lari'];
+  const KESENIAN = ['Vokal / Menyanyi','Tari Tradisional','Musik'];
+  const HOBI = ['Membaca','Olahraga','Memasak','Berkebun','Menyanyi'];
+  const CITA = ['Menjadi perawat profesional','Bekerja di luar negeri untuk membantu keluarga','Membuka usaha sendiri','Menjadi guru'];
+
+  function setVal(id, val){ const el=document.getElementById(id); if(el) el.value=val; }
+  function setRandomSelect(id){
+    const el=document.getElementById(id); if(!el) return;
+    const opts=[...el.options].filter(o=>o.value!=='');
+    if(opts.length) el.value=opts[randInt(0,opts.length-1)].value;
+  }
+  function setRandomRadio(name){
+    const radios=[...document.querySelectorAll(`input[name="${name}"]`)];
+    if(!radios.length) return '';
+    const chosen=radios[randInt(0,radios.length-1)];
+    chosen.checked=true;
+    chosen.dispatchEvent(new Event('change'));
+    return chosen.value;
+  }
+  function fillRow(type, tbodyId, data){
+    let tr=document.querySelector('#'+tbodyId+' tr');
+    if(!tr){ window.addRow(type); tr=document.querySelector('#'+tbodyId+' tr'); }
+    if(!tr) return;
+    tr.querySelectorAll('[data-key]').forEach(el=>{
+      const v=data[el.dataset.key];
+      if(v!==undefined) el.value=v;
+    });
+  }
+
+  window.isiContohCpmi = function(){
+    const namaDepan=pick(NAMA_DEPAN), namaBelakang=pick(NAMA_BELAKANG);
+    const usia=randInt(20,40);
+    const tahunLahir=new Date().getFullYear()-usia;
+    const bulan=String(randInt(1,12)).padStart(2,'0'), tgl=String(randInt(1,28)).padStart(2,'0');
+
+    // 5 field utama (wajib) — acak
+    setVal('bioNama', `${namaDepan} ${namaBelakang}`);
+    setVal('bioUsia', usia);
+    setRandomSelect('bioGender');
+    setVal('bioTelp', '08' + randDigits(9));
+    setVal('bioNIK', randDigits(16));
+
+    // Field lainnya — ikut diacak juga
+    setVal('bioTTLKota', pick(KOTA));
+    setVal('bioTTLTgl', `${tahunLahir}-${bulan}-${tgl}`);
+    setRandomSelect('bioStatusKawin');
+    setVal('bioSuku', pick(SUKU));
+    setRandomSelect('bioAgama');
+    setVal('bioAlamat', `Jl. Contoh No. ${randInt(1,99)}, ${pick(KOTA)}`);
+    setVal('bioEmail', `${namaDepan}.${namaBelakang}${randInt(1,99)}@gmail.com`.toLowerCase());
+    setVal('bioHobi', pick(HOBI));
+    setVal('bioCitaCita', pick(CITA));
+
+    setVal('bioSosmedLinkedin', `linkedin.com/in/${namaDepan.toLowerCase()}${namaBelakang.toLowerCase()}`);
+    setVal('bioSosmedInstagram', `@${namaDepan.toLowerCase()}${randInt(1,99)}`);
+    setVal('bioSosmedFacebook', `${namaDepan} ${namaBelakang}`);
+    setVal('bioSosmedTwitter', `@${namaDepan.toLowerCase()}`);
+    setVal('bioSosmedLainnya', '');
+
+    // Riwayat (tabel) — isi baris pertama tiap tabel dengan data acak
+    fillRow('pendidikan','tbodyPendidikan',{lembaga:pick(SEKOLAH),jurusan:pick(JURUSAN),lokasi:pick(KOTA),periode:`${tahunLahir+12} \u2013 ${tahunLahir+15}`,keterangan:'Lulus'});
+    fillRow('kursus','tbodyKursus',{lembaga:pick(LEMBAGA_KURSUS),nama_pelatihan:pick(PELATIHAN),lokasi:pick(KOTA),periode:'2022 \u2013 2023'});
+    fillRow('kerja','tbodyKerja',{instansi:pick(INSTANSI),jabatan:pick(JABATAN),lokasi:pick(KOTA),periode:'Jan 2021 \u2013 Des 2022'});
+    fillRow('organisasi','tbodyOrganisasi',{nama_organisasi:pick(ORGANISASI),jabatan:'Anggota',tempat:pick(KOTA),lamanya:randInt(1,3)+' tahun'});
+    fillRow('keterampilan','tbodyKeterampilan',{keterampilan:pick(KETERAMPILAN),spesifikasi:'Mahir',sertifikasi:'-',tingkat:pick(['baik','cukup'])});
+    fillRow('olahraga','tbodyOlahraga',{jenis:pick(OLAHRAGA),status:'aktif'});
+    fillRow('kesenian','tbodyKesenian',{jenis:pick(KESENIAN),status:'aktif'});
+    fillRow('keluarga','tbodyKeluarga',{nama:`${pick(NAMA_DEPAN)} ${pick(NAMA_BELAKANG)}`,gender:pick(['L','P']),usia:String(randInt(40,65)),hubungan:pick(['Ayah','Ibu']),pekerjaan:pick(['Wiraswasta','Petani','Ibu Rumah Tangga','PNS'])});
+
+    // Riwayat kesehatan — acak ya/tidak, isi detail bila "ya"
+    const sakit=setRandomRadio('bioSakitKeras'); window.toggleKondisi('sakit', sakit);
+    if(sakit==='ya'){ setVal('bioSakitPenyakit','Asma'); setVal('bioSakitKapan','2019'); setVal('bioSakitAkibat','Sudah sembuh total'); }
+
+    const kecelakaan=setRandomRadio('bioKecelakaan'); window.toggleKondisi('kecelakaan', kecelakaan);
+    if(kecelakaan==='ya'){ setVal('bioKecelakaanJenis','Kecelakaan motor'); setVal('bioKecelakaanKapan','2020'); setVal('bioKecelakaanAkibat','Luka ringan, sudah sembuh'); }
+
+    const psikotest=setRandomRadio('bioPsikotest'); window.toggleKondisi('psikotest', psikotest);
+    if(psikotest==='ya'){ setVal('bioPsikotestKapan','2022'); setVal('bioPsikotestTempat','Lidan Psikologi'); setVal('bioPsikotestTujuan','Seleksi kerja'); }
+
+    // Sinkronkan bioPend (hidden) dari baris pendidikan yang baru diisi
+    window.getBiodataCpmi();
+  };
 
   console.log('\u2705 initBiodataCpmi selesai');
 }
