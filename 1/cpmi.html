@@ -862,7 +862,24 @@ async function handleDaftar(){
   if(!sPaket){eb.textContent='⚠ Paket tes tidak ditemukan. Hubungi administrator.';eb.classList.add('show');return}
   // Simpan biodata sementara, lalu pindah ke screen selfie
   const pid=String(sPaket.id_x).trim(),pnm=(sPaket.x_01||'').trim();
+  // Ambil struktur biodata LENGKAP (bioNama, bioNIK, kursus[], kerja[], keluarga[], dst)
+  // dari form biodata-cpmi.html — supaya x_02 yang tersimpan berisi seluruh data,
+  // bukan hanya ringkasan. Field ringkas (nama, telepon, pendidikan, status, dst)
+  // TETAP dipertahankan karena masih dipakai gBio() dan fungsi lain di file ini.
+  // Catatan: key "pendidikan" pada getBiodataCpmi() adalah ARRAY riwayat pendidikan,
+  // sedangkan key "pendidikan" ringkas adalah STRING (sekolah terakhir, dari bioPend).
+  // Supaya keduanya tetap tersimpan tanpa saling timpa, array lengkapnya disalin
+  // ke key baru "riwayatPendidikan" sebelum digabung.
+  let bioLengkap={};
+  if(typeof window.getBiodataCpmi==='function'){
+    try{ bioLengkap=window.getBiodataCpmi()||{}; }catch(e){ console.warn('[handleDaftar] getBiodataCpmi gagal:',e); }
+  }
+  if(bioLengkap.pendidikan!==undefined){
+    bioLengkap.riwayatPendidikan=bioLengkap.pendidikan;
+    delete bioLengkap.pendidikan;
+  }
   _pendingBio={
+    ...bioLengkap,
     nama:$('bioNama').value.trim(),
     usia:$('bioUsia').value.trim(),
     pendidikan:$('bioPend').value.trim(),
