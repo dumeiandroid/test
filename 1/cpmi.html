@@ -823,9 +823,7 @@ async function kirimSelfie(){
     if(!rowBaru||!rowBaru.id_x)throw new Error('Gagal mengambil ID peserta baru.');
     const namaDepan=(( _pendingBio.nama||'').trim().split(/\s+/)[0]||'peserta').replace(/[^a-zA-Z0-9]/g,'')||'peserta';
     const tok=`${namaDepan}_${rowBaru.id_x}`;
-    // Sisipkan id_cpmi ke biodata lalu update x_02 sekalian dengan token final
-    _pendingBio.id_cpmi = String(rowBaru.id_x);
-    const upd=await aP(rowBaru.id_x,{x_01:tok, x_02:JSON.stringify(_pendingBio)});
+    const upd=await aP(rowBaru.id_x,{x_01:tok});
     const updJson=await upd.json().catch(()=>({}));
     if(updJson&&updJson.success===false)throw new Error('Gagal menyimpan token akhir.');
 
@@ -1858,45 +1856,6 @@ function initBiodataCpmi() {
         tempat: document.getElementById('bioPsikotestTempat')?.value||'',
         tujuan: document.getElementById('bioPsikotestTujuan')?.value||'',
       },
-      kuesioner: {
-        sukses: {
-          a: document.getElementById('kues1a')?.value||'',
-          b: document.getElementById('kues1b')?.value||'',
-          c: document.getElementById('kues1c')?.value||'',
-          d: document.getElementById('kues1d')?.value||'',
-          e: document.getElementById('kues1e')?.value||'',
-          f: document.getElementById('kues1f')?.value||'',
-          g: document.getElementById('kues1g')?.value||'',
-        },
-        kurangSesuai: {
-          a: document.getElementById('kues2a')?.value||'',
-          b: document.getElementById('kues2b')?.value||'',
-          c: document.getElementById('kues2c')?.value||'',
-          d: document.getElementById('kues2d')?.value||'',
-          e: document.getElementById('kues2e')?.value||'',
-          f: document.getElementById('kues2f')?.value||'',
-          h: document.getElementById('kues2h')?.value||'',
-        },
-        perubahan: {
-          a: document.getElementById('kues3a')?.value||'',
-          b: document.getElementById('kues3b')?.value||'',
-          c: document.getElementById('kues3c')?.value||'',
-          d: document.getElementById('kues3d')?.value||'',
-          e: document.getElementById('kues3e')?.value||'',
-          f: document.getElementById('kues3f')?.value||'',
-          i: document.getElementById('kues3i')?.value||'',
-        },
-        kerjaTim: {
-          a: document.getElementById('kues4a')?.value||'',
-          b: document.getElementById('kues4b')?.value||'',
-          c: document.getElementById('kues4c')?.value||'',
-          d: document.getElementById('kues4d')?.value||'',
-          e: document.getElementById('kues4e')?.value||'',
-          f: document.getElementById('kues4f')?.value||'',
-          j: document.getElementById('kues4j')?.value||'',
-        },
-        kekuatanKelemahan: document.getElementById('kues5')?.value||'',
-      },
     };
   };
 
@@ -2351,13 +2310,34 @@ function kreplinCatatKolom(){
   _kLog.push({kolom:_kKolom,soal:_kSoalIdx,benar:benarKolom,salah:salahKolom});
   _kBenarPrev=_kBenar;
   _kSalahPrev=_kSalah;
-  // Simpan progress ke server setiap akhir kolom
+  // Jangan simpan ke server kalau kreplin sudah selesai (_kDone)
+  // agar tidak menimpa data final dari kreplinSelesai()
+  if(_kDone)return;
+  // Simpan progress per kolom ke server — merge kolom per kolom
+  // agar kalau request ini datang telat tidak menghapus kolom lain yg sudah tersimpan
+  const kolomIdx=_kKolom-1;
+  const entry=_kLog[_kLog.length-1];
   const dbId=localStorage.getItem('db_id');
   if(dbId){
     aG(dbId).then(cur=>{
+      if(_kDone)return; // cek lagi setelah fetch selesai
       const sf='x_06';
       let o={};try{o=JSON.parse(cur.data[sf]||'{}')}catch{}
-      o.kreplin=kreplinBuildPayload();
+      // Merge: ambil dikerjakan/benar/salah yang sudah ada, update hanya kolom ini
+      const total=_kCfg.totalKolom||45;
+      const toDikerjakanArr=((o.kreplin&&o.kreplin.dikerjakan)||'').split('|');
+      const toBenarArr=((o.kreplin&&o.kreplin.benar)||'').split('|');
+      const toSalahArr=((o.kreplin&&o.kreplin.salah)||'').split('|');
+      while(toDikerjakanArr.length<total)toDikerjakanArr.push('');
+      while(toBenarArr.length<total)toBenarArr.push('');
+      while(toSalahArr.length<total)toSalahArr.push('');
+      toDikerjakanArr[kolomIdx]=String(entry.soal||0);
+      toBenarArr[kolomIdx]=String(entry.benar||0);
+      toSalahArr[kolomIdx]=String(entry.salah||0);
+      if(!o.kreplin)o.kreplin={};
+      o.kreplin.dikerjakan=toDikerjakanArr.join('|');
+      o.kreplin.benar=toBenarArr.join('|');
+      o.kreplin.salah=toSalahArr.join('|');
       const upd={};upd[sf]=JSON.stringify(o);
       return aP(dbId,upd).then(()=>{cu=cur.data;cu[sf]=upd[sf];});
     }).catch(e=>console.warn('[kreplin] gagal simpan kolom:',e));
@@ -2404,17 +2384,27 @@ async function kreplinSelesai(){
   kreplinClearState();
   localStorage.removeItem('_activeTask');
   const dbId=localStorage.getItem('db_id');
+  // Tandai done di cu secara lokal dulu agar goNext2 tidak loop
+  // walau simpan ke server gagal sekalipun
+  const payloadKreplin=kreplinBuildPayload();
+  try{
+    let oLocal={};try{oLocal=JSON.parse(cu['x_06']||'{}')}catch{}
+    oLocal.kreplin=payloadKreplin;
+    cu['x_06']=JSON.stringify(oLocal);
+  }catch{}
   if(dbId){
     sl('Menyimpan hasil...');
     try{
       const cur=await aG(dbId);
       const sf='x_06';
       let o={};try{o=JSON.parse(cur.data[sf]||'{}')}catch{}
-      o.kreplin=kreplinBuildPayload();
+      o.kreplin=payloadKreplin;
       const upd={};upd[sf]=JSON.stringify(o);
       await aP(dbId,upd);
       cu=cur.data;cu[sf]=upd[sf];
-    }catch(e){console.warn('[kreplin] gagal simpan:',e)}
+    }catch(e){
+      console.warn('[kreplin] gagal simpan ke server, pakai data lokal:',e);
+    }
   }
   sl('Memuat tes berikutnya...');
   await goNext2();
