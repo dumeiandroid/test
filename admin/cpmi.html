@@ -656,6 +656,45 @@ function renderTimer(x04Raw) {
     return '<span style="color:#ccc;font-size:12px">—</span>';
 }
 
+// ── Aksi (kolom x_04 — flag token bermasalah) ──
+const MSG_AKSI_TOOLTIP = 'Tekan tombol di baris jika token bermasalah karena gangguan internet.';
+
+function infoAksi() {
+    alert(MSG_AKSI_TOOLTIP);
+}
+
+function renderAksi(x04Raw, idX) {
+    if (!x04Raw || String(x04Raw).trim() === '') {
+        return '<span style="color:#ccc;font-size:12px">—</span>';
+    }
+    return `<button class="btn btn-warning btn-sm" style="padding:4px 10px;font-size:11px"
+                onclick="resetTokenBermasalah('${String(idX).replace(/'/g, "\\'")}')"
+                title="${escHtml(MSG_AKSI_TOOLTIP)}">🔄 Reset Token</button>`;
+}
+
+async function resetTokenBermasalah(idX) {
+    if (!confirm('Kosongkan x_04 untuk baris ini?')) return;
+    const url = `${API_BASE}?table=${encodeURIComponent(tableName)}&id_x=${encodeURIComponent(idX)}`;
+    console.log('[resetTokenBermasalah] URL:', url, '| id_x:', idX);
+    try {
+        const res = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': AUTH_KEY },
+            body: JSON.stringify({ x_04: '' })
+        });
+        const text = await res.text();
+        console.log('[resetTokenBermasalah] HTTP status:', res.status, '| response:', text);
+        let json;
+        try { json = JSON.parse(text); } catch(e) { throw new Error('Response bukan JSON: ' + text); }
+        if (!json.success) throw new Error(json.message || json.error || 'Gagal update (lihat console).');
+        lastHash = null;
+        await update();
+    } catch (e) {
+        console.error('[resetTokenBermasalah] Error:', e);
+        alert('Gagal mengosongkan x_04: ' + e.message);
+    }
+}
+
 function renderViolation(x09Raw) {
     if (!x09Raw || x09Raw.trim() === '') return '<span style="color:#ccc;font-size:12px">—</span>';
     let entries = [];
@@ -782,12 +821,13 @@ function buildRows(data) {
             x_02:   renderJsonBio(row.x_02),
             progres: renderProgresGabung(row.x_05, row.x_06, row.x_07),
             x_09:   renderViolation(row.x_09 || ''),
+            aksi:   renderAksi(row.x_04 || '', row.id_x || ''),
             tgl:    `<span style="font-size:12px;color:var(--muted)">${getDateFromX02(row.x_02)}</span>`
         }));
 }
 
 function initTable(rows) {
-    const heads = `<th>ID</th><th>Selfie</th><th>Token</th><th>Biodata</th><th>Progres</th><th>🔄 Tab</th><th>Tgl Tes</th>`;
+    const heads = `<th>ID</th><th>Selfie</th><th>Token</th><th>Biodata</th><th>Progres</th><th>🔄 Tab</th><th onclick="infoAksi()" title="${escHtml(MSG_AKSI_TOOLTIP)}" style="cursor:help">Aksi ℹ️</th><th>Tgl Tes</th>`;
     const cols  = [
         { data: 'id_x',   orderable: true },
         { data: 'selfie', orderable: false },
@@ -795,6 +835,7 @@ function initTable(rows) {
         { data: 'x_02' },
         { data: 'progres', orderable: false },
         { data: 'x_09',   orderable: false, defaultContent: '—' },
+        { data: 'aksi',   orderable: false, defaultContent: '—' },
         { data: 'tgl',    orderable: false }
     ];
     document.getElementById('todayContainer').innerHTML = `
