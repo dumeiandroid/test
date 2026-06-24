@@ -546,10 +546,10 @@ function shortTitle(t){ return (t||'').split(' — ')[0].split(' \u2014 ')[0]; }
 // KONFIGURASI PAKET — diambil dari query string ?p=nama-paket
 // ============================================================
 // p tidak lagi diambil dari URL — dihardcode ke paket "cpmi"
-const AUTO_PAKET = 'cpmi';
+const AUTO_PAKET = 'apm';
 
 // Paket yang langsung aktif tanpa konfirmasi manual tester
-const PAKET_AUTO_AKTIF = ['asmara','potensi','karakter','karir','cpmi'];
+const PAKET_AUTO_AKTIF = ['asmara','potensi','karakter','karir','cpmi','apm'];
 const IS_AUTO_AKTIF = PAKET_AUTO_AKTIF.includes(AUTO_PAKET.toLowerCase());
 
 const BASE='https://cipta.my.id/psikotest/simpel/';
@@ -584,8 +584,8 @@ const ALL_CONFIG=[
   {id:'tkd6',  dataUrl:BASE+'tkd6_a.txt', type:'text_input',        saveField:'x_05'},
   {id:'kreplin',dataUrl:BASE+'kreplin.txt',type:'kreplin',           saveField:'x_06'}
 ];
-const API_W='https://tabi.my.id/api/contacts_filter_dinamis6';
-const API_R='https://tabi.my.id/api/contacts_filter_dinamis7';
+const API_W='https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6';
+const API_R='https://lidan-co-id.pages.dev/api/contacts_filter_dinamis7';
 const TBL='nilai1_json',TBL_P='alat_tes',TBL_K='admin_kontrol',AUTH='admin',WHO_B='https://cipta.my.id/who2/';
 const R2='https://indahabadi.my.id/api/upload_r2_lidan',CDN='https://assets.indahabadi.my.id/';
 const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -827,13 +827,18 @@ async function kirimSelfie(){
     const updJson=await upd.json().catch(()=>({}));
     if(updJson&&updJson.success===false)throw new Error('Gagal menyimpan token akhir.');
 
-    // 4. Tutup kamera — JANGAN auto-login. Kembali ke screenDaftar
-    //    dan minta peserta memasukkan token secara manual untuk mulai tes.
+    // 4. Auto-login diam-diam (TANPA popup token) agar peserta bisa langsung
+    //    mengerjakan WWQ di rumah. Token baru diminta lagi setelah WWQ selesai.
     tutupKameraSelfie();
+    localStorage.setItem('token', tok);
+    localStorage.setItem('db_id', String(rowBaru.id_x));
+    localStorage.setItem('_p', AUTO_PAKET);
+    cu = rowBaru;
+    stTxt.textContent='Memuat tes...';
+    await loadAC();
     hl();
-    ss('screenDaftar');
-    alert('✅ Pendaftaran berhasil!\nSilakan masukkan token Anda untuk login dan memulai tes.');
-    bukaPopupToken(true);
+    startGlobalPolling();
+    await goNext2();
   }catch(e){
     loadEl.style.display='none';
     $('selfieActions').style.display='flex';
@@ -1474,7 +1479,17 @@ function wSK(){
 }
 function wMA(idx){if(!wAns.includes(idx))wAns.push(idx);const p=wSkip.indexOf(idx);if(p!==-1){wSkip.splice(p,1);const u=wUA.indexOf('SKIP');if(u!==-1)wUA.splice(u,1)}}
 function wUP(){const t=wQs.length,d=wAns.length;$('progressBar').style.width=(t?Math.round((d/t)*100):0)+'%';let info=`Soal ${wQi+1} / ${t}`;if(wSkip.length>0)info+=` · ⟳ ${wSkip.length} dilewati`;$('progressInfo').innerText=info;const bt=$('bbTitle'),bp=$('bbProgress');if(bt)bt.innerText=cfg.title||'';if(bp)bp.innerText=info}
-function wAfT(){const i=wFindNext();if(i!==-1){wBI=i;wOpen(i)}else goNext2()}
+function wAfT(){
+  const i=wFindNext();
+  if(i!==-1){wBI=i;wOpen(i);return}
+  // Semua tes WHO (termasuk WWQ) sudah selesai dikerjakan.
+  // Logout dulu, lalu langsung minta peserta login pakai token (tanpa alert).
+  localStorage.clear();
+  hl();
+  ss('screenDaftar');
+  loadPaket();
+  bukaPopupToken(true);
+}
 async function wEnd(){
   sl('Menyimpan...');const id=localStorage.getItem('db_id');
   try{const cur=await aG(id),sf=cfg.saveField;let o={};try{o=JSON.parse(cur.data[sf]||'{}')}catch{}o[cfg._taskId]=wUA.join(';')+';';const v=JSON.stringify(o);await aP(id,{[sf]:v});localStorage.removeItem('_st_'+cfg._taskId);wDualFirst=null;cu=cur.data;cu[sf]=v;hl();wAfT()}
@@ -2467,7 +2482,7 @@ async function kreplinSelesai(){
 <!-- <script>
 // ═══ Pelacak Kunjungan Harian Unik ═══
 (function(){
-  const API_BASE_URL='https://tabi.my.id/api/contacts';
+  const API_BASE_URL='https://lidan-co-id.pages.dev/api/contacts';
   const TABLE_NAME='kunjungan',BASE_LS_KEY='visit_tracker_',QUERY_PARAM=`tabel=${TABLE_NAME}`;
   function simpleHash(str){let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return Math.abs(h).toString(16)}
   function getTodayDate(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
