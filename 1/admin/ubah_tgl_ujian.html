@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viewer — nilai1_json</title>
+<style>
+:root {
+    --primary: #667eea;
+    --purple: #764ba2;
+    --success: #28a745;
+    --danger: #dc3545;
+    --bg: #f0f2ff;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+    min-height: 100vh;
+}
+.topnav {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+.topnav-brand { font-size: 15px; font-weight: 700; color: #fff; }
+.srv-chip {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.srv-chip.active { background: #fff; color: var(--primary); }
+.main { padding: 20px; max-width: 1300px; margin: 0 auto; }
+.card {
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    padding: 20px;
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--bg);
+}
+.card-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.controls-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+.ctrl-input {
+    padding: 8px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+    background: #fff;
+    color: var(--text);
+}
+.ctrl-input:focus { border-color: var(--primary); }
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--purple); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { opacity: .85; }
+.btn-outline { background: #fff; color: var(--text); border: 2px solid var(--border); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.info-pill {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 5px 12px;
+    border-radius: 99px;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    position: sticky;
+    top: 0;
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:hover td { background: #fafbff; }
+.col-id { width: 60px; color: var(--muted); font-weight: 700; }
+.col-x01 { width: 140px; font-weight: 600; }
+.col-x02 {
+    max-width: 360px;
+    font-family: 'Courier New', monospace;
+    font-size: 11.5px;
+    color: var(--muted);
+    word-break: break-all;
+    cursor: pointer;
+}
+.col-x02.expanded { white-space: pre-wrap; max-width: none; color: var(--text); }
+.col-x05 { max-width: 160px; word-break: break-word; }
+.col-aksi { width: 230px; }
+.aksi-row { display: flex; gap: 6px; align-items: center; }
+.date-input {
+    padding: 6px 10px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    width: 130px;
+}
+.date-input:focus { border-color: var(--primary); outline: none; }
+.status-tag { font-size: 11px; font-weight: 700; margin-left: 4px; white-space: nowrap; }
+.status-ok { color: var(--success); }
+.status-err { color: var(--danger); }
+.status-saving { color: var(--muted); }
+.col-chk { width: 36px; text-align: center; }
+.col-chk input, th.col-chk input { width: 16px; height: 16px; cursor: pointer; }
+.bulk-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    background: #eef2ff;
+    border: 2px dashed var(--primary);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    position: sticky;
+    top: 64px;
+    z-index: 60;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+.bulk-bar.hidden { display: none; }
+.bulk-count { font-size: 12.5px; font-weight: 700; color: var(--primary); }
+tr.row-selected td { background: #f5f7ff; }
+.loading-block { text-align: center; padding: 60px 0; color: var(--muted); font-size: 14px; }
+.empty-block { text-align: center; padding: 60px 0; color: var(--muted); font-size: 14px; }
+.spinner {
+    width: 30px; height: 30px; border: 3px solid var(--border);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+    <div class="topnav-brand">📋 Viewer — nilai1_json</div>
+    <div id="srvChips" style="display:flex;gap:6px;"></div>
+</div>
+
+<div class="main">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">🗂 Data Tabel</div>
+            <span class="info-pill" id="recordCount">0 data</span>
+        </div>
+
+        <div class="controls-bar">
+            <input type="text" class="ctrl-input" id="tableInput" value="nilai1_json" style="width:160px" placeholder="Nama tabel">
+            <input type="text" class="ctrl-input" id="searchInput" placeholder="🔎 Cari id / x_01 / x_05..." style="width:240px">
+            <button class="btn btn-primary" onclick="loadTable()">🔄 Refresh</button>
+            <span class="info-pill" id="lastUpdate"></span>
+        </div>
+
+        <div class="bulk-bar hidden" id="bulkBar">
+            <span class="bulk-count" id="bulkCount">0 dipilih</span>
+            <input type="date" class="ctrl-input date-input" id="bulkDateInput" style="width:140px">
+            <button class="btn btn-success" onclick="terapkanBulkTglTes()">💾 Terapkan ke yang dipilih</button>
+            <button class="btn btn-outline" onclick="clearSelection()">✖ Batal pilih</button>
+            <span class="status-tag" id="bulkStatus"></span>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <div id="container"><div class="loading-block"><div class="spinner"></div>Memuat data...</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   SERVER LIST — sama seperti dashboard utama
+══════════════════════════════════════════════════════════════════ */
+const SERVERS = [
+    { label: 'Lidan',     domain: 'lidan-co-id.pages.dev' },
+    { label: 'Tabi',      domain: 'tabi.my.id'             },
+    { label: 'Mobeli',    domain: 'mobeli.my.id'           },
+    { label: 'TalentMap', domain: 'talentmap.my.id'        },
+];
+let activeSrvIdx = 0;
+
+const API_PATH_BASE   = '/api/contacts_filter_dinamis7';
+const API_PATH_INSERT = '/api/contacts_filter_dinamis6';
+function getApiBase()   { return `https://${SERVERS[activeSrvIdx].domain}${API_PATH_BASE}`; }
+function getApiInsert() { return `https://${SERVERS[activeSrvIdx].domain}${API_PATH_INSERT}`; }
+Object.defineProperty(window, 'API_BASE',   { get: getApiBase });
+Object.defineProperty(window, 'API_INSERT', { get: getApiInsert });
+
+const AUTH_KEY = 'admin';
+
+function renderSrvChips() {
+    document.getElementById('srvChips').innerHTML = SERVERS.map((s, i) => `
+        <button class="srv-chip${i === activeSrvIdx ? ' active' : ''}" onclick="switchServer(${i})">
+            ${i === activeSrvIdx ? '✓ ' : ''}${s.label}
+        </button>`).join('');
+}
+function switchServer(idx) {
+    if (idx === activeSrvIdx) return;
+    activeSrvIdx = idx;
+    renderSrvChips();
+    loadTable();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════════════════ */
+let rawData = []; // cache mentah dari server
+let selectedIds = new Set(); // id_x yang dicentang
+
+function getX02Obj(x02str) {
+    try { return JSON.parse(x02str || '{}'); } catch(e) { return {}; }
+}
+function getTglTes(x02str) {
+    return getX02Obj(x02str).tgl_tes || '';
+}
+
+async function fetchTable() {
+    const tbl = document.getElementById('tableInput').value.trim() || 'nilai1_json';
+    const res = await fetch(`${API_BASE}?table=${encodeURIComponent(tbl)}`, {
+        headers: { 'X-Custom-Auth': AUTH_KEY }
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || 'Gagal mengambil data');
+    return json.data || [];
+}
+
+async function loadTable() {
+    document.getElementById('container').innerHTML =
+        '<div class="loading-block"><div class="spinner"></div>Memuat data...</div>';
+    try {
+        rawData = await fetchTable();
+        document.getElementById('lastUpdate').textContent = '🕐 ' + new Date().toLocaleTimeString('id-ID');
+        renderTable();
+    } catch (e) {
+        document.getElementById('container').innerHTML =
+            `<div class="empty-block">⚠ ${e.message}</div>`;
+    }
+}
+
+function renderTable() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    let data = rawData;
+    if (q) {
+        data = data.filter(r =>
+            String(r.id_x || '').toLowerCase().includes(q) ||
+            String(r.x_01 || '').toLowerCase().includes(q) ||
+            String(r.x_05 || '').toLowerCase().includes(q)
+        );
+    }
+
+    document.getElementById('recordCount').textContent = `${data.length} dari ${rawData.length} data`;
+
+    if (!data.length) {
+        document.getElementById('container').innerHTML = '<div class="empty-block">Tidak ada data.</div>';
+        return;
+    }
+
+    const rows = data.map(row => {
+        const idX  = String(row.id_x || '');
+        const tgl  = getTglTes(row.x_02);
+        const checked = selectedIds.has(idX);
+        const x02Display = (row.x_02 || '').length > 90
+            ? (row.x_02 || '').slice(0, 90) + '…'
+            : (row.x_02 || '');
+        return `
+        <tr data-id="${idX}" class="${checked ? 'row-selected' : ''}">
+            <td class="col-chk"><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSelect('${idX}', this.checked)"></td>
+            <td class="col-id">${idX}</td>
+            <td class="col-x01">${escapeHtml(row.x_01 || '')}</td>
+            <td class="col-x02" title="Klik untuk lihat lengkap" onclick="this.classList.toggle('expanded'); this.textContent = this.classList.contains('expanded') ? (rawData.find(r=>String(r.id_x)==='${idX}')||{}).x_02 || '' : '${escapeHtml(x02Display).replace(/'/g,"\\'")}'">${escapeHtml(x02Display)}</td>
+            <td class="col-x05">${escapeHtml(row.x_05 || '')}</td>
+            <td class="col-aksi">
+                <div class="aksi-row">
+                    <input type="date" class="date-input" id="tgl-${idX}" value="${tgl}">
+                    <button class="btn btn-success" onclick="simpanTglTes('${idX}')">💾 Simpan</button>
+                </div>
+                <div id="status-${idX}" class="status-tag"></div>
+            </td>
+        </tr>`;
+    }).join('');
+
+    const allVisibleChecked = data.length > 0 && data.every(r => selectedIds.has(String(r.id_x || '')));
+
+    document.getElementById('container').innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-chk"><input type="checkbox" ${allVisibleChecked ? 'checked' : ''} onchange="toggleSelectAll(this.checked)"></th>
+                    <th>ID</th>
+                    <th>X_01</th>
+                    <th>X_02</th>
+                    <th>X_05</th>
+                    <th>Aksi — Tgl Tes</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+
+    updateBulkBar();
+}
+
+function toggleSelect(idX, checked) {
+    if (checked) selectedIds.add(idX); else selectedIds.delete(idX);
+    const tr = document.querySelector(`tr[data-id="${idX}"]`);
+    if (tr) tr.classList.toggle('row-selected', checked);
+    updateBulkBar();
+}
+
+function toggleSelectAll(checked) {
+    // hanya pengaruhi baris yang sedang tampil (hasil filter/search)
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    let data = rawData;
+    if (q) {
+        data = data.filter(r =>
+            String(r.id_x || '').toLowerCase().includes(q) ||
+            String(r.x_01 || '').toLowerCase().includes(q) ||
+            String(r.x_05 || '').toLowerCase().includes(q)
+        );
+    }
+    data.forEach(r => {
+        const idX = String(r.id_x || '');
+        if (checked) selectedIds.add(idX); else selectedIds.delete(idX);
+    });
+    renderTable();
+}
+
+function clearSelection() {
+    selectedIds.clear();
+    renderTable();
+}
+
+function updateBulkBar() {
+    const bar = document.getElementById('bulkBar');
+    const count = selectedIds.size;
+    document.getElementById('bulkCount').textContent = `${count} dipilih`;
+    bar.classList.toggle('hidden', count === 0);
+}
+
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SIMPAN TGL_TES → update key tgl_tes di dalam x_02 (JSON), kirim PUT
+══════════════════════════════════════════════════════════════════ */
+async function simpanTglTes(idX) {
+    const tbl       = document.getElementById('tableInput').value.trim() || 'nilai1_json';
+    const newTgl    = document.getElementById(`tgl-${idX}`).value;
+    const statusEl  = document.getElementById(`status-${idX}`);
+    const row       = rawData.find(r => String(r.id_x) === String(idX));
+    if (!row) return;
+
+    if (!newTgl) { statusEl.textContent = '⚠ Tanggal kosong'; statusEl.className = 'status-tag status-err'; return; }
+
+    const x02Obj = getX02Obj(row.x_02);
+    x02Obj.tgl_tes = newTgl;
+    const newX02 = JSON.stringify(x02Obj);
+
+    statusEl.textContent = '⏳ Menyimpan...';
+    statusEl.className = 'status-tag status-saving';
+
+    try {
+        const res = await fetch(`${API_INSERT}?table=${encodeURIComponent(tbl)}&id_x=${encodeURIComponent(idX)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': AUTH_KEY },
+            body: JSON.stringify({ x_02: newX02 })
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || json.success === false) throw new Error(json.error || ('HTTP ' + res.status));
+
+        // update cache lokal supaya kolom X_02 ikut ter-refresh
+        row.x_02 = newX02;
+        statusEl.textContent = '✅ Tersimpan';
+        statusEl.className = 'status-tag status-ok';
+        renderTable();
+    } catch (e) {
+        statusEl.textContent = '⚠ Gagal: ' + e.message;
+        statusEl.className = 'status-tag status-err';
+    }
+}
+
+async function terapkanBulkTglTes() {
+    const tbl      = document.getElementById('tableInput').value.trim() || 'nilai1_json';
+    const newTgl   = document.getElementById('bulkDateInput').value;
+    const statusEl = document.getElementById('bulkStatus');
+    const ids      = Array.from(selectedIds);
+
+    if (!newTgl) { statusEl.textContent = '⚠ Pilih tanggal dulu'; statusEl.className = 'status-tag status-err'; return; }
+    if (!ids.length) { statusEl.textContent = '⚠ Belum ada yang dipilih'; statusEl.className = 'status-tag status-err'; return; }
+
+    let ok = 0, fail = 0;
+    for (let i = 0; i < ids.length; i++) {
+        const idX = ids[i];
+        statusEl.textContent = `⏳ Memproses ${i + 1}/${ids.length}...`;
+        statusEl.className = 'status-tag status-saving';
+
+        const row = rawData.find(r => String(r.id_x) === String(idX));
+        if (!row) { fail++; continue; }
+
+        const x02Obj = getX02Obj(row.x_02);
+        x02Obj.tgl_tes = newTgl;
+        const newX02 = JSON.stringify(x02Obj);
+
+        try {
+            const res = await fetch(`${API_INSERT}?table=${encodeURIComponent(tbl)}&id_x=${encodeURIComponent(idX)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': AUTH_KEY },
+                body: JSON.stringify({ x_02: newX02 })
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok || json.success === false) throw new Error(json.error || ('HTTP ' + res.status));
+            row.x_02 = newX02;
+            ok++;
+        } catch (e) {
+            fail++;
+        }
+    }
+
+    statusEl.textContent = fail === 0
+        ? `✅ ${ok} data berhasil diupdate`
+        : `⚠ ${ok} berhasil, ${fail} gagal`;
+    statusEl.className = 'status-tag ' + (fail === 0 ? 'status-ok' : 'status-err');
+
+    selectedIds.clear();
+    renderTable();
+}
+
+document.getElementById('searchInput').addEventListener('input', renderTable);
+
+renderSrvChips();
+loadTable();
+</script>
+</body>
+</html>
