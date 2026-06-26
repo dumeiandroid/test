@@ -347,6 +347,11 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
 
     <div id="loginErr" style="display:none;background:#fef2f2;border:1.5px solid #fecaca;color:#dc2626;border-radius:8px;padding:9px 12px;font-size:.83em;font-weight:600;margin-bottom:14px;"></div>
 
+    <label style="display:flex;align-items:center;gap:7px;text-align:left;margin-bottom:16px;cursor:pointer;font-size:.82em;color:#475569;font-weight:600;">
+      <input id="loginRemember" type="checkbox" style="width:16px;height:16px;cursor:pointer;accent-color:#667eea;">
+      Ingat saya (tidak perlu login lagi)
+    </label>
+
     <button onclick="doLogin()" id="loginBtn"
       style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:.95em;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s;">
       Masuk
@@ -394,6 +399,7 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
         style="padding:8px 12px;border:2px solid var(--border);border-radius:10px;font-size:14px;outline:none;font-family:inherit;"
         onchange="onDateChange(this.value)">
       <button class="btn btn-outline btn-sm" onclick="setToday()" id="btnHariIni">Hari Ini</button>
+      <button class="btn btn-outline btn-sm" onclick="setAllDates()" id="btnAll">All</button>
       <!-- hidden tabel input masih ada untuk fungsi loadTable() -->
       <input type="text" id="tableInput" value="nilai1_json" style="display:none">
     </div>
@@ -834,6 +840,8 @@ function hasKreplin(x06Raw) {
 // ============================================================
 // RENDER TABEL
 // ============================================================
+let showAllDates = false;
+
 function buildRows(data) {
     const dateVal = document.getElementById('dateInput').value || todayString();
     const minId   = getMinId();
@@ -843,7 +851,7 @@ function buildRows(data) {
     return data
         .filter(row => {
             const id = parseInt(row.id_x) || 0;
-            return getDateFromX02(row.x_02) === dateVal
+            return (showAllDates || getDateFromX02(row.x_02) === dateVal)
                 && id >= minId
                 && hasKreplin(row.x_06 || '');
         })
@@ -935,11 +943,15 @@ async function update() {
         } else {
             if (rows.length === 0) {
                 const dateVal = document.getElementById('dateInput').value || todayString();
-                document.getElementById('todayContainer').innerHTML = `
-                    <div class="empty-msg">
+                document.getElementById('todayContainer').innerHTML = showAllDates
+                    ? `<div class="empty-msg">
+                        <div class="em-icon">📭</div>
+                        <p>Tidak ada peserta sama sekali</p>
+                      </div>`
+                    : `<div class="empty-msg">
                         <div class="em-icon">📭</div>
                         <p>Tidak ada peserta pada <strong>${dateVal}</strong></p>
-                    </div>`;
+                      </div>`;
             } else {
                 initTable(rows);
             }
@@ -1009,8 +1021,16 @@ async function doLogin() {
             btn.textContent = 'Masuk'; btn.disabled = false; return;
         }
 
-        // Simpan sesi ke sessionStorage (hilang saat tab ditutup)
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ user, ts: Date.now() }));
+        // Simpan sesi — localStorage jika "Ingat saya" dicentang (persist), sessionStorage jika tidak (hilang saat tab ditutup)
+        const remember = document.getElementById('loginRemember').checked;
+        const sessionData = JSON.stringify({ user, ts: Date.now() });
+        if (remember) {
+            localStorage.setItem(SESSION_KEY, sessionData);
+            sessionStorage.removeItem(SESSION_KEY);
+        } else {
+            sessionStorage.setItem(SESSION_KEY, sessionData);
+            localStorage.removeItem(SESSION_KEY);
+        }
         document.getElementById('loginOverlay').style.display = 'none';
         btn.textContent = 'Masuk'; btn.disabled = false;
 
@@ -1026,11 +1046,12 @@ async function doLogin() {
 function doLogout() {
     if (!confirm('Keluar dari sesi ini?')) return;
     sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_KEY);
     location.reload();
 }
 
 function checkSession() {
-    const raw = sessionStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
     if (!raw) return false;
     try { return !!JSON.parse(raw).user; } catch(e) { return false; }
 }
@@ -1046,6 +1067,7 @@ function loadSavedDate() {
 }
 
 function onDateChange(val) {
+    showAllDates = false;
     localStorage.setItem(LS_DATE_KEY, val);
     updateDateBadge(val);
     lastHash = null;
@@ -1056,14 +1078,31 @@ function onDateChange(val) {
 }
 
 function setToday() {
+    showAllDates = false;
     const today = todayString();
     document.getElementById('dateInput').value = today;
     onDateChange(today);
 }
 
+function setAllDates() {
+    showAllDates = true;
+    updateDateBadge(null);
+    lastHash = null;
+    if (testerTable) { testerTable.destroy(); testerTable = null; }
+    document.getElementById('todayContainer').innerHTML =
+        '<div class="loading-block"><div class="spinner"></div><p>Memuat...</p></div>';
+    update();
+}
+
 function updateDateBadge(val) {
     const badge = document.getElementById('todayBadgeLabel');
     if (!badge) return;
+    if (showAllDates) {
+        badge.textContent = 'Semua Data';
+        badge.style.background = '#dcfce7';
+        badge.style.color      = '#16a34a';
+        return;
+    }
     const today = todayString();
     if (val === today) {
         badge.textContent = 'Hari Ini';
