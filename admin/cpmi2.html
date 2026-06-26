@@ -844,7 +844,7 @@ let showAllDates = false;
 
 function buildRows(data) {
     const dateVal = document.getElementById('dateInput').value || todayString();
-    const minId   = getMinId();
+    const minId   = showAllDates ? 1 : getMinId();
     // Reset store tiap build agar index tetap sinkron
     _biodataStore = [];
     _progresStore = [];
