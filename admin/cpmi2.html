@@ -832,11 +832,6 @@ function getMinId() {
     return SERVER_MIN_ID[activeSrvIdx] ?? 0;
 }
 
-function hasKreplin(x06Raw) {
-    if (!x06Raw || x06Raw.trim() === '') return false;
-    try { return !!JSON.parse(x06Raw).kreplin; } catch(e) { return false; }
-}
-
 // ============================================================
 // RENDER TABEL
 // ============================================================
@@ -852,8 +847,7 @@ function buildRows(data) {
         .filter(row => {
             const id = parseInt(row.id_x) || 0;
             return (showAllDates || getDateFromX02(row.x_02) === dateVal)
-                && id >= minId
-                && hasKreplin(row.x_06 || '');
+                && id >= minId;
         })
         .map(row => ({
             id_x:   String(row.id_x || ''),
