@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create New Token — Psikotest</title>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+    --primary: #667eea;
+    --primary-dark: #5a67d8;
+    --purple: #764ba2;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --bg: #f0f2ff;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+.main { max-width: 1100px; margin: 0 auto; }
+
+.topbar {
+    color: white; text-align: center; margin-bottom: 22px;
+}
+.topbar h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.topbar p { font-size: 13px; opacity: .85; }
+
+.card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+}
+.card-title {
+    font-size: 16px; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 2px solid var(--bg);
+}
+.step-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--purple));
+    color: white; font-size: 12px; font-weight: 800; flex-shrink: 0;
+}
+
+/* ── FORM ── */
+.form-group { margin-bottom: 16px; }
+.form-group label {
+    display: block; font-size: 12px; font-weight: 700; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.form-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.form-row .form-group { flex: 1; min-width: 180px; }
+.ctrl-input, select.ctrl-input {
+    width: 100%; padding: 11px 14px; border: 2px solid var(--border);
+    border-radius: 10px; font-size: 14px; outline: none;
+    transition: border-color 0.2s; background: white; color: var(--text);
+}
+.ctrl-input:focus { border-color: var(--primary); }
+.hint { font-size: 11.5px; color: var(--muted); margin-top: 5px; line-height: 1.5; }
+
+/* ── DROPZONE ── */
+.dropzone {
+    border: 2.5px dashed var(--border);
+    border-radius: 14px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafbff;
+}
+.dropzone:hover, .dropzone.dragover {
+    border-color: var(--primary); background: #eff3ff;
+}
+.dropzone .dz-icon { font-size: 38px; margin-bottom: 10px; }
+.dropzone .dz-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.dropzone .dz-sub { font-size: 12px; color: var(--muted); }
+.dropzone input[type=file] { display: none; }
+.file-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #eef2ff; border: 1.5px solid #c7d2fe; border-radius: 10px;
+    padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--primary-dark);
+    margin-top: 12px;
+}
+.file-chip button {
+    background: none; border: none; color: #94a3b8; cursor: pointer;
+    font-size: 14px; line-height: 1; padding: 0 0 0 4px;
+}
+.file-chip button:hover { color: var(--danger); }
+
+/* ── BUTTONS ── */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 11px 22px; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn-primary { background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; box-shadow: 0 3px 10px rgba(102,126,234,.3); }
+.btn-primary:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
+.btn-success { background: linear-gradient(135deg, #28a745, #20c997); color: white; box-shadow: 0 3px 10px rgba(40,167,69,.25); }
+.btn-success:hover:not(:disabled) { opacity: 0.92; }
+.btn-outline { background: white; color: var(--muted); border: 2px solid var(--border); }
+.btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.btn-block { width: 100%; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+
+/* ── STATS ── */
+.stats-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px; margin: 16px 0;
+}
+.stat-box { background: var(--bg); border-radius: 12px; padding: 14px 16px; text-align: center; }
+.stat-num { font-size: 26px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-box.warn .stat-num { color: #d97706; }
+.stat-box.danger .stat-num { color: var(--danger); }
+.stat-box.ok .stat-num { color: var(--success); }
+
+/* ── TABLE PREVIEW ── */
+.table-wrap { overflow-x: auto; border: 1.5px solid var(--border); border-radius: 12px; max-height: 460px; overflow-y: auto; }
+table.preview-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.preview-tbl thead th {
+    background: linear-gradient(135deg, var(--primary), var(--purple));
+    color: white; padding: 10px 12px; font-weight: 700; text-align: left;
+    position: sticky; top: 0; white-space: nowrap;
+}
+table.preview-tbl tbody td { padding: 8px 12px; border-bottom: 1px solid #eef0f6; vertical-align: middle; }
+table.preview-tbl tbody tr:nth-child(even) { background: #fafbff; }
+table.preview-tbl tbody tr:hover { background: #f5f7ff; }
+.token-cell { font-family: 'Courier New', monospace; font-weight: 700; color: var(--primary-dark); }
+.row-status { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 99px; white-space: nowrap; }
+.status-pending { background: #f1f5f9; color: var(--muted); }
+.status-ok { background: #dcfce7; color: #16a34a; }
+.status-dup { background: #fef3c7; color: #b45309; }
+.status-saved { background: #dbeafe; color: #1d4ed8; }
+.status-error { background: #fee2e2; color: #dc2626; }
+.status-skip { background: #f3f4f6; color: #9ca3af; }
+.name-empty { color: var(--danger); font-style: italic; font-size: 12px; }
+
+/* ── LOG ── */
+.log-box {
+    margin-top: 14px; max-height: 200px; overflow-y: auto;
+    background: #f8f9fa; border-radius: 10px; padding: 12px 14px;
+    font-size: 12px; font-family: 'Courier New', monospace; display: none;
+}
+.log-ok { color: #16a34a; margin: 2px 0; }
+.log-err { color: #dc2626; margin: 2px 0; }
+.log-info { color: #6366f1; margin: 2px 0; }
+
+/* ── LOADING ── */
+.loading-inline { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.spinner-sm {
+    border: 3px solid #f3f3f3; border-top: 3px solid var(--primary);
+    border-radius: 50%; width: 16px; height: 16px;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.section-disabled { opacity: 0.5; pointer-events: none; filter: grayscale(0.3); }
+.badge-soft {
+    display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 99px; background: #ede9fe; color: #6d28d9; margin-left: 8px;
+}
+.toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1e293b; color: white; padding: 12px 22px; border-radius: 99px;
+    font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    z-index: 9999; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+@media (max-width: 600px) {
+    body { padding: 12px; }
+    .card { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="main">
+    <div class="topbar">
+        <h1>🔑 Create New Token — dari Daftar Nama</h1>
+        <p>Upload file nama peserta (.txt / .xlsx / .csv) → generate token unik → simpan ke server</p>
+    </div>
+
+    <!-- ══ STEP 1 — KONFIGURASI TABEL ══ -->
+    <div class="card">
+        <div class="card-title"><span class="step-badge">1</span> Konfigurasi Tabel</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Nama Tabel (cek duplikat &amp; simpan token)</label>
+                <input type="text" class="ctrl-input" id="tableInput" value="nilai1_json">
+                <div class="hint">Token akan dicek keunikannya ke tabel ini, dan saat "Simpan ke Server" juga akan diinsert ke tabel ini (kolom <code>x_01</code>).</div>
+            </div>
+            <div class="form-group">
+                <label>Panjang Angka Acak</label>
+                <input type="number" class="ctrl-input" id="digitInput" value="2" min="1" max="4">
+                <div class="hint">Default 2 digit (00–99). Jika nama sama banyak, sistem otomatis menambah digit bila kombinasi habis.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ STEP 2 — UPLOAD FILE ══ -->
+    <div class="card">
+        <div class="card-title"><span class="step-badge">2</span> Upload Daftar Nama</div>
+        <div class="dropzone" id="dropzone">
+            <div class="dz-icon">📄</div>
+            <div class="dz-title">Klik atau seret file ke sini</div>
+            <div class="dz-sub">Format: .txt (1 nama per baris) atau .xlsx / .xls / .csv (nama di kolom A)</div>
+            <input type="file" id="fileInput" accept=".txt,.xlsx,.xls,.csv">
+        </div>
+        <div id="fileChipArea"></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btnProcess" onclick="processFile()" disabled>⚡ Generate Token</button>
+        </div>
+        <div id="uploadLoading" style="display:none;margin-top:12px;" class="loading-inline">
+            <div class="spinner-sm"></div> Membaca file & memeriksa duplikasi ke server...
+        </div>
+    </div>
+
+    <!-- ══ STEP 3 — PREVIEW & HASIL ══ -->
+    <div class="card" id="resultCard" style="display:none;">
+        <div class="card-title">
+            <span class="step-badge">3</span> Hasil Generate
+            <span class="badge-soft" id="resultFileType"></span>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total Nama</div></div>
+            <div class="stat-box ok"><div class="stat-num" id="statGenerated">0</div><div class="stat-label">Token Dibuat</div></div>
+            <div class="stat-box warn"><div class="stat-num" id="statSkipped">0</div><div class="stat-label">Dilewati (Nama Kosong)</div></div>
+            <div class="stat-box" id="statSavedBox"><div class="stat-num" id="statSaved">0</div><div class="stat-label">Tersimpan ke Server</div></div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="preview-tbl">
+                <thead>
+                    <tr><th style="width:46px">#</th><th>Nama Peserta</th><th>Token</th><th style="width:130px">Status</th></tr>
+                </thead>
+                <tbody id="previewBody"></tbody>
+            </table>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-success" id="btnSaveServer" onclick="saveToServer()">💾 Simpan ke Server</button>
+            <button class="btn btn-primary" id="btnDownload" onclick="downloadResult()">⬇️ Download Hasil</button>
+            <button class="btn btn-outline" onclick="resetAll()">↺ Mulai Ulang</button>
+        </div>
+
+        <div class="log-box" id="logBox"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   KONFIGURASI API — disamakan dengan dashboard psikotest
+══════════════════════════════════════════════════════════════════ */
+const API_BASE   = 'https://lidan-co-id.pages.dev/api/contacts_filter_dinamis7';
+const API_INSERT = 'https://lidan-co-id.pages.dev/api/contacts_filter_dinamis6';
+const AUTH_KEY   = 'admin';
+const NUM_CHARS  = '0123456789';
+
+/* ══════════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════════ */
+let currentFile      = null;
+let currentFileType   = null;   // 'txt' | 'excel'
+let originalWorkbook  = null;   // dipakai utk excel agar bisa download dgn kolom asli
+let originalSheetName = null;
+let rows = [];   // [{ idx, nama, token, status, statusLabel }]
+let existingTokensCache = new Set();   // token yg sudah ada di server (hasil fetch sekali)
+
+/* ══════════════════════════════════════════════════════════════════
+   UTIL
+══════════════════════════════════════════════════════════════════ */
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function randDigits(len) {
+    let r = '';
+    for (let i = 0; i < len; i++) r += NUM_CHARS.charAt(Math.floor(Math.random() * NUM_CHARS.length));
+    return r;
+}
+
+// Ambil "nama depan" dari nama lengkap: kata pertama, lowercase, buang karakter non-huruf
+function extractFirstNameSlug(fullName) {
+    const trimmed = String(fullName || '').trim();
+    if (!trimmed) return '';
+    const firstWord = trimmed.split(/\s+/)[0];
+    const slug = firstWord.toLowerCase().replace(/[^a-z]/g, '');
+    return slug;
+}
+
+function addLog(type, msg) {
+    const log = document.getElementById('logBox');
+    log.style.display = 'block';
+    const d = document.createElement('div');
+    d.className = 'log-' + type;
+    d.textContent = msg;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DROPZONE / FILE INPUT
+══════════════════════════════════════════════════════════════════ */
+const dropzone  = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFileSelected(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => {
+    if (e.target.files.length) handleFileSelected(e.target.files[0]);
+});
+
+function handleFileSelected(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['txt', 'xlsx', 'xls', 'csv'].includes(ext)) {
+        alert('Format file tidak didukung. Gunakan .txt, .xlsx, .xls, atau .csv');
+        return;
+    }
+    currentFile     = file;
+    currentFileType = (ext === 'txt') ? 'txt' : 'excel';
+
+    const chipArea = document.getElementById('fileChipArea');
+    chipArea.innerHTML = '';
+    const chip = document.createElement('div');
+    chip.className = 'file-chip';
+    chip.innerHTML = `📎 ${escHtml(file.name)} <button onclick="clearFile()" title="Hapus">✕</button>`;
+    chipArea.appendChild(chip);
+
+    document.getElementById('btnProcess').disabled = false;
+}
+
+function clearFile() {
+    currentFile = null;
+    currentFileType = null;
+    fileInput.value = '';
+    document.getElementById('fileChipArea').innerHTML = '';
+    document.getElementById('btnProcess').disabled = true;
+}
+
+function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   BACA FILE → daftar nama mentah
+══════════════════════════════════════════════════════════════════ */
+function readTxtFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const lines = String(reader.result)
+                .split(/\r?\n/)
+                .map(l => l.trim())
+                .filter(l => l.length > 0);
+            resolve(lines);
+        };
+        reader.onerror = () => reject(new Error('Gagal membaca file txt.'));
+        reader.readAsText(file, 'UTF-8');
+    });
+}
+
+function readExcelFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const data = new Uint8Array(reader.result);
+                const wb = XLSX.read(data, { type: 'array' });
+                const sheetName = wb.SheetNames[0];
+                const sheet = wb.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                originalWorkbook  = wb;
+                originalSheetName = sheetName;
+                // Ambil kolom A (index 0) dari setiap baris, lewati baris yang benar2 kosong semua
+                const names = [];
+                for (const r of json) {
+                    if (!r || r.length === 0) continue;
+                    const isRowEmpty = r.every(cell => String(cell).trim() === '');
+                    if (isRowEmpty) continue;
+                    names.push(String(r[0] != null ? r[0] : '').trim());
+                }
+                resolve(names);
+            } catch (e) {
+                reject(e);
+            }
+        };
+        reader.onerror = () => reject(new Error('Gagal membaca file excel.'));
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CEK TOKEN KE SERVER
+══════════════════════════════════════════════════════════════════ */
+async function tokenExistsOnServer(token, tbl) {
+    try {
+        const res  = await fetch(`${API_INSERT}?table=${tbl}&x_01_eq=${encodeURIComponent(token)}`, { headers: { 'X-Custom-Auth': AUTH_KEY } });
+        const data = await res.json();
+        return data.success && data.count > 0;
+    } catch {
+        return false; // jika gagal cek, jangan blokir proses — akan ketahuan saat insert
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   GENERATE TOKEN UNIK (cek terhadap server + token yg sudah dipakai di batch ini)
+══════════════════════════════════════════════════════════════════ */
+async function generateUniqueTokenFor(namaSlug, tbl, digitLen, usedInBatch) {
+    if (!namaSlug) return null; // nama kosong -> tidak generate
+
+    let attemptDigitLen = digitLen;
+    const maxAttemptsPerLen = 25;
+
+    for (let lenTry = 0; lenTry < 3; lenTry++) { // jika kombinasi di satu panjang digit habis, naikkan panjangnya
+        for (let i = 0; i < maxAttemptsPerLen; i++) {
+            const candidate = namaSlug + randDigits(attemptDigitLen);
+            if (usedInBatch.has(candidate)) continue;
+            if (existingTokensCache.has(candidate)) continue;
+            // cek live ke server juga (in case cache belum lengkap / data berubah)
+            const existsServer = await tokenExistsOnServer(candidate, tbl);
+            if (existsServer) {
+                existingTokensCache.add(candidate);
+                continue;
+            }
+            usedInBatch.add(candidate);
+            return candidate;
+        }
+        attemptDigitLen += 1; // perpanjang digit jika 25x percobaan gagal semua
+    }
+    return null; // gagal total (sangat tidak mungkin, tapi sebagai pengaman)
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PROSES UTAMA: file -> generate token
+══════════════════════════════════════════════════════════════════ */
+async function processFile() {
+    if (!currentFile) { alert('Pilih file terlebih dahulu.'); return; }
+    const tbl      = document.getElementById('tableInput').value.trim() || 'nilai1_json';
+    const digitLen = Math.max(1, Math.min(4, parseInt(document.getElementById('digitInput').value) || 2));
+
+    document.getElementById('uploadLoading').style.display = 'flex';
+    document.getElementById('btnProcess').disabled = true;
+
+    try {
+        let names = [];
+        if (currentFileType === 'txt') {
+            names = await readTxtFile(currentFile);
+        } else {
+            names = await readExcelFile(currentFile);
+        }
+
+        if (names.length === 0) {
+            alert('Tidak ada nama yang terbaca dari file ini.');
+            document.getElementById('uploadLoading').style.display = 'none';
+            document.getElementById('btnProcess').disabled = false;
+            return;
+        }
+
+        rows = names.map((nama, i) => ({ idx: i + 1, nama, token: null, status: 'pending' }));
+
+        const usedInBatch = new Set();
+        existingTokensCache = new Set();
+
+        let generated = 0, skipped = 0;
+        for (const row of rows) {
+            const slug = extractFirstNameSlug(row.nama);
+            if (!slug) {
+                row.status = 'skip';
+                row.token  = null;
+                skipped++;
+                continue;
+            }
+            const token = await generateUniqueTokenFor(slug, tbl, digitLen, usedInBatch);
+            if (token) {
+                row.token  = token;
+                row.status = 'ok';
+                generated++;
+            } else {
+                row.status = 'error';
+                row.token  = null;
+            }
+        }
+
+        renderPreview();
+        document.getElementById('resultCard').style.display = 'block';
+        document.getElementById('resultFileType').textContent = currentFileType === 'txt' ? '📄 TXT' : '📊 Excel/CSV';
+        document.getElementById('statTotal').textContent = rows.length;
+        document.getElementById('statGenerated').textContent = generated;
+        document.getElementById('statSkipped').textContent = skipped;
+        document.getElementById('statSaved').textContent = '0';
+
+        document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        showToast(`✅ ${generated} token berhasil dibuat${skipped ? `, ${skipped} dilewati` : ''}`);
+    } catch (e) {
+        alert('Gagal memproses file: ' + e.message);
+    } finally {
+        document.getElementById('uploadLoading').style.display = 'none';
+        document.getElementById('btnProcess').disabled = false;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER PREVIEW TABLE
+══════════════════════════════════════════════════════════════════ */
+function statusLabel(status) {
+    switch (status) {
+        case 'ok':     return { cls: 'status-ok',     text: '✓ Siap' };
+        case 'saved':  return { cls: 'status-saved',  text: '💾 Tersimpan' };
+        case 'error':  return { cls: 'status-error',  text: '✗ Gagal' };
+        case 'skip':   return { cls: 'status-skip',   text: '— Dilewati' };
+        case 'dup':    return { cls: 'status-dup',    text: '⚠ Duplikat' };
+        default:       return { cls: 'status-pending', text: 'Menunggu' };
+    }
+}
+
+function renderPreview() {
+    const body = document.getElementById('previewBody');
+    body.innerHTML = '';
+    for (const row of rows) {
+        const tr = document.createElement('tr');
+        const sl = statusLabel(row.status);
+        const namaCell = row.nama
+            ? escHtml(row.nama)
+            : '<span class="name-empty">(nama kosong)</span>';
+        const tokenCell = row.token
+            ? `<span class="token-cell">${escHtml(row.token)}</span>`
+            : '<span style="color:var(--muted)">-</span>';
+        tr.innerHTML = `
+            <td>${row.idx}</td>
+            <td>${namaCell}</td>
+            <td>${tokenCell}</td>
+            <td><span class="row-status ${sl.cls}">${sl.text}</span></td>
+        `;
+        body.appendChild(tr);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SIMPAN KE SERVER (insert ke tabel, kolom x_01)
+══════════════════════════════════════════════════════════════════ */
+async function saveToServer() {
+    const tbl = document.getElementById('tableInput').value.trim() || 'nilai1_json';
+    const toSave = rows.filter(r => r.status === 'ok' && r.token);
+    if (toSave.length === 0) {
+        alert('Tidak ada token yang siap untuk disimpan (semua sudah tersimpan / tidak valid).');
+        return;
+    }
+    if (!confirm(`Simpan ${toSave.length} token baru ke tabel "${tbl}"?`)) return;
+
+    const btn = document.getElementById('btnSaveServer');
+    btn.disabled = true;
+    btn.textContent = '⏳ Menyimpan...';
+    document.getElementById('logBox').innerHTML = '';
+    document.getElementById('logBox').style.display = 'block';
+    addLog('info', `Mulai menyimpan ${toSave.length} token ke tabel "${tbl}"...`);
+
+    let ok = 0, fail = 0;
+    for (let i = 0; i < toSave.length; i++) {
+        const row = toSave[i];
+        try {
+            // cek ulang sesaat sebelum insert, untuk mengurangi race condition
+            const exists = await tokenExistsOnServer(row.token, tbl);
+            if (exists) {
+                row.status = 'dup';
+                fail++;
+                addLog('err', `[${i + 1}/${toSave.length}] ✗ ${row.token} (${row.nama}) — sudah ada di server, dilewati`);
+                continue;
+            }
+            const res = await fetch(`${API_INSERT}?table=${tbl}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': AUTH_KEY },
+                body: JSON.stringify({ x_01: row.token })
+            });
+            const data = await res.json();
+            if (data.success) {
+                row.status = 'saved';
+                ok++;
+                addLog('ok', `[${i + 1}/${toSave.length}] ✓ ${row.token} (${row.nama}) → id_x:${data.id_x}`);
+            } else {
+                row.status = 'error';
+                fail++;
+                addLog('err', `[${i + 1}/${toSave.length}] ✗ ${row.token} (${row.nama}) — ${data.message || 'error'}`);
+            }
+        } catch (e) {
+            row.status = 'error';
+            fail++;
+            addLog('err', `[${i + 1}/${toSave.length}] ✗ ${row.token} (${row.nama}) — ${e.message}`);
+        }
+    }
+    addLog('info', `─── Selesai: ${ok} tersimpan, ${fail} gagal/duplikat ───`);
+
+    renderPreview();
+    const savedTotal = rows.filter(r => r.status === 'saved').length;
+    document.getElementById('statSaved').textContent = savedTotal;
+
+    btn.disabled = false;
+    btn.textContent = '💾 Simpan ke Server';
+    showToast(`💾 ${ok} token tersimpan ke server${fail ? `, ${fail} gagal/duplikat` : ''}`);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DOWNLOAD HASIL (txt -> txt "nama,token" ; excel -> xlsx dgn kolom token di sebelah nama)
+══════════════════════════════════════════════════════════════════ */
+function downloadResult() {
+    if (rows.length === 0) { alert('Belum ada data untuk didownload.'); return; }
+
+    const ts = new Date();
+    const stamp = `${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}`;
+
+    if (currentFileType === 'txt') {
+        const lines = rows.map(r => `${r.nama},${r.token || ''}`);
+        const content = 'nama,token\n' + lines.join('\n');
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        triggerDownload(blob, `hasil_token_${stamp}.txt`);
+    } else {
+        // Bangun ulang sheet: kolom A = nama asli, kolom B = token (disisipkan tepat di sebelah nama)
+        const aoa = [['Nama', 'Token']];
+        for (const r of rows) {
+            aoa.push([r.nama, r.token || '']);
+        }
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Token');
+        XLSX.writeFile(wb, `hasil_token_${stamp}.xlsx`);
+        return;
+    }
+}
+
+function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESET
+══════════════════════════════════════════════════════════════════ */
+function resetAll() {
+    if (!confirm('Mulai ulang? Hasil yang belum didownload akan hilang.')) return;
+    rows = [];
+    currentFile = null;
+    currentFileType = null;
+    originalWorkbook = null;
+    originalSheetName = null;
+    fileInput.value = '';
+    document.getElementById('fileChipArea').innerHTML = '';
+    document.getElementById('btnProcess').disabled = true;
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('logBox').innerHTML = '';
+    document.getElementById('logBox').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
