@@ -1254,34 +1254,9 @@ async function saveToServer() {
             });
             const data = await res.json();
             if (data.success) {
-                const idX = data.id_x;
-                const tokenAwal = row.token;
-                const tokenFinal = tokenAwal + idX; // sambung angka acak dengan id_x
-
-                // Update baris yg baru diinsert agar x_01 jadi token+id_x
-                try {
-                    const resUpd = await fetch(`${API_INSERT}?table=${tbl}&id_x=${idX}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': AUTH_KEY },
-                        body: JSON.stringify({ x_01: tokenFinal })
-                    });
-                    const dataUpd = await resUpd.json();
-                    if (dataUpd.success) {
-                        row.token = tokenFinal;
-                        row.status = 'saved';
-                        ok++;
-                        addLog('ok', `[${i + 1}/${toSave.length}] ✓ ${lbl({ ...row, token: tokenAwal })} → id_x:${idX} → token final: ${tokenFinal}`);
-                    } else {
-                        // insert sukses tapi update gagal -> token tetap versi awal (tanpa id_x)
-                        row.status = 'saved';
-                        ok++;
-                        addLog('err', `[${i + 1}/${toSave.length}] ⚠ ${lbl(row)} → id_x:${idX} — tersimpan, tapi gagal update token final (${dataUpd.message || 'error'})`);
-                    }
-                } catch (eUpd) {
-                    row.status = 'saved';
-                    ok++;
-                    addLog('err', `[${i + 1}/${toSave.length}] ⚠ ${lbl(row)} → id_x:${idX} — tersimpan, tapi gagal update token final (${eUpd.message})`);
-                }
+                row.status = 'saved';
+                ok++;
+                addLog('ok', `[${i + 1}/${toSave.length}] ✓ ${lbl(row)} → id_x:${data.id_x}`);
             } else {
                 row.status = 'error';
                 fail++;
@@ -1305,7 +1280,7 @@ async function saveToServer() {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   DOWNLOAD HASIL (selalu dalam bentuk Excel/.xlsx — kolom Nama & Token)
+   DOWNLOAD HASIL (txt -> txt "nama,token" ; excel -> xlsx dgn kolom token di sebelah nama)
 ══════════════════════════════════════════════════════════════════ */
 function downloadResult() {
     if (rows.length === 0) { alert('Belum ada data untuk didownload.'); return; }
@@ -1313,14 +1288,25 @@ function downloadResult() {
     const ts = new Date();
     const stamp = `${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}`;
 
-    const aoa = [['Nama', 'Token']];
-    for (const r of rows) {
-        aoa.push([r.nama, r.token || '']);
+    const isTxtLike = (inputSource === 'paste') || (currentFileType === 'txt');
+
+    if (isTxtLike) {
+        const lines = rows.map(r => `${r.nama},${r.token || ''}`);
+        const content = 'nama,token\n' + lines.join('\n');
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        triggerDownload(blob, `hasil_token_${stamp}.txt`);
+    } else {
+        // Bangun ulang sheet: kolom A = nama asli, kolom B = token (disisipkan tepat di sebelah nama)
+        const aoa = [['Nama', 'Token']];
+        for (const r of rows) {
+            aoa.push([r.nama, r.token || '']);
+        }
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Token');
+        XLSX.writeFile(wb, `hasil_token_${stamp}.xlsx`);
+        return;
     }
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Token');
-    XLSX.writeFile(wb, `hasil_token_${stamp}.xlsx`);
 }
 
 function triggerDownload(blob, filename) {
