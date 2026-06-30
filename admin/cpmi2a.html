@@ -425,13 +425,7 @@ const SERVERS = [
     { label: '4', domain: 'talentmap.my.id'        },
 ];
 const API_PATH = '/api/contacts_filter_dinamis7';
-const SRV_STORAGE_KEY = 'cpmi2_activeSrvIdx';
-// Restore pilihan server terakhir dari localStorage (kalau valid)
 let activeSrvIdx = 0;
-try {
-    const _saved = parseInt(localStorage.getItem(SRV_STORAGE_KEY));
-    if (!isNaN(_saved) && _saved >= 0 && _saved < SERVERS.length) activeSrvIdx = _saved;
-} catch (e) {}
 
 // Getter dinamis — semua fetch pakai ini
 function getApiBase() { return `https://${SERVERS[activeSrvIdx].domain}${API_PATH}`; }
@@ -474,7 +468,6 @@ function renderSrvChips() {
 function switchSrcServer(idx) {
     if (idx === activeSrvIdx) return;
     activeSrvIdx = idx;
-    try { localStorage.setItem(SRV_STORAGE_KEY, String(idx)); } catch (e) {}
     renderSrvChips();
     // Reset cache & reload data jika sudah login
     lastHash = null;
@@ -832,6 +825,13 @@ async function fetchData() {
     return (json.success && json.data) ? json.data : [];
 }
 
+// ID minimum per server (index 0-based sesuai SERVERS array)
+const SERVER_MIN_ID = [802, 175, 190];
+
+function getMinId() {
+    return SERVER_MIN_ID[activeSrvIdx] ?? 0;
+}
+
 // ============================================================
 // RENDER TABEL
 // ============================================================
@@ -839,11 +839,16 @@ let showAllDates = false;
 
 function buildRows(data) {
     const dateVal = document.getElementById('dateInput').value || todayString();
+    const minId   = showAllDates ? 1 : getMinId();
     // Reset store tiap build agar index tetap sinkron
     _biodataStore = [];
     _progresStore = [];
     return data
-        .filter(row => showAllDates || getDateFromX02(row.x_02) === dateVal)
+        .filter(row => {
+            const id = parseInt(row.id_x) || 0;
+            return (showAllDates || getDateFromX02(row.x_02) === dateVal)
+                && id >= minId;
+        })
         .map(row => ({
             id_x:   String(row.id_x || ''),
             selfie: renderTodaySelfie(row.x_02),

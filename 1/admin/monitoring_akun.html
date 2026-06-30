@@ -1556,6 +1556,12 @@ const SERVERS = [
     { label: 'TalentMap', domain: 'talentmap.my.id'         },
 ];
 let activeSrvIdx = 0;
+const SRV_STORAGE_KEY = 'monitoring_akun_activeSrvIdx';
+// Restore pilihan server terakhir dari localStorage (kalau valid)
+try {
+    const _saved = parseInt(localStorage.getItem(SRV_STORAGE_KEY));
+    if (!isNaN(_saved) && _saved >= 0 && _saved < SERVERS.length) activeSrvIdx = _saved;
+} catch (e) {}
 
 // Path API (tetap, hanya domain yg berubah)
 const API_PATH_BASE   = '/api/contacts_filter_dinamis7';
@@ -1593,12 +1599,14 @@ function renderSrvChips() {
 function switchSrcServer(idx) {
     if (idx === activeSrvIdx) return;
     activeSrvIdx = idx;
+    try { localStorage.setItem(SRV_STORAGE_KEY, String(idx)); } catch (e) {}
     renderSrvChips();
 
     // Reset semua cache & tabel agar data diambil ulang dari server baru
     allLastHash = null;
     allRawCache = {};
     emptyRawCache = {};
+    rawDataAll = [];               // ← shared cache, dipakai juga oleh tab Hari Ini & Token Kosong
     filterPaketData = null;
     filterPaketLoaded = false;
 
@@ -1606,10 +1614,16 @@ function switchSrcServer(idx) {
     const activePage = document.querySelector('.page.active');
     if (activePage) {
         const pageId = activePage.id;
+        // pageToday & pageEmpty bergantung pada rawDataAll (shared cache).
+        // rawDataAll hanya terisi lewat allUpdate(), jadi panggil itu dulu
+        // supaya data benar-benar di-fetch ulang dari server yang baru dipilih.
         if      (pageId === 'pageAll')      { allLoadTable(); }
-        else if (pageId === 'pageToday')    { todayLoadTable(); }
-        else if (pageId === 'pageEmpty')    { emptyLoadTable(); }
+        else if (pageId === 'pageToday')    { todayLoadTable(); allUpdate(); }
+        else if (pageId === 'pageEmpty')    { emptyLoadTable(); allUpdate(); }
         else if (pageId === 'pagePerPaket') { renderPerPaketButtons(); }
+        else                                 { allUpdate(); } // jaga-jaga tab lain yg juga pakai rawDataAll
+    } else {
+        allUpdate();
     }
 }
 

@@ -595,31 +595,8 @@ const ALL_CONFIG=[
   {id:'tkd6',  dataUrl:BASE+'tkd6_a.txt', type:'text_input',        saveField:'x_05'},
   {id:'kreplin',dataUrl:BASE+'kreplin.txt',type:'kreplin',           saveField:'x_06'}
 ];
-// ============================================================
-// PILIH SERVER — cukup ganti angka ini, API_W & API_R otomatis menyesuaikan
-// Jika file ditaruh di folder bernama angka (misal /test/2/index.html),
-// nilai folder itu dipakai otomatis (selama angkanya valid sesuai daftar SERVERS di bawah).
-// Jika bukan folder angka / angka di luar rentang, pakai SERVER_DEFAULT.
-// ============================================================
-const SERVER_DEFAULT = 2;
-const SERVERS = [
-  { label:'1', domain:'lidan-co-id.pages.dev' },
-  { label:'2', domain:'tabi.my.id'            },
-  { label:'3', domain:'mobeli.my.id'          },
-  { label:'4', domain:'talentmap.my.id'       },
-  // Tambahkan server baru di sini, contoh:
-  // { label:'5', domain:'contoh-domain-baru.id' },
-];
-const _folderParts=window.location.pathname.split('/').filter(Boolean);
-const _cand1=_folderParts[_folderParts.length-1]; // elemen terakhir (kasus ada trailing slash: ini foldernya)
-const _cand2=_folderParts[_folderParts.length-2]; // elemen sebelum terakhir (kasus URL berakhir di file, misal index.html)
-const _folderSrv=/^\d+$/.test(_cand1)?parseInt(_cand1):(/^\d+$/.test(_cand2)?parseInt(_cand2):NaN);
-const SERVER = (_folderSrv>=1&&_folderSrv<=SERVERS.length) ? _folderSrv : SERVER_DEFAULT;
-const ACTIVE_DOMAIN = (SERVERS[SERVER-1] || SERVERS[0]).domain;
-const API_W=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis6`;
-const API_R=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
-// Paket alat_tes selalu diambil dari server 1, tidak ikut SERVER aktif
-const API_R_PAKET=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
+const API_W='https://talentmap.my.id/api/contacts_filter_dinamis6';
+const API_R='https://talentmap.my.id/api/contacts_filter_dinamis7';
 const TBL='nilai1_json',TBL_P='alat_tes',TBL_K='admin_kontrol',AUTH='admin',WHO_B='https://cipta.my.id/who2/';
 const R2='https://indahabadi.my.id/api/upload_r2_lidan',CDN='https://assets.indahabadi.my.id/';
 const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -720,7 +697,7 @@ async function genTok(pid){for(let i=0;i<10;i++){const t=pid+'-'+rs(i<8?12:14);i
 
 async function loadPaket(){
   try{
-    const d=await aF(`${API_R_PAKET}?table=${TBL_P}`,{headers:{'X-Custom-Auth':AUTH}});
+    const d=await aF(`${API_R}?table=${TBL_P}`,{headers:{'X-Custom-Auth':AUTH}});
     pList=(d.success&&d.data)||[];
     sPaket=pList.find(p=>(p.x_01||'').trim()===AUTO_PAKET)||null;
     if(!sPaket)console.warn('[loadPaket] Paket tidak ditemukan:',AUTO_PAKET);
@@ -777,8 +754,6 @@ async function loginDenganTokenMain() {
     }
     // ── Cek apakah biodata sudah terisi (field 'nama') ──
     let bioCek = {}; try { bioCek = JSON.parse(cu.x_02 || '{}'); } catch {}
-    // Cek status logout SEGERA setelah login berhasil — tidak peduli biodata sudah diisi atau belum
-    cekTombolLogout(bioCek.logout === true);
     if (!bioCek.nama) {
       // Biodata masih kosong → tampilkan form biodata (fragment yang sudah diinject),
       // token TETAP yang sudah ada (tidak generate token baru, tidak insert baru — nanti di-UPDATE).
@@ -898,7 +873,6 @@ async function kirimSelfie(){
 
     // 2. Inject URL foto ke biodata
     _pendingBio.foto_selfie=fotoUrl;
-    _pendingBio.nama_file=namaFile();
 
     if(_updateExistingId){
       // ── MODE UPDATE: token sudah ada (dari login token), biodata diisi pertama kali ──
@@ -994,7 +968,7 @@ async function loadAC(){
   function expand(list){const r=[];for(const c of list){if(c.type==='ranking'&&c.totalKolom){for(let k=1;k<=c.totalKolom;k++)r.push({type:'config',ref:{...c,id:c.id+'_k'+k,_baseId:c.id,kolom:k,_taskId:c.id+'_k'+k}})}else r.push({type:'config',ref:c})}return r}
   if(!p){AC=ALL_CONFIG;WTL=[];UT=expand(ALL_CONFIG);return}
   try{
-    const d=await aF(`${API_R_PAKET}?table=${TBL_P}&x_01_eq=${encodeURIComponent(p)}`,{headers:{'X-Custom-Auth':AUTH}});
+    const d=await aF(`${API_R}?table=${TBL_P}&x_01_eq=${encodeURIComponent(p)}`,{headers:{'X-Custom-Auth':AUTH}});
     if(!d.success||!d.count){AC=ALL_CONFIG;WTL=[];UT=expand(ALL_CONFIG);return}
     const items=(d.data[0].x_02||'').split('|').map(s=>s.trim()).filter(Boolean);
     AC=[];WTL=[];UT=[];
@@ -1070,24 +1044,7 @@ async function goNext2(){
   doneAll();
 }
 
-function doneAll(){
-  stopGlobalPolling();stopPolling();hl();ss('screenUpgrade');tampilTopBarId();startLogoutPoll();
-  // Catat waktu semua subtes selesai (selesai_semua) ke x_02
-  const _doneId=localStorage.getItem('db_id');
-  if(_doneId){
-    (async()=>{
-      try{
-        const cur3=await aG(_doneId);
-        let bioObj={};try{bioObj=JSON.parse(cur3.data.x_02||'{}')}catch{}
-        bioObj.nama_file=namaFile();
-        bioObj.selesai_semua=tsNow();
-        const newBio=JSON.stringify(bioObj);
-        await aP(_doneId,{x_02:newBio});
-        cu.x_02=newBio;
-      }catch(e){console.warn('[doneAll-log]',e)}
-    })();
-  }
-}
+function doneAll(){stopGlobalPolling();stopPolling();hl();ss('screenUpgrade');tampilTopBarId();startLogoutPoll();}
 
 // ── UPGRADE LAPORAN ──
 let upPaketSel=null,upHargaSel=0;
@@ -1407,25 +1364,6 @@ function mAns(idx){
   if(p!==-1){skip.splice(p,1);const u=ua.indexOf(`${idx+1}SKIPx`);if(u!==-1)ua.splice(u,1)}
 }
 
-// Helper: timestamp "YYYY-MM-DD HH:MM:SS" waktu lokal
-const tsNow=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')};
-// Helper: nama file HTML tanpa path dan ekstensi (misal "index.html" → "index")
-const namaFile=()=>{const p=window.location.pathname.split('/').pop()||'';return p.replace(/\.html?$/i,'')||'index'};
-// Helper: update log_selesai di x_02 tanpa menimpa field lain
-async function catatSelesaiSubtes(id,taskId,ts,extraFields){
-  try{
-    const cur2=await aG(id);
-    let bioObj={};try{bioObj=JSON.parse(cur2.data.x_02||'{}')}catch{}
-    bioObj.nama_file=namaFile();
-    if(!bioObj.log_selesai)bioObj.log_selesai={};
-    bioObj.log_selesai[taskId]=ts;
-    if(extraFields)Object.assign(bioObj,extraFields);
-    const newBio=JSON.stringify(bioObj);
-    await aP(id,{x_02:newBio});
-    cu.x_02=newBio;
-  }catch(e){console.warn('[catatSelesaiSubtes]',e)}
-}
-
 async function endTest(to){
   clearInterval(ti);sl('Menyimpan hasil...');const id=localStorage.getItem('db_id');
   try{
@@ -1440,8 +1378,6 @@ async function endTest(to){
     localStorage.removeItem('_st_'+cfg._taskId);
     localStorage.removeItem('_activeTask');
     cu=cur.data;cu[sf]=upd[sf];if(cfg.logField)cu[cfg.logField]=upd[cfg.logField];
-    // Catat nama_file + waktu selesai subtes ini ke x_02 (tidak menimpa field biodata lain)
-    await catatSelesaiSubtes(id, cfg.id, tsNow());
     hl();afterT();
   }catch(e){alert('Gagal: '+e.message);hl()}
 }
@@ -1927,8 +1863,6 @@ window.onload = async () => {
 
       // ── Cek apakah biodata sudah terisi (field 'nama') ──
       let bioCekR = {}; try { bioCekR = JSON.parse(cu.x_02 || '{}'); } catch {}
-      // Cek status logout SEGERA setelah login berhasil — tidak peduli biodata sudah diisi atau belum
-      cekTombolLogout(bioCekR.logout === true);
       if (!bioCekR.nama) {
         hl();
         _updateExistingId = String(cu.id_x);
@@ -2201,7 +2135,7 @@ async function kreplinSelesai(){
 <!-- <script>
 // ═══ Pelacak Kunjungan Harian Unik ═══
 (function(){
-  const API_BASE_URL='https://lidan-co-id.pages.dev/api/contacts';
+  const API_BASE_URL='https://talentmap.my.id/api/contacts';
   const TABLE_NAME='kunjungan',BASE_LS_KEY='visit_tracker_',QUERY_PARAM=`tabel=${TABLE_NAME}`;
   function simpleHash(str){let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return Math.abs(h).toString(16)}
   function getTodayDate(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}

@@ -596,30 +596,19 @@ const ALL_CONFIG=[
   {id:'kreplin',dataUrl:BASE+'kreplin.txt',type:'kreplin',           saveField:'x_06'}
 ];
 // ============================================================
-// PILIH SERVER — cukup ganti angka ini, API_W & API_R otomatis menyesuaikan
-// Jika file ditaruh di folder bernama angka (misal /test/2/index.html),
-// nilai folder itu dipakai otomatis (selama angkanya valid sesuai daftar SERVERS di bawah).
-// Jika bukan folder angka / angka di luar rentang, pakai SERVER_DEFAULT.
+// PILIH SERVER — cukup ganti angka ini (1 - 4), API_W & API_R otomatis menyesuaikan
+// 1 = lidan-co-id.pages.dev | 2 = tabi.my.id | 3 = mobeli.my.id | 4 = talentmap.my.id
 // ============================================================
-const SERVER_DEFAULT = 2;
+const SERVER = 2;
 const SERVERS = [
   { label:'1', domain:'lidan-co-id.pages.dev' },
   { label:'2', domain:'tabi.my.id'            },
   { label:'3', domain:'mobeli.my.id'          },
   { label:'4', domain:'talentmap.my.id'       },
-  // Tambahkan server baru di sini, contoh:
-  // { label:'5', domain:'contoh-domain-baru.id' },
 ];
-const _folderParts=window.location.pathname.split('/').filter(Boolean);
-const _cand1=_folderParts[_folderParts.length-1]; // elemen terakhir (kasus ada trailing slash: ini foldernya)
-const _cand2=_folderParts[_folderParts.length-2]; // elemen sebelum terakhir (kasus URL berakhir di file, misal index.html)
-const _folderSrv=/^\d+$/.test(_cand1)?parseInt(_cand1):(/^\d+$/.test(_cand2)?parseInt(_cand2):NaN);
-const SERVER = (_folderSrv>=1&&_folderSrv<=SERVERS.length) ? _folderSrv : SERVER_DEFAULT;
 const ACTIVE_DOMAIN = (SERVERS[SERVER-1] || SERVERS[0]).domain;
 const API_W=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis6`;
 const API_R=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
-// Paket alat_tes selalu diambil dari server 1, tidak ikut SERVER aktif
-const API_R_PAKET=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
 const TBL='nilai1_json',TBL_P='alat_tes',TBL_K='admin_kontrol',AUTH='admin',WHO_B='https://cipta.my.id/who2/';
 const R2='https://indahabadi.my.id/api/upload_r2_lidan',CDN='https://assets.indahabadi.my.id/';
 const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -720,7 +709,7 @@ async function genTok(pid){for(let i=0;i<10;i++){const t=pid+'-'+rs(i<8?12:14);i
 
 async function loadPaket(){
   try{
-    const d=await aF(`${API_R_PAKET}?table=${TBL_P}`,{headers:{'X-Custom-Auth':AUTH}});
+    const d=await aF(`${API_R}?table=${TBL_P}`,{headers:{'X-Custom-Auth':AUTH}});
     pList=(d.success&&d.data)||[];
     sPaket=pList.find(p=>(p.x_01||'').trim()===AUTO_PAKET)||null;
     if(!sPaket)console.warn('[loadPaket] Paket tidak ditemukan:',AUTO_PAKET);
@@ -994,7 +983,7 @@ async function loadAC(){
   function expand(list){const r=[];for(const c of list){if(c.type==='ranking'&&c.totalKolom){for(let k=1;k<=c.totalKolom;k++)r.push({type:'config',ref:{...c,id:c.id+'_k'+k,_baseId:c.id,kolom:k,_taskId:c.id+'_k'+k}})}else r.push({type:'config',ref:c})}return r}
   if(!p){AC=ALL_CONFIG;WTL=[];UT=expand(ALL_CONFIG);return}
   try{
-    const d=await aF(`${API_R_PAKET}?table=${TBL_P}&x_01_eq=${encodeURIComponent(p)}`,{headers:{'X-Custom-Auth':AUTH}});
+    const d=await aF(`${API_R}?table=${TBL_P}&x_01_eq=${encodeURIComponent(p)}`,{headers:{'X-Custom-Auth':AUTH}});
     if(!d.success||!d.count){AC=ALL_CONFIG;WTL=[];UT=expand(ALL_CONFIG);return}
     const items=(d.data[0].x_02||'').split('|').map(s=>s.trim()).filter(Boolean);
     AC=[];WTL=[];UT=[];

@@ -416,7 +416,13 @@ const SERVERS = [
     { label: '4', domain: 'talentmap.my.id'        },
 ];
 const API_PATH = '/api/contacts_filter_dinamis7';
+const SRV_STORAGE_KEY = 'cpmi_activeSrvIdx';
+// Restore pilihan server terakhir dari localStorage (kalau valid)
 let activeSrvIdx = 0;
+try {
+    const _saved = parseInt(localStorage.getItem(SRV_STORAGE_KEY));
+    if (!isNaN(_saved) && _saved >= 0 && _saved < SERVERS.length) activeSrvIdx = _saved;
+} catch (e) {}
 
 // Getter dinamis — semua fetch pakai ini
 function getApiBase() { return `https://${SERVERS[activeSrvIdx].domain}${API_PATH}`; }
@@ -459,6 +465,7 @@ function renderSrvChips() {
 function switchSrcServer(idx) {
     if (idx === activeSrvIdx) return;
     activeSrvIdx = idx;
+    try { localStorage.setItem(SRV_STORAGE_KEY, String(idx)); } catch (e) {}
     renderSrvChips();
     // Reset cache & reload data jika sudah login
     lastHash = null;
