@@ -285,23 +285,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════
-     KONFIGURASI FRAGMENT
-     Ganti angka di akhir nama file untuk mengganti
-     varian biodata atau penutup yang digunakan.
-     Semua file diletakkan di: https://lidan.co.id/test/
-     ─────────────────────────────────────────────
-     biodata-1.html  → tanpa radio kesediaan (corporate)
-     biodata-2.html  → dengan radio kesediaan (free/premium)
-     penutup-1.html  → ucapan terima kasih + laporan diproses
-     penutup-2.html  → pilihan paket harga berbayar
-     ═══════════════════════════════════════════ -->
-<script>
-  const FRAGMENT_BASE  = 'https://lidan.co.id/test/';
-  const BIODATA_FILE   = 'biodata-cpmi.html'; // ← ganti angka sesuai kebutuhan
-  const PENUTUP_FILE   = 'penutup-2.html';   // ← ganti angka sesuai kebutuhan
-</script>
-
+<!-- Konfigurasi fragment (FRAGMENT_BASE/BIODATA_FILE/PENUTUP_FILE) sekarang
+     ada di dalam CONFIG, lihat bagian "KONFIGURASI UTAMA" pada script di bawah. -->
 <div id="globalLoader"><div class="spinner"></div><p id="loaderText">Memuat...</p></div>
 
 <!-- ═══ SCREEN: TES DITUTUP ═══ -->
@@ -363,13 +348,28 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   </div>
 </div>
 
-<!-- ═══ SCREEN: FORM BIODATA (diisi dari fetch) ═══ -->
+<!-- ═══ SCREEN: LOGIN / BIODATA ═══ -->
 <div id="screenDaftar" class="screen">
-  <div class="card" style="max-width:520px" id="biodataContainer">
-    <!-- Konten di-inject dari BIODATA_FILE -->
-    <div style="text-align:center;padding:40px 0;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px"></div>Memuat formulir...</div>
+  <div id="tokenLoginBox" class="card" style="max-width:440px;margin-top:32px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:2.6em;margin-bottom:10px;">🔑</div>
+      <div class="page-title" style="font-size:1.3em;">Masuk dengan Token</div>
+      <p class="page-sub" style="margin-bottom:0;">Masukkan token yang telah diberikan oleh tester untuk memulai tes.</p>
+    </div>
+    <div class="form-group">
+      <label for="inputTokenMain">Token Peserta</label>
+      <input id="inputTokenMain" type="text" placeholder="Contoh: ABC123XYZ"
+        autocomplete="off" spellcheck="false"
+        style="font-family:'Courier New',monospace;font-size:1.05em;letter-spacing:.05em;"
+        onkeydown="if(event.key==='Enter')loginDenganTokenMain()">
+    </div>
+    <div id="tokenErrBoxMain" style="display:none;padding:9px 12px;background:#fee2e2;color:#dc2626;border-radius:8px;font-size:.875em;font-weight:600;margin-bottom:12px;"></div>
+    <button id="btnLoginTokenMain" class="btn btn-primary" onclick="loginDenganTokenMain()">
+      Masuk →
+    </button>
   </div>
-
+  <!-- Container biodata: diinject dari fragment (sama seperti file asli), ditampilkan hanya jika biodata token masih kosong -->
+  <div id="biodataContainer" class="card" style="display:none;"></div>
 </div>
 
 <!-- ═══ SCREEN: SELFIE VERIFIKASI ═══ -->
@@ -474,6 +474,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div class="card card-wide">
     <div class="page-title" id="startTitle" style="margin-bottom:20px"></div>
     <div class="instr-section"><div class="instr-heading">📋 Instruksi Pengerjaan</div><p id="startInstructions"></p></div>
+    <div id="krepTrialNoticeStart" style="display:none;background:#fef3c7;border:1px solid #f59e0b;color:#92400e;padding:10px 14px;border-radius:8px;font-size:.85em;margin-bottom:16px;font-weight:600">⚠️ MODE PERCOBAAN/TRIAL — durasi per kolom dipercepat untuk keperluan testing, bukan durasi sebenarnya.</div>
     <div class="example-block" id="exampleBlock">
       <div class="ex-heading">📖 Contoh Soal &amp; Jawaban</div>
       <div class="example-images">
@@ -492,14 +493,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <!-- ═══ SCREEN: KREPLIN ═══ -->
 <div id="screenKreplin" class="screen">
   <div class="card card-wide">
-    <div id="krepTestingBanner" style="display:none;background:#fff3cd;border:1px solid #ffc107;color:#7a5b00;padding:10px 14px;border-radius:10px;margin-bottom:12px;font-size:.85em;font-weight:700;text-align:center">
-      ⚠️ MODE TESTING AKTIF — waktu per kolom di-override. Cari <code>WAKTU_KREPLIN_OVERRIDE</code> di kode dan set kembali ke <code>null</code> sebelum launching!
-    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
       <span class="top-title" id="krepTitle">Tes Kraepelin</span>
       <span id="krepProgress" style="color:var(--muted);font-size:.85em"></span>
       <span id="krepTimerDisplay" style="display:none"></span>
     </div>
+    <div id="krepTrialNoticeTest" style="display:none;background:#fef3c7;border:1px solid #f59e0b;color:#92400e;padding:8px 12px;border-radius:8px;font-size:.78em;margin-bottom:10px;font-weight:600;text-align:center">⚠️ MODE PERCOBAAN/TRIAL — bukan durasi sebenarnya</div>
     <div class="progress-wrap"><div id="krepProgressBar" style="height:100%;background:var(--primary);border-radius:99px;transition:width .4s;width:0%"></div></div>
     <div id="krepContent" style="text-align:center;padding:24px 0">
       <div style="font-size:2.8em;font-weight:800;color:var(--text);margin-bottom:24px;letter-spacing:.05em" id="krepSoalQ">? + ?</div>
@@ -542,55 +541,184 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 // Sembunyikan bagian " — XYZ" dari judul subtes
 function shortTitle(t){ return (t||'').split(' — ')[0].split(' \u2014 ')[0]; }
 
-// ============================================================
-// KONFIGURASI PAKET — diambil dari query string ?p=nama-paket
-// ============================================================
-// p tidak lagi diambil dari URL — dihardcode ke paket "cpmi"
-const AUTO_PAKET = 'apm';
+// ════════════════════════════════════════════════════════════
+// KONFIGURASI UTAMA — SEMUA variable yang aman/sering diubah ada
+// di SATU object CONFIG ini. Lihat KETERANGAN_VARIABLE.txt untuk
+// penjelasan lengkap tiap field. Kode di bawah CONFIG (ALL_CONFIG,
+// SERVERS, TBL, dst) HANYA membaca dari sini — jangan diubah,
+// cukup ubah isi CONFIG.
+// ════════════════════════════════════════════════════════════
+const CONFIG = {
 
-// Paket yang langsung aktif tanpa konfirmasi manual tester
-const PAKET_AUTO_AKTIF = ['asmara','potensi','karakter','karir','cpmi','apm'];
+  // ── 1. PAKET ──────────────────────────────────────────────
+  paket: {
+    // Paket aktif untuk file index.html ini (harus cocok dgn x_01 di tabel alat_tes)
+    aktif: 'cpmi-sumut',
+    // Paket yang langsung aktif tanpa perlu admin klik "aktifkan" dulu
+    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'cpmi-sumut'],
+  },
+
+  // ── 2. FRAGMENT (form biodata & layar penutup) ───────────────
+  fragment: {
+    base: 'https://lidan.co.id/test/',
+    // biodata-1.html    → ringkas, tanpa radio kesediaan (corporate)
+    // biodata-2.html    → ringkas, dengan radio kesediaan (free/premium)
+    // biodata-cpmi2.html → LENGKAP: NIK, riwayat pendidikan/kerja/keluarga,
+    //                       kuesioner STAR, dll (khusus program CPMI)
+    biodataFile: 'biodata-cpmi2.html',
+    // penutup-1.html → ucapan terima kasih + laporan diproses
+    // penutup-2.html → pilihan paket harga berbayar
+    penutupFile: 'penutup-2.html',
+  },
+
+  // ── 2b. CPMI (khusus form biodata-cpmi2.html) ─────────────────
+  cpmi: {
+    // true  = tombol "🎲 Isi Contoh (Acak)" ditampilkan (untuk testing/demo).
+    // false = tombol disembunyikan (untuk peserta CPMI asli, supaya tidak
+    //         sengaja/iseng terisi data acak).
+    tampilkanIsiContoh: true,
+  },
+
+  // ── 2c. KREPLIN OVERRIDE (percepat durasi untuk testing) ──────
+  kreplinOverride: {
+    // true  = pakai detikPerKolom di bawah ini (mengabaikan nilai dari kreplin.txt).
+    // false = pakai durasi asli dari file soal (biasanya 30 detik/kolom).
+    aktif: true,
+    // Durasi per kolom (detik) saat override aktif. Contoh: 3 = tiap kolom cuma 3 detik,
+    // supaya testing alur cepat tanpa harus menunggu 45 kolom x 30 detik.
+    detikPerKolom: 3,
+  },
+
+  // ── 3. SERVER (backend Cloudflare Pages) ─────────────────────
+  server: {
+    // Dipakai HANYA kalau file tidak diletakkan di folder angka,
+    // atau angkanya di luar daftar list[] di bawah.
+    default: 2,
+    // Urutan menentukan nomor server (index ke-1 = server '1', dst).
+    // SERVER aktif otomatis dideteksi dari nama folder (misal /test/3/ → server 3).
+    list: [
+      { label: '1', domain: 'lidan-co-id.pages.dev' },
+      { label: '2', domain: 'tabi.my.id' },
+      { label: '3', domain: 'mobeli.my.id' },
+      { label: '4', domain: 'talentmap.my.id' },
+      // Tambahkan server baru di sini, contoh:
+      // { label:'5', domain:'contoh-domain-baru.id' },
+    ],
+  },
+
+  // ── 4. DATABASE (nama tabel & otorisasi backend) ─────────────
+  database: {
+    tbl: 'nilai1_json',          // tabel data peserta (biodata + jawaban)
+    tblPaket: 'alat_tes',        // tabel master daftar paket tes
+    tblKontrol: 'admin_kontrol', // tabel status aktif/nonaktif sistem
+    auth: 'admin',               // header X-Custom-Auth, harus sama dgn backend
+    whoEndpoint: 'https://cipta.my.id/who2/',
+  },
+
+  // ── 5. TOKEN ──────────────────────────────────────────────
+  token: {
+    // Skema checkpoint (urutan langkah, BUKAN jumlah subtes):
+    //   0 = token diminta LANGSUNG DI DEPAN, sebelum biodata (perilaku lama).
+    //   1 = token diminta setelah BIODATA selesai, SEBELUM selfie.
+    //   2 = token diminta setelah SELFIE selesai (biodata+selfie sudah tersimpan).
+    //   3 = token diminta setelah urutan PERTAMA di paket (x_02) selesai.
+    //   4 = setelah urutan kedua di paket selesai. 5=urutan ketiga. Dst.
+    //   (rumus umum untuk N>=3: token diminta setelah urutan ke-(N-2) di paket selesai)
+    // Kalau angka SENGAJA dibuat lebih besar dari total langkah yang ada (biodata+
+    // selfie+seluruh subtes di paket), checkpoint TIDAK PERNAH ke-trigger — tes
+    // berjalan terus sampai selesai tanpa minta token di tengah, karena token
+    // sudah otomatis tersimpan di localStorage sejak biodata pertama disimpan.
+    mintaSetelah: 3,
+    chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+  },
+
+  // ── 6. STORAGE (upload selfie/gambar) ────────────────────────
+  storage: {
+    r2Endpoint: 'https://indahabadi.my.id/api/upload_r2_lidan',
+    cdnBase: 'https://assets.indahabadi.my.id/',
+  },
+
+  // ── 7. SUBTES (daftar master semua subtes yang tersedia) ─────
+  subtesBase: 'https://cipta.my.id/psikotest/simpel/',
+  subtes: [
+    { id: 'apm0',   file: 'apm0.txt',    type: 'image_single',      saveField: 'x_05' },
+    { id: 'apm1',   file: 'apm1.txt',    type: 'image_single',      saveField: 'x_05' },
+    { id: 'apm1a',  file: 'apm1a.txt',   type: 'image_single',      saveField: 'x_05' },
+    { id: 'apm1b',  file: 'apm1b.txt',   type: 'image_single',      saveField: 'x_05' },
+    { id: 'apm2',   file: 'apm2.txt',    type: 'image_single',      saveField: 'x_05' },
+    { id: 'apm2a',  file: 'apm2a.txt',   type: 'image_single',      saveField: 'x_05' },
+    { id: 'apm2b',  file: 'apm2b.txt',   type: 'image_single',      saveField: 'x_05' },
+    { id: 'apm14',  file: 'apm14.txt',   type: 'image_single',      saveField: 'x_05' },
+    { id: 'cfit0',  file: 'cfit0.txt',   type: 'image_single',      saveField: 'x_05' },
+    { id: 'cfit1',  file: 'cfit1.txt',   type: 'image_single',      saveField: 'x_05' },
+    { id: 'cfit2',  file: 'cfit2_a.txt', type: 'image_multi',       saveField: 'x_05' },
+    { id: 'cfit3',  file: 'cfit3.txt',   type: 'image_single',      saveField: 'x_05' },
+    { id: 'cfit4',  file: 'cfit4.txt',   type: 'image_single',      saveField: 'x_05' },
+    { id: 'epps',   file: 'epps.txt',    type: 'ab_choice',         saveField: 'x_06' },
+    { id: 'ist0',   file: 'ist0.txt',    type: 'text_choice',       saveField: 'x_05' },
+    { id: 'ist1',   file: 'ist1.txt',    type: 'text_choice',       saveField: 'x_05' },
+    { id: 'ist2',   file: 'ist2.txt',    type: 'text_choice',       saveField: 'x_05' },
+    { id: 'ist3',   file: 'ist3.txt',    type: 'text_choice',       saveField: 'x_05' },
+    { id: 'ist4_a', file: 'ist4_a.txt',  type: 'text_input_scored', saveField: 'x_05' },
+    { id: 'ist5_a', file: 'ist5_a.txt',  type: 'digit_check',       saveField: 'x_05' },
+    { id: 'ist6_a', file: 'ist6_a.txt',  type: 'digit_check',       saveField: 'x_05' },
+    { id: 'ist7',   file: 'ist7.txt',    type: 'image_single',      saveField: 'x_05' },
+    { id: 'ist8',   file: 'ist8.txt',    type: 'image_single',      saveField: 'x_05' },
+    { id: 'ist9',   file: 'ist9.txt',    type: 'text_choice',       saveField: 'x_05' },
+    { id: 'papi',   file: 'papi.txt',    type: 'ab_choice',         saveField: 'x_06' },
+    { id: 'rmib',   file: 'rmib.txt',    type: 'ranking',           saveField: 'x_06', kolom: 1, totalKolom: 8, showInstructionsOnce: true },
+    { id: 'tkd3',   file: 'tkd3.txt',    type: 'text_choice',       saveField: 'x_05' },
+    { id: 'tkd6',   file: 'tkd6_a.txt',  type: 'text_input',        saveField: 'x_05' },
+    { id: 'kreplin',file: 'kreplin.txt', type: 'kreplin',           saveField: 'x_06' },
+  ],
+};
+
+// ────────────────────────────────────────────────────────────
+// Variable di bawah ini DITURUNKAN dari CONFIG di atas, supaya
+// seluruh kode lain di file ini (yang masih memakai nama lama
+// seperti AUTO_PAKET, ALL_CONFIG, SERVERS, TBL, dst) tetap jalan
+// tanpa perlu diubah satu per satu. JANGAN diedit di sini — ubah
+// nilainya di CONFIG di atas.
+// ────────────────────────────────────────────────────────────
+const FRAGMENT_BASE  = CONFIG.fragment.base;
+const BIODATA_FILE   = CONFIG.fragment.biodataFile;
+const PENUTUP_FILE   = CONFIG.fragment.penutupFile;
+const TAMPILKAN_ISI_CONTOH = CONFIG.cpmi.tampilkanIsiContoh !== false;
+const KREPLIN_OVERRIDE_AKTIF = !!(CONFIG.kreplinOverride && CONFIG.kreplinOverride.aktif);
+const KREPLIN_OVERRIDE_DETIK = (CONFIG.kreplinOverride && CONFIG.kreplinOverride.detikPerKolom) || 3;
+
+const AUTO_PAKET = CONFIG.paket.aktif;
+const PAKET_AUTO_AKTIF = CONFIG.paket.autoAktifList;
 const IS_AUTO_AKTIF = PAKET_AUTO_AKTIF.includes(AUTO_PAKET.toLowerCase());
 
-const BASE='https://cipta.my.id/psikotest/simpel/';
-const ALL_CONFIG=[
-  {id:'apm0',  dataUrl:BASE+'apm0.txt',   type:'image_single',      saveField:'x_05'},
-  {id:'apm1',  dataUrl:BASE+'apm1.txt',   type:'image_single',      saveField:'x_05'},
-  {id:'apm1a', dataUrl:BASE+'apm1a.txt',  type:'image_single',      saveField:'x_05'},
-  {id:'apm1b', dataUrl:BASE+'apm1b.txt',  type:'image_single',      saveField:'x_05'},
-  {id:'apm2',  dataUrl:BASE+'apm2.txt',   type:'image_single',      saveField:'x_05'},
-  {id:'apm2a', dataUrl:BASE+'apm2a.txt',  type:'image_single',      saveField:'x_05'},
-  {id:'apm2b', dataUrl:BASE+'apm2b.txt',  type:'image_single',      saveField:'x_05'},
-  {id:'apm14', dataUrl:BASE+'apm14.txt',  type:'image_single',      saveField:'x_05'},
-  {id:'cfit0', dataUrl:BASE+'cfit0.txt',  type:'image_single',      saveField:'x_05'},
-  {id:'cfit1', dataUrl:BASE+'cfit1.txt',  type:'image_single',      saveField:'x_05'},
-  {id:'cfit2', dataUrl:BASE+'cfit2_a.txt',type:'image_multi',       saveField:'x_05'},
-  {id:'cfit3', dataUrl:BASE+'cfit3.txt',  type:'image_single',      saveField:'x_05'},
-  {id:'cfit4', dataUrl:BASE+'cfit4.txt',  type:'image_single',      saveField:'x_05'},
-  {id:'epps',  dataUrl:BASE+'epps.txt',   type:'ab_choice',         saveField:'x_06'},
-  {id:'ist0',  dataUrl:BASE+'ist0.txt',   type:'text_choice',       saveField:'x_05'},
-  {id:'ist1',  dataUrl:BASE+'ist1.txt',   type:'text_choice',       saveField:'x_05'},
-  {id:'ist2',  dataUrl:BASE+'ist2.txt',   type:'text_choice',       saveField:'x_05'},
-  {id:'ist3',  dataUrl:BASE+'ist3.txt',   type:'text_choice',       saveField:'x_05'},
-  {id:'ist4_a',dataUrl:BASE+'ist4_a.txt', type:'text_input_scored', saveField:'x_05'},
-  {id:'ist5_a',dataUrl:BASE+'ist5_a.txt', type:'digit_check',       saveField:'x_05'},
-  {id:'ist6_a',dataUrl:BASE+'ist6_a.txt', type:'digit_check',       saveField:'x_05'},
-  {id:'ist7',  dataUrl:BASE+'ist7.txt',   type:'image_single',      saveField:'x_05'},
-  {id:'ist8',  dataUrl:BASE+'ist8.txt',   type:'image_single',      saveField:'x_05'},
-  {id:'ist9',  dataUrl:BASE+'ist9.txt',   type:'text_choice',       saveField:'x_05'},
-  {id:'papi',  dataUrl:BASE+'papi.txt',   type:'ab_choice',         saveField:'x_06'},
-  {id:'rmib',  dataUrl:BASE+'rmib.txt',   type:'ranking',           saveField:'x_06',kolom:1,totalKolom:8,showInstructionsOnce:true},
-  {id:'tkd3',  dataUrl:BASE+'tkd3.txt',   type:'text_choice',       saveField:'x_05'},
-  {id:'tkd6',  dataUrl:BASE+'tkd6_a.txt', type:'text_input',        saveField:'x_05'},
-  {id:'kreplin',dataUrl:BASE+'kreplin.txt',type:'kreplin',           saveField:'x_06'}
-];
-const API_W='https://tabi.my.id/api/contacts_filter_dinamis6';
-const API_R='https://tabi.my.id/api/contacts_filter_dinamis7';
-const TBL='nilai1_json',TBL_P='alat_tes',TBL_K='admin_kontrol',AUTH='admin',WHO_B='https://cipta.my.id/who2/';
-const R2='https://indahabadi.my.id/api/upload_r2_lidan',CDN='https://assets.indahabadi.my.id/';
-const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const BASE = CONFIG.subtesBase;
+const ALL_CONFIG = CONFIG.subtes.map(s => ({ ...s, dataUrl: BASE + s.file }));
+
+const SERVER_DEFAULT = CONFIG.server.default;
+const SERVERS = CONFIG.server.list;
+const _folderParts=window.location.pathname.split('/').filter(Boolean);
+const _cand1=_folderParts[_folderParts.length-1]; // elemen terakhir (kasus ada trailing slash: ini foldernya)
+const _cand2=_folderParts[_folderParts.length-2]; // elemen sebelum terakhir (kasus URL berakhir di file, misal index.html)
+const _folderSrv=/^\d+$/.test(_cand1)?parseInt(_cand1):(/^\d+$/.test(_cand2)?parseInt(_cand2):NaN);
+const SERVER = (_folderSrv>=1&&_folderSrv<=SERVERS.length) ? _folderSrv : SERVER_DEFAULT;
+const ACTIVE_DOMAIN = (SERVERS[SERVER-1] || SERVERS[0]).domain;
+const API_W=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis6`;
+const API_R=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
+// Paket alat_tes selalu diambil dari server 1, tidak ikut SERVER aktif
+const API_R_PAKET=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
+// admin_kontrol (status buka/tutup tes) juga HARUS selalu dari server 1,
+// supaya toggle admin di 1 tempat berlaku untuk semua folder /1/ /2/ /3/ /4/.
+// (sebelumnya ikut ACTIVE_DOMAIN/API_R per-folder — itu bug: status bisa beda2 per server)
+const API_R_KONTROL=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
+const TBL=CONFIG.database.tbl, TBL_P=CONFIG.database.tblPaket, TBL_K=CONFIG.database.tblKontrol,
+      AUTH=CONFIG.database.auth, WHO_B=CONFIG.database.whoEndpoint;
+
+const MINTA_TOKEN_SETELAH = CONFIG.token.mintaSetelah;
+const CHARS = CONFIG.token.chars;
+const R2 = CONFIG.storage.r2Endpoint, CDN = CONFIG.storage.cdnBase;
 
 let cu=null,cfg=null,qs=[],qi=0,ua=[],sc=0,tl=0,ti=null;
+let _updateExistingId=null; // id_x yang harus di-UPDATE saat biodata token masih kosong
 let tStarted=false,fEnd=false,swEl=0,vCnt=0,rSel=[],uNum=[],skip=[],ans=[];
 let AC=[],WTL=[],UT=[],pList=[],sPaket=null,vMap={};
 let wBL=[],wBI=0,wQs=[],wQi=0,wUA=[],wSkip=[],wAns=[];
@@ -606,11 +734,6 @@ const ss=id=>{
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
-  // Tombol token hanya muncul di screenDaftar
-  const btnTF=document.getElementById('btnTokenFloat');
-  const popupTF=document.getElementById('popupToken');
-  if(btnTF) btnTF.style.display=(id==='screenDaftar')?'block':'none';
-  if(popupTF && id!=='screenDaftar') popupTF.style.display='none';
 };
 function sLoad(btn,on){btn.disabled=on;if(on){btn.dataset.t=btn.innerHTML;btn.innerHTML='<span class="spinner" style="width:18px;height:18px;border-width:3px;display:inline-block"></span>'}else btn.innerHTML=btn.dataset.t}
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -622,11 +745,9 @@ const aG=id=>aF(`${API_R}?table=${TBL}&id_x=${id}`,{headers:{'X-Custom-Auth':AUT
 const aP=(id,b)=>fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify(b)});
 const gBio=f=>{try{const o=JSON.parse(cu.x_02||'{}');return o[f.replace(/^bio/,'').toLowerCase()]||''}catch{return''}};
 
-function bukaPopupToken(wajib){
+function bukaPopupToken(){
   const popup=document.getElementById('popupToken');
-  popup.style.display='flex';
-  const btnBatal=document.getElementById('btnBatalToken');
-  if(btnBatal) btnBatal.style.display=wajib?'none':'flex';
+  popup.style.display='block';
   setTimeout(()=>document.getElementById('inputToken').focus(),50);
 }
 function tutupPopupToken(){
@@ -690,9 +811,18 @@ async function loginDenganToken(){
 async function chkTok(t){try{const d=await aF(`${API_W}?table=${TBL}&x_01_eq=${encodeURIComponent(t)}`,{headers:{'X-Custom-Auth':AUTH}});return d.success&&d.count>0}catch{return false}}
 async function genTok(pid){for(let i=0;i<10;i++){const t=pid+'-'+rs(i<8?12:14);if(!(await chkTok(t)))return t}return pid+'-'+rs(16)}
 
+// Generate token final untuk mode checkpoint (MINTA_TOKEN_SETELAH>0):
+// format [namaDepan][2 huruf acak][id_x], contoh: "Budi Santoso" + id_x 245 -> "budixy245"
+function genTokenDariNama(nama, id_x){
+  let depan = (nama||'').trim().split(/\s+/)[0] || 'peserta';
+  depan = depan.toLowerCase().replace(/[^a-z0-9]/g,'') || 'peserta';
+  const huruf2 = rs(2).toLowerCase().replace(/[^a-z0-9]/g,'a').padEnd(2,'a').slice(0,2);
+  return `${depan}${huruf2}${id_x}`;
+}
+
 async function loadPaket(){
   try{
-    const d=await aF(`${API_R}?table=${TBL_P}`,{headers:{'X-Custom-Auth':AUTH}});
+    const d=await aF(`${API_R_PAKET}?table=${TBL_P}`,{headers:{'X-Custom-Auth':AUTH}});
     pList=(d.success&&d.data)||[];
     sPaket=pList.find(p=>(p.x_01||'').trim()===AUTO_PAKET)||null;
     if(!sPaket)console.warn('[loadPaket] Paket tidak ditemukan:',AUTO_PAKET);
@@ -723,7 +853,85 @@ function showPaketNotFoundScreen(){
 }
 function renderPaket(){}
 
-// ─── Fungsi biodata (dipakai oleh biodata-2, tersedia global) ───
+// ─── LOGIN TOKEN UTAMA (form di screenDaftar) ───
+async function loginDenganTokenMain() {
+  const inp = document.getElementById('inputTokenMain');
+  const errBox = document.getElementById('tokenErrBoxMain');
+  const btn = document.getElementById('btnLoginTokenMain');
+  const tok = (inp.value || '').trim();
+  errBox.style.display = 'none';
+  if (!tok) { errBox.textContent = '⚠ Masukkan token terlebih dahulu.'; errBox.style.display = 'block'; inp.focus(); return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner-sm"></span> Memeriksa...';
+  sl('Memeriksa token...');
+  try {
+    const res = await aF(`${API_R}?table=${TBL}&x_01_eq=${tok}`, { headers: { 'X-Custom-Auth': AUTH } });
+    if (!res.success || !res.count) {
+      hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
+      errBox.textContent = '❌ Token tidak ditemukan. Periksa kembali token Anda.';
+      errBox.style.display = 'block'; return;
+    }
+    cu = res.data[0];
+    const paketToken = (cu.x_04 || '').trim().toLowerCase();
+    if (paketToken && paketToken !== AUTO_PAKET.toLowerCase()) {
+      hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
+      errBox.textContent = '❌ Token ini bukan untuk paket ' + AUTO_PAKET + '.';
+      errBox.style.display = 'block'; return;
+    }
+    // ── Cek apakah biodata sudah terisi (field 'nama') ──
+    let bioCek = {}; try { bioCek = JSON.parse(cu.x_02 || '{}'); } catch {}
+    // Cek status logout SEGERA setelah login berhasil — tidak peduli biodata sudah diisi atau belum
+    cekTombolLogout(bioCek.logout === true);
+    if (!bioCek.nama) {
+      // Biodata masih kosong → tampilkan form biodata (fragment yang sudah diinject),
+      // token TETAP yang sudah ada (tidak generate token baru, tidak insert baru — nanti di-UPDATE).
+      hl();
+      _updateExistingId = String(cu.id_x); // tandai mode update untuk handleDaftar/kirimSelfie
+      localStorage.setItem('token', tok);
+      localStorage.setItem('db_id', String(cu.id_x));
+      localStorage.setItem('_p', AUTO_PAKET);
+      tampilTopBarId();
+      $('tokenLoginBox').style.display = 'none';
+      $('biodataContainer').style.display = 'block';
+      return;
+    }
+    // Biodata sudah ada tapi SELFIE belum (mis. mode checkpoint N=1: token diminta
+    // tepat setelah biodata, sebelum selfie) → arahkan langsung ke kamera selfie,
+    // BUKAN ke form biodata (sudah terisi) atau langsung ke tes (selfie wajib dulu).
+    if (!bioCek.foto_selfie) {
+      hl();
+      _updateExistingId = String(cu.id_x);
+      _pendingBio = bioCek;
+      localStorage.setItem('token', tok);
+      localStorage.setItem('db_id', String(cu.id_x));
+      localStorage.setItem('_p', AUTO_PAKET);
+      tampilTopBarId();
+      $('tokenLoginBox').style.display = 'none';
+      bukaKameraSelfie();
+      return;
+    }
+
+    localStorage.setItem('token', tok);
+    localStorage.setItem('db_id', String(cu.id_x));
+    localStorage.setItem('_p', AUTO_PAKET);
+    tampilTopBarId();
+    vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
+    await loadAC();
+    let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
+    hl(); startGlobalPolling();
+    if (IS_AUTO_AKTIF || status === 'aktif') {
+      await goNext2();
+    } else {
+      ss('screenTunggu'); showZoomTunggu();
+    }
+  } catch (e) {
+    hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
+    errBox.textContent = '⚠ Terjadi kesalahan. Coba lagi.';
+    errBox.style.display = 'block';
+  }
+}
+
+// Diset saat biodata token masih kosong: id_x yang harus di-UPDATE (bukan insert baru)
+
 function syncRadioStyle(){
   const y=$('bioKesediaanY'),n=$('bioKesediaanN');
   const ly=$('radioLabelBersedia'),ln=$('radioLabelTidak');
@@ -807,43 +1015,116 @@ async function kirimSelfie(){
 
     // 2. Inject URL foto ke biodata
     _pendingBio.foto_selfie=fotoUrl;
+    _pendingBio.nama_file=namaFile();
 
-    // 3. Simpan ke API (POST biodata + foto) — pakai token sementara dulu
-    //    karena id_x baru terbentuk SETELAH record disimpan di database.
-    stTxt.textContent='Menyimpan data...';
-    const tokSementara='tmp-'+Date.now()+'-'+rs(6);
+    if(_updateExistingId){
+      // ── MODE UPDATE: token sudah ada (dari login token), biodata diisi pertama kali ──
+      stTxt.textContent='Menyimpan data...';
+      const bio=JSON.stringify(_pendingBio);
+      const tok=localStorage.getItem('token');
+      const resU=await aP(_updateExistingId,{x_02:bio}).then(r=>r.json());
+      if(!resU.success)throw new Error(resU.message||'Gagal menyimpan data.');
+
+      tutupKameraSelfie();
+      localStorage.setItem('db_id',_updateExistingId);
+      cu={id_x:_updateExistingId,x_01:tok,x_02:bio};
+      _updateExistingId=null;
+      stTxt.textContent='Memuat tes...';
+      await loadAC();
+      let status='nonaktif';try{status=JSON.parse(bio||'{}').status||'nonaktif'}catch{}
+      if(IS_AUTO_AKTIF||status==='aktif'){hl();startGlobalPolling();await goNext2();}
+      else{
+        hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
+        const idBox=document.getElementById('tungguIdBox');
+        const idNum=document.getElementById('tungguIdNum');
+        if(idBox&&idNum){idNum.textContent=String(cu.id_x);idBox.style.display='block';}
+      }
+      return;
+    }
+
+    // 3. Simpan ke API (POST biodata + foto) — jalur lama (insert baru)
+    stTxt.textContent='Membuat token...';
+    let tok=await genTok(_pendingPid);
     const bio=JSON.stringify(_pendingBio);
-    const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tokSementara,x_02:bio})});
+    stTxt.textContent='Menyimpan data...';
+    const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tok,x_02:bio})});
     if(!res.success)throw new Error(res.message||'Gagal menyimpan data.');
 
-    // 3b. Ambil id_x yang baru terbentuk, lalu susun token final: namaDepan_id_x
-    stTxt.textContent='Membuat token...';
-    const lookup=await aF(`${API_W}?table=${TBL}&x_01_eq=${encodeURIComponent(tokSementara)}`,{headers:{'X-Custom-Auth':AUTH}});
-    const rowBaru=lookup&&lookup.data?(Array.isArray(lookup.data)?lookup.data[0]:lookup.data):null;
-    if(!rowBaru||!rowBaru.id_x)throw new Error('Gagal mengambil ID peserta baru.');
-    const namaDepan=(( _pendingBio.nama||'').trim().split(/\s+/)[0]||'peserta').replace(/[^a-zA-Z0-9]/g,'')||'peserta';
-    const tok=`${namaDepan}_${rowBaru.id_x}`;
-    const upd=await aP(rowBaru.id_x,{x_01:tok});
-    const updJson=await upd.json().catch(()=>({}));
-    if(updJson&&updJson.success===false)throw new Error('Gagal menyimpan token akhir.');
+    // Mode checkpoint (MINTA_TOKEN_SETELAH>0): ganti token sementara dengan token final
+    // format [namaDepan][2huruf][id_x], lalu update ke DB (terlihat admin di dashboard).
+    // Peserta TIDAK diberitahu token ini — disimpan diam-diam ke localStorage saja.
+    if(MINTA_TOKEN_SETELAH>0){
+      try{
+        const tokFinal=genTokenDariNama(_pendingBio.nama, res.id_x);
+        await aP(res.id_x,{x_01:tokFinal});
+        tok=tokFinal;
+      }catch(e){console.warn('[checkpoint] gagal update token final:',e)}
+    }
 
-    // 4. Auto-login diam-diam (TANPA popup token) agar peserta bisa langsung
-    //    mengerjakan WWQ di rumah. Token baru diminta lagi setelah WWQ selesai.
+    // 4. Tutup kamera & lanjutkan alur normal
     tutupKameraSelfie();
-    localStorage.setItem('token', tok);
-    localStorage.setItem('db_id', String(rowBaru.id_x));
-    localStorage.setItem('_p', AUTO_PAKET);
-    cu = rowBaru;
+    localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',_pendingPnm);
+    cu={id_x:res.id_x,x_01:tok,x_02:bio};
+
+    // Mode checkpoint N=2: token diminta TEPAT setelah selfie, sebelum subtes apapun dimulai.
+    if(MINTA_TOKEN_SETELAH===2){
+      try{
+        let bioObj={};try{bioObj=JSON.parse(bio||'{}')}catch{}
+        bioObj.checkpoint_lewat=true;
+        await aP(res.id_x,{x_02:JSON.stringify(bioObj)});
+      }catch(e){console.warn('[checkpoint] gagal tandai checkpoint_lewat:',e)}
+      hl();
+      logoutPaksaCheckpoint();
+      return;
+    }
+
     stTxt.textContent='Memuat tes...';
     await loadAC();
-    hl();
-    startGlobalPolling();
-    await goNext2();
+    if(IS_AUTO_AKTIF){hl();startGlobalPolling();await goNext2();}
+    else{
+      hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();
+      const idBox=document.getElementById('tungguIdBox');
+      const idNum=document.getElementById('tungguIdNum');
+      if(idBox&&idNum){idNum.textContent=String(res.id_x);idBox.style.display='block';}
+    }
   }catch(e){
     loadEl.style.display='none';
     $('selfieActions').style.display='flex';
     alert('⚠ '+e.message);
   }
+}
+
+// ── PENGUMPUL BIODATA DINAMIS ──────────────────────────────────
+// Membaca SEMUA elemen form (input/select/textarea) di dalam #biodataContainer,
+// apapun id/name/strukturnya. Tujuannya: kalau fragment biodata (biodata-1.html,
+// biodata-2.html, biodata-cpmi2.html, atau fragment baru apapun ke depannya)
+// diubah/ditambah fieldnya, x_02 yang tersimpan OTOMATIS ikut lengkap tanpa
+// perlu edit kode ini lagi.
+// Field genap (fieldset radio) dikelompokkan per `name`, hanya nilai yang
+// checked yang diambil. Checkbox disimpan sebagai boolean.
+// Elemen bisa ditandai `data-skip-autocollect="true"` untuk dikecualikan
+// (mis. input pencarian/autocomplete yang bukan bagian dari data final).
+// CATATAN: ini menangkap field FLAT (satu nilai per elemen). Untuk data
+// bertingkat/berulang (tabel riwayat pendidikan/kerja/keluarga dengan banyak
+// baris dinamis), fragment tetap perlu menyediakan fungsi khusus seperti
+// window.getBiodataCpmi() — hasilnya digabung setelah ini di handleDaftar()
+// dan menimpa field yang tumpang tindih (karena lebih detail/terstruktur).
+function collectBiodataDinamis(){
+  const c=document.getElementById('biodataContainer');
+  if(!c)return{};
+  const hasil={};
+  c.querySelectorAll('input[id], select[id], textarea[id]').forEach(el=>{
+    if(['button','submit','file','radio'].includes(el.type))return;
+    if(el.dataset&&el.dataset.skipAutocollect==='true')return;
+    hasil[el.id]=el.type==='checkbox'?el.checked:el.value;
+  });
+  const radioNames=new Set();
+  c.querySelectorAll('input[type="radio"][name]').forEach(el=>radioNames.add(el.name));
+  radioNames.forEach(name=>{
+    const checked=c.querySelector(`input[type="radio"][name="${CSS.escape(name)}"]:checked`);
+    hasil[name]=checked?checked.value:'';
+  });
+  return hasil;
 }
 
 async function handleDaftar(){
@@ -878,6 +1159,11 @@ async function handleDaftar(){
   // sedangkan key "pendidikan" ringkas adalah STRING (sekolah terakhir, dari bioPend).
   // Supaya keduanya tetap tersimpan tanpa saling timpa, array lengkapnya disalin
   // ke key baru "riwayatPendidikan" sebelum digabung.
+  // Urutan penggabungan (yang belakang menimpa yang depan kalau key sama):
+  //  1. bioDinamis  → SEMUA field flat dari form apapun (otomatis, ikut berubah kalau HTML fragment berubah)
+  //  2. bioLengkap  → data array/bertingkat dari fungsi khusus fragment (kalau ada), lebih detail
+  //  3. field ringkas hasil normalisasi (nama, usia, dst) → nama key konsisten untuk laporan/fungsi lain
+  const bioDinamis=collectBiodataDinamis();
   let bioLengkap={};
   if(typeof window.getBiodataCpmi==='function'){
     try{ bioLengkap=window.getBiodataCpmi()||{}; }catch(e){ console.warn('[handleDaftar] getBiodataCpmi gagal:',e); }
@@ -887,6 +1173,7 @@ async function handleDaftar(){
     delete bioLengkap.pendidikan;
   }
   _pendingBio={
+    ...bioDinamis,
     ...bioLengkap,
     nama:$('bioNama').value.trim(),
     usia:$('bioUsia').value.trim(),
@@ -898,7 +1185,52 @@ async function handleDaftar(){
     status:IS_AUTO_AKTIF?'aktif':'nonaktif'
   };
   _pendingPid=pid; _pendingPnm=pnm;
-  // Buka kamera selfie
+
+  // ── CHECKPOINT N=1: token diminta TEPAT setelah biodata, SEBELUM selfie ──
+  // (skema: 1=setelah biodata sebelum selfie, 2=setelah selfie — lihat CONFIG.token)
+  if(MINTA_TOKEN_SETELAH===1){
+    sl('Menyimpan data...');
+    try{
+      if(_updateExistingId){
+        // Token sudah diketahui peserta sejak awal (mode N=0, login token dulu),
+        // biodata baru diisi sekarang. Tidak perlu logout-paksa — token sudah dipegang
+        // peserta, jadi langsung lanjut ke selfie.
+        const bio=JSON.stringify(_pendingBio);
+        const resU=await aP(_updateExistingId,{x_02:bio}).then(r=>r.json());
+        if(!resU.success)throw new Error(resU.message||'Gagal menyimpan data.');
+        localStorage.setItem('db_id',_updateExistingId);
+        cu={id_x:_updateExistingId,x_01:localStorage.getItem('token'),x_02:bio};
+        _pendingBio=JSON.parse(bio);
+        _updateExistingId=null;
+        hl();
+        bukaKameraSelfie();
+        return;
+      }
+      // Insert baru: simpan biodata, generate token checkpoint diam-diam, lalu logout-paksa
+      // (peserta WAJIB minta token ke admin sebelum bisa lanjut ke selfie).
+      let tok=await genTok(pid);
+      const bio=JSON.stringify(_pendingBio);
+      const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tok,x_02:bio})});
+      if(!res.success)throw new Error(res.message||'Gagal menyimpan data.');
+      try{
+        const tokFinal=genTokenDariNama(_pendingBio.nama, res.id_x);
+        await aP(res.id_x,{x_01:tokFinal});
+        tok=tokFinal;
+      }catch(e){console.warn('[checkpoint] gagal update token final:',e)}
+      let bioObj={};try{bioObj=JSON.parse(bio||'{}')}catch{}
+      bioObj.checkpoint_lewat=true;
+      await aP(res.id_x,{x_02:JSON.stringify(bioObj)});
+      localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',pnm);
+      hl();
+      logoutPaksaCheckpoint();
+    }catch(e){
+      hl();
+      eb.textContent='⚠ '+e.message;eb.classList.add('show');
+    }
+    return;
+  }
+
+  // Buka kamera selfie (mode normal / checkpoint lain)
   bukaKameraSelfie();
 }
 
@@ -907,7 +1239,7 @@ async function loadAC(){
   function expand(list){const r=[];for(const c of list){if(c.type==='ranking'&&c.totalKolom){for(let k=1;k<=c.totalKolom;k++)r.push({type:'config',ref:{...c,id:c.id+'_k'+k,_baseId:c.id,kolom:k,_taskId:c.id+'_k'+k}})}else r.push({type:'config',ref:c})}return r}
   if(!p){AC=ALL_CONFIG;WTL=[];UT=expand(ALL_CONFIG);return}
   try{
-    const d=await aF(`${API_R}?table=${TBL_P}&x_01_eq=${encodeURIComponent(p)}`,{headers:{'X-Custom-Auth':AUTH}});
+    const d=await aF(`${API_R_PAKET}?table=${TBL_P}&x_01_eq=${encodeURIComponent(p)}`,{headers:{'X-Custom-Auth':AUTH}});
     if(!d.success||!d.count){AC=ALL_CONFIG;WTL=[];UT=expand(ALL_CONFIG);return}
     const items=(d.data[0].x_02||'').split('|').map(s=>s.trim()).filter(Boolean);
     AC=[];WTL=[];UT=[];
@@ -964,21 +1296,21 @@ async function goNext2(){
   }
 
   for(const ut of UT){
-    if(ut.type==='who'){wBL=WTL;const i=wFindNext();if(i!==-1){wBI=i;wOpen(i);return}}
+    // PERBAIKAN BUG URUTAN: sebelumnya, begitu loop bertemu ut.type==='who', kode
+    // langsung mencari WHO mana saja yang belum selesai di SELURUH WTL (wFindNext()
+    // dari awal) — bukan mengecek WHO spesifik di posisi ini. Akibatnya kalau ada 2+
+    // WHO yang tidak bersebelahan di paket (mis. who:1 ... cfit1..tkd6 ... who:4),
+    // begitu who:1 selesai, kode bisa melompat ke who:4 lebih dulu lewat wAfT(),
+    // melewati semua subtes config-type yang seharusnya ada di antaranya.
+    // Sekarang: cek apakah WHO SPESIFIK ini (ut.ref) sudah selesai; kalau sudah,
+    // lanjut ke item berikutnya di UT (urutan paket tetap dihormati).
+    if(ut.type==='who'){
+      const b=ut.ref,sf=(b.data&&b.data.saveField)||'x_07';
+      let done=false;try{const o=JSON.parse(cu[sf]||'{}');done=o[b._taskId]!=null&&o[b._taskId]!==''}catch{}
+      if(!done){wBL=WTL;wBI=WTL.indexOf(b);wOpen(wBI);return}
+    }
     else if(ut.type==='kreplin'){
-      // Selalu fetch ulang dari server untuk pastikan x_06 terbaru
-      // karena cu in-memory bisa tidak punya x_06 (field tidak ikut termuat saat login)
-      let done=false;
-      try{
-        const dbId=localStorage.getItem('db_id');
-        if(dbId){
-          const fresh=await aG(dbId);
-          const freshRow=Array.isArray(fresh.data)?fresh.data[0]:fresh.data;
-          if(freshRow){cu=freshRow;} // update cu sekalian
-        }
-        const o=JSON.parse(cu.x_06||'{}');
-        done=!!o.kreplin&&o.kreplin.dikerjakan!=='';
-      }catch{}
+      let done=false;try{const o=JSON.parse(cu.x_06||'{}');done=!!o.kreplin&&o.kreplin.dikerjakan!==''}catch{}
       if(!done){hl();await kreplinStart(ut.ref);return}
     }
     else{
@@ -995,7 +1327,24 @@ async function goNext2(){
   doneAll();
 }
 
-function doneAll(){stopGlobalPolling();stopPolling();hl();ss('screenUpgrade');tampilTopBarId();startLogoutPoll();}
+function doneAll(){
+  stopGlobalPolling();stopPolling();hl();ss('screenUpgrade');tampilTopBarId();startLogoutPoll();
+  // Catat waktu semua subtes selesai (selesai_semua) ke x_02
+  const _doneId=localStorage.getItem('db_id');
+  if(_doneId){
+    (async()=>{
+      try{
+        const cur3=await aG(_doneId);
+        let bioObj={};try{bioObj=JSON.parse(cur3.data.x_02||'{}')}catch{}
+        bioObj.nama_file=namaFile();
+        bioObj.selesai_semua=tsNow();
+        const newBio=JSON.stringify(bioObj);
+        await aP(_doneId,{x_02:newBio});
+        cu.x_02=newBio;
+      }catch(e){console.warn('[doneAll-log]',e)}
+    })();
+  }
+}
 
 // ── UPGRADE LAPORAN ──
 let upPaketSel=null,upHargaSel=0;
@@ -1315,6 +1664,53 @@ function mAns(idx){
   if(p!==-1){skip.splice(p,1);const u=ua.indexOf(`${idx+1}SKIPx`);if(u!==-1)ua.splice(u,1)}
 }
 
+// Helper: timestamp "YYYY-MM-DD HH:MM:SS" waktu lokal
+const tsNow=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')};
+// Helper: nama file HTML tanpa path dan ekstensi (misal "index.html" → "index")
+const namaFile=()=>{const p=window.location.pathname.split('/').pop()||'';return p.replace(/\.html?$/i,'')||'index'};
+// Helper: update log_selesai di x_02 tanpa menimpa field lain
+async function catatSelesaiSubtes(id,taskId,ts,extraFields){
+  try{
+    const cur2=await aG(id);
+    let bioObj={};try{bioObj=JSON.parse(cur2.data.x_02||'{}')}catch{}
+    bioObj.nama_file=namaFile();
+    if(!bioObj.log_selesai)bioObj.log_selesai={};
+    bioObj.log_selesai[taskId]=ts;
+    if(extraFields)Object.assign(bioObj,extraFields);
+    const newBio=JSON.stringify(bioObj);
+    await aP(id,{x_02:newBio});
+    cu.x_02=newBio;
+    return bioObj;
+  }catch(e){console.warn('[catatSelesaiSubtes]',e);return null}
+}
+
+// ── Helper TERPUSAT: cek & trigger checkpoint MINTA_TOKEN_SETELAH setelah SETIAP
+// jenis subtes selesai (config, WHO, maupun Kraepelin) — supaya hitungannya mengikuti
+// URUTAN PAKET (posisi di x_02) secara utuh, bukan hanya subtes config-type seperti
+// sebelumnya. Skema (lihat juga komentar CONFIG.token.mintaSetelah):
+//   N=3 → checkpoint setelah urutan ke-1 di paket selesai (mis. who:1 kalau dia
+//         paling depan), N=4 → setelah urutan ke-2, dst (target = N-2).
+// (N=0 ditangani di layar awal, N=1 di handleDaftar(), N=2 di kirimSelfie() —
+//  fungsi ini HANYA menangani N>=3, yaitu checkpoint di tengah pengerjaan subtes.)
+// PERBAIKAN BUG: dulu hanya endTest() yang mencatat ke log_selesai/cek checkpoint,
+// sehingga WHO & Kraepelin tidak pernah ikut terhitung — kalau WHO ada di urutan
+// awal paket, checkpoint baru kena setelah subtes config PERTAMA, bukan setelah
+// posisi-pertama-paket yang sebenarnya (yang bisa jadi WHO).
+// Return true kalau checkpoint di-trigger (caller WAJIB return / hentikan alur).
+async function cekTriggerCheckpoint(id,_bioSelesai){
+  if(!_bioSelesai)return false;
+  const _jmlSelesai=_bioSelesai.log_selesai?Object.keys(_bioSelesai.log_selesai).length:0;
+  if(MINTA_TOKEN_SETELAH>=3 && _jmlSelesai>=(MINTA_TOKEN_SETELAH-2) && !_bioSelesai.checkpoint_lewat){
+    try{
+      const _bo2=JSON.parse(JSON.stringify(_bioSelesai));_bo2.checkpoint_lewat=true;
+      await aP(id,{x_02:JSON.stringify(_bo2)});
+    }catch(e){console.warn('[checkpoint] gagal tandai checkpoint_lewat:',e)}
+    logoutPaksaCheckpoint();
+    return true;
+  }
+  return false;
+}
+
 async function endTest(to){
   clearInterval(ti);sl('Menyimpan hasil...');const id=localStorage.getItem('db_id');
   try{
@@ -1329,7 +1725,12 @@ async function endTest(to){
     localStorage.removeItem('_st_'+cfg._taskId);
     localStorage.removeItem('_activeTask');
     cu=cur.data;cu[sf]=upd[sf];if(cfg.logField)cu[cfg.logField]=upd[cfg.logField];
-    hl();afterT();
+    // Catat nama_file + waktu selesai subtes ini ke x_02 (tidak menimpa field biodata lain)
+    const _bioSelesai=await catatSelesaiSubtes(id, cfg.id, tsNow());
+    hl();
+    // ── Checkpoint MINTA_TOKEN_SETELAH (lihat cekTriggerCheckpoint() untuk detail) ──
+    if(await cekTriggerCheckpoint(id,_bioSelesai))return;
+    afterT();
   }catch(e){alert('Gagal: '+e.message);hl()}
 }
 function afterT(){
@@ -1372,7 +1773,7 @@ async function wOpen(idx){
     hl();$('startTitle').innerText=shortTitle(cfg.title);$('startInstructions').innerText=cfg.instructions||cfg.desc;$('exNote').innerText=cfg.exNote;
     const it=$('exImgTop'),ib=$('exImgBottom');it.style.display=cfg.exImgTop?'':'none';ib.style.display=cfg.exImgBottom?'':'none';
     if(cfg.exImgTop)it.src=cfg.exImgTop;if(cfg.exImgBottom)ib.src=cfg.exImgBottom;
-    $('exampleBlock').style.display=(cfg.exImgTop||cfg.exImgBottom||cfg.exNote)?'':'none';ss('screenStart');
+    $('exampleBlock').style.display=(cfg.exImgTop||cfg.exImgBottom||cfg.exNote)?'':'none';ss('screenStart');tampilTopBarId();
   }catch(e){alert('Gagal: '+e.message);hl();if(wBL.length>1)wDash()}
 }
 async function wDash(){
@@ -1387,7 +1788,7 @@ async function wDash(){
     div.innerHTML=`<div class="task-num">${done?'✓':i+1}</div><div class="task-name">${d.title||('Tes '+b.fileKey)}</div><span class="task-badge ${done?'badge-done':cur?'badge-current':'badge-locked'}">${done?'Selesai':cur?'▶ Mulai':'Terkunci'}</span>`;
     if(cur)div.onclick=()=>{wBI=i;wOpen(i)};g.appendChild(div);
   });
-  $('welcomeSub').innerText=fp===null?'🎉 Semua selesai!':'Klik tes bertanda ▶ Mulai.';ss('screenDash');
+  $('welcomeSub').innerText=fp===null?'🎉 Semua selesai!':'Klik tes bertanda ▶ Mulai.';ss('screenDash');tampilTopBarId();
 }
 async function wStart(){
   sl('Memuat soal...');
@@ -1479,20 +1880,25 @@ function wSK(){
 }
 function wMA(idx){if(!wAns.includes(idx))wAns.push(idx);const p=wSkip.indexOf(idx);if(p!==-1){wSkip.splice(p,1);const u=wUA.indexOf('SKIP');if(u!==-1)wUA.splice(u,1)}}
 function wUP(){const t=wQs.length,d=wAns.length;$('progressBar').style.width=(t?Math.round((d/t)*100):0)+'%';let info=`Soal ${wQi+1} / ${t}`;if(wSkip.length>0)info+=` · ⟳ ${wSkip.length} dilewati`;$('progressInfo').innerText=info;const bt=$('bbTitle'),bp=$('bbProgress');if(bt)bt.innerText=cfg.title||'';if(bp)bp.innerText=info}
-function wAfT(){
-  const i=wFindNext();
-  if(i!==-1){wBI=i;wOpen(i);return}
-  // Semua tes WHO (termasuk WWQ) sudah selesai dikerjakan.
-  // Logout dulu, lalu langsung minta peserta login pakai token (tanpa alert).
-  localStorage.clear();
-  hl();
-  ss('screenDaftar');
-  loadPaket();
-  bukaPopupToken(true);
-}
+// PERBAIKAN BUG URUTAN: sebelumnya wAfT() langsung cari WHO berikutnya yang belum
+// selesai di seluruh WTL (wFindNext()) dan membukanya, melewati goNext2() sama sekali.
+// Ini menyebabkan subtes config-type di antara dua WHO (mis. cfit1..tkd6 di antara
+// who:1 dan who:4) ikut terlewati. Sekarang selalu lewat goNext2(), yang sudah
+// diperbaiki untuk mengecek WHO spesifik sesuai posisinya di urutan paket (UT).
+function wAfT(){goNext2()}
 async function wEnd(){
   sl('Menyimpan...');const id=localStorage.getItem('db_id');
-  try{const cur=await aG(id),sf=cfg.saveField;let o={};try{o=JSON.parse(cur.data[sf]||'{}')}catch{}o[cfg._taskId]=wUA.join(';')+';';const v=JSON.stringify(o);await aP(id,{[sf]:v});localStorage.removeItem('_st_'+cfg._taskId);wDualFirst=null;cu=cur.data;cu[sf]=v;hl();wAfT()}
+  try{
+    const cur=await aG(id),sf=cfg.saveField;let o={};try{o=JSON.parse(cur.data[sf]||'{}')}catch{}
+    o[cfg._taskId]=wUA.join(';')+';';const v=JSON.stringify(o);await aP(id,{[sf]:v});
+    localStorage.removeItem('_st_'+cfg._taskId);wDualFirst=null;cu=cur.data;cu[sf]=v;
+    // Catat selesai ke log_selesai (PERBAIKAN: dulu WHO tidak pernah tercatat di sini,
+    // jadi tidak ikut dihitung checkpoint MINTA_TOKEN_SETELAH sesuai urutan paket)
+    const _bioSelesai=await catatSelesaiSubtes(id, cfg._taskId, tsNow());
+    hl();
+    if(await cekTriggerCheckpoint(id,_bioSelesai))return;
+    wAfT();
+  }
   catch(e){alert('Gagal: '+e.message);hl()}
 }
 
@@ -1600,6 +2006,130 @@ function stopLogoutPoll(){
   if(_logoutPollInterval){clearInterval(_logoutPollInterval);_logoutPollInterval=null;}
 }
 
+// ── CHECKPOINT TOKEN (mode MINTA_TOKEN_SETELAH>0) ──
+// Logout-paksa setelah checkpoint tercapai: bersihkan sesi lokal total,
+// LANGSUNG tampilkan form "masukkan token" (tanpa menunjukkan kembali
+// form/hasil isian biodata). Peserta WAJIB masukkan token dari admin untuk lanjut.
+function logoutPaksaCheckpoint(){
+  localStorage.clear();
+  _updateExistingId=null;
+  stopGlobalPolling();
+  stopLogoutPoll();
+  hl();
+  const tlb=$('tokenLoginBox'),bc=$('biodataContainer');
+  if(tlb)tlb.style.display='none';
+  if(bc)bc.style.display='none';
+  ss('screenDaftar');
+  const oldBtn=document.getElementById('btnBukaCheckpointToken');
+  if(oldBtn)oldBtn.style.display='none';
+  bukaPopupCheckpointToken(true);
+}
+
+// Tampilkan tombol kecil "Sudah punya token?" di screenDaftar — HANYA dipakai saat
+// halaman dibuka dari awal tanpa localStorage (peserta baru / sesi sudah hilang),
+// supaya form biodata tetap tampil duluan dan token bersifat opsional/manual.
+function tampilTombolCheckpoint(){
+  if(MINTA_TOKEN_SETELAH<=0)return;
+  let btn=document.getElementById('btnBukaCheckpointToken');
+  if(!btn){
+    btn=document.createElement('button');
+    btn.id='btnBukaCheckpointToken';
+    btn.type='button';
+    btn.innerHTML='🔑 Masukkan Token';
+    btn.style.cssText='position:fixed;right:18px;bottom:18px;z-index:500;background:var(--primary);color:#fff;border:none;border-radius:999px;padding:12px 20px;font-size:.9em;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;gap:6px;';
+    btn.onclick=()=>bukaPopupCheckpointToken(false);
+    document.body.appendChild(btn);
+  }
+  btn.style.display='flex';
+}
+
+function bukaPopupCheckpointToken(forced){
+  let pop=document.getElementById('popupCheckpointToken');
+  if(!pop){
+    pop=document.createElement('div');
+    pop.id='popupCheckpointToken';
+    pop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;';
+    pop.innerHTML=`
+      <div class="card" style="max-width:380px;width:100%;margin:0;">
+        <div style="text-align:center;margin-bottom:18px;">
+          <div style="font-size:2.2em;margin-bottom:8px;">🔑</div>
+          <div class="page-title" style="font-size:1.15em;">Masukkan Token</div>
+          <p class="page-sub" style="margin-bottom:0;">Minta token kepada tester/admin untuk melanjutkan tes.</p>
+        </div>
+        <div class="form-group">
+          <input id="inputCheckpointToken" type="text" placeholder="Contoh: budixy245"
+            autocomplete="off" spellcheck="false"
+            style="font-family:'Courier New',monospace;font-size:1.05em;letter-spacing:.05em;"
+            onkeydown="if(event.key==='Enter')prosesCheckpointToken()">
+        </div>
+        <div id="checkpointTokenErrBox" style="display:none;padding:9px 12px;background:#fee2e2;color:#dc2626;border-radius:8px;font-size:.875em;font-weight:600;margin-bottom:12px;"></div>
+        <button id="btnProsesCheckpointToken" class="btn btn-primary" onclick="prosesCheckpointToken()">Lanjutkan →</button>
+        <button id="btnBatalCheckpointToken" type="button" onclick="tutupPopupCheckpointToken()" style="display:block;margin:10px auto 0;background:none;border:none;color:var(--muted);font-size:.85em;cursor:pointer;">Batal</button>
+      </div>`;
+    document.body.appendChild(pop);
+  }
+  pop.style.display='flex';
+  const inp=document.getElementById('inputCheckpointToken');if(inp){inp.value='';inp.focus();}
+  const eb=document.getElementById('checkpointTokenErrBox');if(eb)eb.style.display='none';
+  // Mode "forced" (dipanggil otomatis setelah logout-paksa): sembunyikan tombol Batal,
+  // karena di belakang popup tidak ada apa-apa untuk dibatalkan ke sana.
+  const btnBatal=document.getElementById('btnBatalCheckpointToken');
+  if(btnBatal)btnBatal.style.display=forced?'none':'block';
+}
+
+function tutupPopupCheckpointToken(){
+  const pop=document.getElementById('popupCheckpointToken');
+  if(pop)pop.style.display='none';
+}
+
+async function prosesCheckpointToken(){
+  const inp=document.getElementById('inputCheckpointToken');
+  const errBox=document.getElementById('checkpointTokenErrBox');
+  const btn=document.getElementById('btnProsesCheckpointToken');
+  const tok=(inp.value||'').trim();
+  errBox.style.display='none';
+  if(!tok){errBox.textContent='Mohon masukkan token.';errBox.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Memeriksa...';
+  try{
+    const res=await aF(`${API_R}?table=${TBL}&x_01_eq=${encodeURIComponent(tok)}`,{headers:{'X-Custom-Auth':AUTH}});
+    if(!res.success||!res.count){
+      errBox.textContent='Token tidak ditemukan / salah.';errBox.style.display='block';
+      btn.disabled=false;btn.textContent='Lanjutkan →';return;
+    }
+    const row=res.data[0];
+    localStorage.setItem('token',tok);
+    localStorage.setItem('db_id',String(row.id_x));
+    // PERBAIKAN BUG: '_p' wajib disinkronkan ke AUTO_PAKET di sini juga.
+    // logoutPaksaCheckpoint() sebelumnya memanggil localStorage.clear() (menghapus '_p'),
+    // dan jalur token checkpoint ini (beda dari window.onload INIT) tidak pernah
+    // menulis ulang '_p' sebelum loadAC() dipanggil — akibatnya loadAC() membaca
+    // '_p' kosong dan fallback ke ALL_CONFIG (mulai dari apm0) sampai halaman di-refresh.
+    localStorage.setItem('_p', AUTO_PAKET);
+    cu=row;
+    // Biodata sudah ada tapi SELFIE belum (checkpoint N=1: token diminta tepat
+    // setelah biodata, sebelum selfie) → arahkan ke kamera selfie, bukan langsung tes.
+    let bioCek2={};try{bioCek2=JSON.parse(row.x_02||'{}')}catch{}
+    if(!bioCek2.foto_selfie){
+      _updateExistingId=String(row.id_x);
+      _pendingBio=bioCek2;
+      tutupPopupCheckpointToken();
+      hl();
+      bukaKameraSelfie();
+      return;
+    }
+    tutupPopupCheckpointToken();
+    sl('Memuat tes...');
+    await loadAC();
+    vMap={};if(cu.x_09){try{const v=JSON.parse(cu.x_09);Object.entries(v).forEach(([k,vl])=>{if(k&&/^[a-zA-Z0-9_]+$/.test(k))vMap[k]=parseInt(vl)||0})}catch{}}
+    hl();
+    startGlobalPolling();
+    await goNext2();
+  }catch(e){
+    errBox.textContent='⚠ Gagal: '+e.message;errBox.style.display='block';
+    btn.disabled=false;btn.textContent='Lanjutkan →';hl();
+  }
+}
+
 // ── Logout: reset sesi peserta, kembali ke daftar ──
 async function doLogout(dbId){
   try{
@@ -1614,6 +2144,11 @@ async function doLogout(dbId){
   }catch(e){console.warn('[logout] gagal reset flag:',e)}
   // Bersihkan sesi lokal
   localStorage.clear();
+  _updateExistingId=null;
+  const tlb=$('tokenLoginBox'),bc=$('biodataContainer');
+  if(tlb)tlb.style.display='block';
+  if(bc)bc.style.display='none';
+  const inpT=$('inputTokenMain');if(inpT)inpT.value='';
   stopGlobalPolling();
   stopLogoutPoll();
   hl();
@@ -1646,7 +2181,7 @@ let _kontrolInfo={aktif:false,waktu_mulai:'',link:''};
 
 async function cekKontrol(){
   try{
-    const res=await aF(`${API_R}?table=${TBL_K}&id_x=1`,{headers:{'X-Custom-Auth':AUTH}});
+    const res=await aF(`${API_R_KONTROL}?table=${TBL_K}&id_x=1`,{headers:{'X-Custom-Auth':AUTH}});
     if(!res.success||!res.data)return{aktif:false,waktu_mulai:'',link:''};
     let raw={};try{raw=JSON.parse(res.data.x_01||'{}')}catch{}
     const paketArr=Array.isArray(raw.paket)?raw.paket:[];
@@ -1720,6 +2255,10 @@ async function loadFragment(url, containerId) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const html = await res.text();
     document.getElementById(containerId).innerHTML = html;
+    // CATATAN: <script> di dalam HTML yang di-inject lewat innerHTML TIDAK ikut
+    // dieksekusi oleh browser. Untuk fragment biodata-cpmi (yang punya script
+    // sendiri: addRow, toggleKondisi, getBiodataCpmi, dst), fungsi-fungsi itu
+    // harus diaktifkan ulang secara manual lewat initBiodataCpmi() di bawah.
     if (url.includes('biodata-cpmi')) initBiodataCpmi();
   } catch (e) {
     console.error('[FRAGMENT] Gagal memuat', url, e);
@@ -1756,6 +2295,18 @@ async function loadFragment(url, containerId) {
 })();
 
 function initBiodataCpmi() {
+  // ── Kontrol tombol "🎲 Isi Contoh (Acak)" lewat CONFIG.cpmi.tampilkanIsiContoh ──
+  // Tombol ini ada di dalam fragment biodata-cpmi2.html (di-inject via innerHTML),
+  // jadi dicari di sini lewat onclick="isiContohCpmi()" atau teks "Isi Contoh".
+  (function toggleTombolIsiContoh() {
+    let btn = document.querySelector('[onclick*="isiContohCpmi"]');
+    if (!btn) {
+      btn = [...document.querySelectorAll('button')]
+        .find(b => /isi\s*contoh/i.test(b.textContent || ''));
+    }
+    if (btn) btn.style.display = TAMPILKAN_ISI_CONTOH ? '' : 'none';
+  })();
+
   const rowTemplates = {
     pendidikan: () => `
       <td><input type="text" placeholder="Nama sekolah/universitas" data-key="lembaga"></td>
@@ -2073,32 +2624,6 @@ function initBiodataCpmi() {
 // INIT
 // ═══════════════════════════════════════════
 window.onload = async () => {
-  // ── Cek ?p= lebih awal, sebelum apapun dijalankan ──
-  if (!AUTO_PAKET) {
-    hl();
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    let errScreen = $('screenNoPacket');
-    if (!errScreen) {
-      errScreen = document.createElement('div');
-      errScreen.id = 'screenNoPacket';
-      errScreen.className = 'screen active';
-      errScreen.innerHTML = `
-        <div class="card" style="text-align:center;margin-top:40px">
-          <div style="font-size:3em;margin-bottom:12px">📦</div>
-          <div style="font-size:1.25em;font-weight:700;color:var(--danger);margin-bottom:10px">Paket Belum Dimasukkan</div>
-          <p style="color:var(--muted);font-size:.9em;line-height:1.7">
-            Halaman ini memerlukan parameter paket pada URL.<br>
-            Tambahkan <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:.9em">?p=nama-paket</code> di akhir URL Anda.<br><br>
-            Contoh: <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:.9em">tes-template.html?p=tes-iq</code>
-          </p>
-        </div>`;
-      document.body.appendChild(errScreen);
-    } else {
-      errScreen.classList.add('active');
-    }
-    return; // hentikan init
-  }
-
   sl('Memeriksa paket...');
 
   // Cek paket di server SEBELUM apapun (termasuk sebelum cek token)
@@ -2149,41 +2674,67 @@ window.onload = async () => {
   const tok = localStorage.getItem('token');
   if (tok) {
     const _pLama = localStorage.getItem('_p');
-    // Catat apakah token ini berasal dari paket yang berbeda SEBELUM dioverwrite
+    // Catat apakah token ini berasal dari paket yang BENAR-BENAR berbeda (bukan sekadar kosong) SEBELUM dioverwrite
     const _paketBeda = !!(_pLama && _pLama !== AUTO_PAKET);
-    if (_paketBeda) {
-      const _keysHapus = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith('_st_')) _keysHapus.push(k);
-      }
-      _keysHapus.forEach(k => localStorage.removeItem(k));
-      localStorage.setItem('_p', AUTO_PAKET);
-      // PERBAIKAN INTI: reset status di DB ke 'nonaktif' jika pindah ke paket non-auto.
-      // Ini mencegah status 'aktif' dari paket sebelumnya (asmara dll) dipakai untuk
-      // melewati screenTunggu pada paket IQ yang wajib konfirmasi admin.
-      if (!IS_AUTO_AKTIF) {
-        const _oldDbId = localStorage.getItem('db_id');
-        if (_oldDbId) {
-          try {
-            const _oldData = await aF(`${API_R}?table=${TBL}&id_x=${_oldDbId}`, {headers:{'X-Custom-Auth':AUTH}});
-            if (_oldData.success && _oldData.data) {
-              let _oldBio = {}; try { _oldBio = JSON.parse(_oldData.data.x_02 || '{}'); } catch {}
-              if (_oldBio.status === 'aktif') {
-                _oldBio.status = 'nonaktif';
-                await aP(_oldDbId, {x_02: JSON.stringify(_oldBio)});
-                console.log('[INIT] Status record lama di-reset ke nonaktif untuk paket:', AUTO_PAKET);
+    // PERBAIKAN BUG: '_p' harus tetap disinkronkan ke AUTO_PAKET setiap kali nilainya
+    // beda dari AUTO_PAKET — TERMASUK saat _pLama masih kosong/null (mis. token ada
+    // tapi '_p' belum pernah ter-set). Sebelumnya kondisi ini hanya jalan kalau ada
+    // nilai LAMA yang beda, sehingga kalau _pLama null, '_p' tidak pernah di-set dan
+    // loadAC() jatuh ke fallback ALL_CONFIG (mulai dari apm0).
+    if (_pLama !== AUTO_PAKET) {
+      if (_paketBeda) {
+        const _keysHapus = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('_st_')) _keysHapus.push(k);
+        }
+        _keysHapus.forEach(k => localStorage.removeItem(k));
+        // PERBAIKAN INTI: reset status di DB ke 'nonaktif' jika pindah ke paket non-auto.
+        // Ini mencegah status 'aktif' dari paket sebelumnya (asmara dll) dipakai untuk
+        // melewati screenTunggu pada paket IQ yang wajib konfirmasi admin.
+        // Hanya jalan saat BENAR-BENAR pindah paket (_paketBeda), bukan saat '_p' sekadar
+        // kosong/null untuk pertama kali (itu bukan perpindahan, jadi tidak perlu reset status).
+        if (!IS_AUTO_AKTIF) {
+          const _oldDbId = localStorage.getItem('db_id');
+          if (_oldDbId) {
+            try {
+              const _oldData = await aF(`${API_R}?table=${TBL}&id_x=${_oldDbId}`, {headers:{'X-Custom-Auth':AUTH}});
+              if (_oldData.success && _oldData.data) {
+                let _oldBio = {}; try { _oldBio = JSON.parse(_oldData.data.x_02 || '{}'); } catch {}
+                if (_oldBio.status === 'aktif') {
+                  _oldBio.status = 'nonaktif';
+                  await aP(_oldDbId, {x_02: JSON.stringify(_oldBio)});
+                  console.log('[INIT] Status record lama di-reset ke nonaktif untuk paket:', AUTO_PAKET);
+                }
               }
-            }
-          } catch(e) { console.warn('[INIT] Gagal reset status lama:', e); }
+            } catch(e) { console.warn('[INIT] Gagal reset status lama:', e); }
+          }
         }
       }
+      // '_p' SELALU disinkronkan ke AUTO_PAKET di sini, baik saat genuine pindah paket
+      // maupun saat _pLama sekadar kosong/null — ini bagian inti dari perbaikan bug.
+      localStorage.setItem('_p', AUTO_PAKET);
     }
     sl('Memeriksa sesi...');
     try {
       const res = await aF(`${API_R}?table=${TBL}&x_01_eq=${tok}`, { headers: { 'X-Custom-Auth': AUTH } });
       if (!res.success || !res.count) { localStorage.clear(); hl(); ss('screenDaftar'); return; }
       cu = res.data[0]; localStorage.setItem('db_id', cu.id_x);
+
+      // ── Cek apakah biodata sudah terisi (field 'nama') ──
+      let bioCekR = {}; try { bioCekR = JSON.parse(cu.x_02 || '{}'); } catch {}
+      // Cek status logout SEGERA setelah login berhasil — tidak peduli biodata sudah diisi atau belum
+      cekTombolLogout(bioCekR.logout === true);
+      if (!bioCekR.nama) {
+        hl();
+        _updateExistingId = String(cu.id_x);
+        tampilTopBarId();
+        ss('screenDaftar');
+        $('tokenLoginBox').style.display = 'none';
+        $('biodataContainer').style.display = 'block';
+        return;
+      }
+
       vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
       await loadAC();
       let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
@@ -2205,15 +2756,18 @@ window.onload = async () => {
     return;
   }
   hl(); ss('screenDaftar');
+  if(MINTA_TOKEN_SETELAH>0){
+    const tlb=$('tokenLoginBox'),bc=$('biodataContainer');
+    if(tlb)tlb.style.display='none';
+    if(bc)bc.style.display='block';
+    tampilTombolCheckpoint();
+  }
 };
 </script>
 
 <script>
 // ═══ KREPLIN ENGINE ═══
-// ⚙️ WAKTU_KREPLIN_OVERRIDE = override detik per kolom untuk testing cepat.
-// Isi angka (misal 5) untuk override waktu dari kreplin.txt. Set null untuk pakai setting asli.
-const WAKTU_KREPLIN_OVERRIDE = null;
-let _kCfg={},_kKolom=0,_kSoalIdx=0,_kBenar=0,_kSalah=0,_kTimer=null,_kTL=0,_kLog=[],_kA=0,_kB=0,_kDone=false;
+let _kCfg={},_kKolom=0,_kSoalIdx=0,_kBenar=0,_kSalah=0,_kTimer=null,_kTL=0,_kLog=[],_kA=0,_kB=0,_kDone=false,_kIsTrial=false;
 const _kSK='_krep_state';
 
 function kreplinSaveState(){
@@ -2247,10 +2801,10 @@ async function kreplinStart(ref){
       }
     }catch(e){console.warn('[kreplin] gagal load config:',e)}
   }
-  if(WAKTU_KREPLIN_OVERRIDE!=null){
-    meta.detikPerKolom=WAKTU_KREPLIN_OVERRIDE; // override tetap berlaku untuk angka apa pun
-    if(WAKTU_KREPLIN_OVERRIDE!==30)meta._testingActive=true; // tapi banner hanya muncul kalau beda dari 30
-  }
+  // ── KREPLIN OVERRIDE: percepat detikPerKolom untuk testing (lihat CONFIG.kreplinOverride) ──
+  const isTrial = KREPLIN_OVERRIDE_AKTIF;
+  if(isTrial) meta.detikPerKolom = KREPLIN_OVERRIDE_DETIK;
+  _kIsTrial = isTrial;
   _kCfg=meta;_kDone=false;
 
   // Cek apakah ada state tersimpan (resume setelah refresh)
@@ -2267,6 +2821,7 @@ async function kreplinStart(ref){
     _kLog=saved.log||[];
     ss('screenKreplin');hl();
     localStorage.setItem('_activeTask','kreplin');
+    $('krepTrialNoticeTest').style.display=_kIsTrial?'':'none';
     kreplinRenderKolom();
     kreplinSoalBaru();
     // Timer resume dari sisa waktu
@@ -2282,6 +2837,7 @@ async function kreplinStart(ref){
   $('exampleBlock').style.display=exNote?'':'none';
   const iw=document.querySelector('#exampleBlock .example-images');if(iw)iw.style.display='none';
   $('timerNote').style.display='none';
+  $('krepTrialNoticeStart').style.display=_kIsTrial?'':'none';
   $('btnStart').onclick=()=>kreplinRun();
   ss('screenStart');hl();tampilTopBarId();
 }
@@ -2292,6 +2848,7 @@ function kreplinRun(){
   localStorage.setItem('_activeTask','kreplin');
   kreplinSaveState();
   ss('screenKreplin');
+  $('krepTrialNoticeTest').style.display=_kIsTrial?'':'none';
   kreplinRenderKolom();
   kreplinSoalBaru();
   kreplinStartTimer();
@@ -2301,8 +2858,6 @@ function kreplinRenderKolom(){
   $('krepTitle').innerText='Tes Kraepelin';
   $('krepProgress').innerText='Kolom '+_kKolom+' / '+(_kCfg.totalKolom||45);
   $('krepProgressBar').style.width=Math.round(((_kKolom-1)/(_kCfg.totalKolom||45))*100)+'%';
-  const banner=$('krepTestingBanner');
-  if(banner)banner.style.display=_kCfg._testingActive?'':'none';
 }
 
 function kreplinNextKolom(){
@@ -2378,34 +2933,13 @@ function kreplinCatatKolom(){
   _kLog.push({kolom:_kKolom,soal:_kSoalIdx,benar:benarKolom,salah:salahKolom});
   _kBenarPrev=_kBenar;
   _kSalahPrev=_kSalah;
-  // Jangan simpan ke server kalau kreplin sudah selesai (_kDone)
-  // agar tidak menimpa data final dari kreplinSelesai()
-  if(_kDone)return;
-  // Simpan progress per kolom ke server — merge kolom per kolom
-  // agar kalau request ini datang telat tidak menghapus kolom lain yg sudah tersimpan
-  const kolomIdx=_kKolom-1;
-  const entry=_kLog[_kLog.length-1];
+  // Simpan progress ke server setiap akhir kolom
   const dbId=localStorage.getItem('db_id');
   if(dbId){
     aG(dbId).then(cur=>{
-      if(_kDone)return; // cek lagi setelah fetch selesai
       const sf='x_06';
       let o={};try{o=JSON.parse(cur.data[sf]||'{}')}catch{}
-      // Merge: ambil dikerjakan/benar/salah yang sudah ada, update hanya kolom ini
-      const total=_kCfg.totalKolom||45;
-      const toDikerjakanArr=((o.kreplin&&o.kreplin.dikerjakan)||'').split('|');
-      const toBenarArr=((o.kreplin&&o.kreplin.benar)||'').split('|');
-      const toSalahArr=((o.kreplin&&o.kreplin.salah)||'').split('|');
-      while(toDikerjakanArr.length<total)toDikerjakanArr.push('');
-      while(toBenarArr.length<total)toBenarArr.push('');
-      while(toSalahArr.length<total)toSalahArr.push('');
-      toDikerjakanArr[kolomIdx]=String(entry.soal||0);
-      toBenarArr[kolomIdx]=String(entry.benar||0);
-      toSalahArr[kolomIdx]=String(entry.salah||0);
-      if(!o.kreplin)o.kreplin={};
-      o.kreplin.dikerjakan=toDikerjakanArr.join('|');
-      o.kreplin.benar=toBenarArr.join('|');
-      o.kreplin.salah=toSalahArr.join('|');
+      o.kreplin=kreplinBuildPayload();
       const upd={};upd[sf]=JSON.stringify(o);
       return aP(dbId,upd).then(()=>{cu=cur.data;cu[sf]=upd[sf];});
     }).catch(e=>console.warn('[kreplin] gagal simpan kolom:',e));
@@ -2452,37 +2986,36 @@ async function kreplinSelesai(){
   kreplinClearState();
   localStorage.removeItem('_activeTask');
   const dbId=localStorage.getItem('db_id');
-  // Tandai done di cu secara lokal dulu agar goNext2 tidak loop
-  // walau simpan ke server gagal sekalipun
-  const payloadKreplin=kreplinBuildPayload();
-  try{
-    let oLocal={};try{oLocal=JSON.parse(cu['x_06']||'{}')}catch{}
-    oLocal.kreplin=payloadKreplin;
-    cu['x_06']=JSON.stringify(oLocal);
-  }catch{}
+  let _bioSelesai=null;
   if(dbId){
     sl('Menyimpan hasil...');
     try{
       const cur=await aG(dbId);
       const sf='x_06';
       let o={};try{o=JSON.parse(cur.data[sf]||'{}')}catch{}
-      o.kreplin=payloadKreplin;
+      o.kreplin=kreplinBuildPayload();
       const upd={};upd[sf]=JSON.stringify(o);
       await aP(dbId,upd);
       cu=cur.data;cu[sf]=upd[sf];
-    }catch(e){
-      console.warn('[kreplin] gagal simpan ke server, pakai data lokal:',e);
-    }
+      // Catat selesai ke log_selesai (PERBAIKAN: dulu Kraepelin tidak pernah tercatat
+      // di sini, jadi tidak ikut dihitung checkpoint MINTA_TOKEN_SETELAH sesuai urutan paket)
+      _bioSelesai=await catatSelesaiSubtes(dbId,'kreplin',tsNow());
+    }catch(e){console.warn('[kreplin] gagal simpan:',e)}
   }
-  sl('Memuat tes berikutnya...');
-  await goNext2();
+  hl();
+  if(dbId && await cekTriggerCheckpoint(dbId,_bioSelesai))return;
+  $('doneIcon').innerText='✅';
+  $('doneTitle').innerText='Tes Kraepelin Selesai!';
+  $('doneDesc').innerText='Hasil telah tersimpan.';
+  ss('screenDone');
+  setTimeout(()=>{sl('Memuat tes berikutnya...');goNext2()},2000);
 }
 </script>
 
 <!-- <script>
 // ═══ Pelacak Kunjungan Harian Unik ═══
 (function(){
-  const API_BASE_URL='https://tabi.my.id/api/contacts';
+  const API_BASE_URL='https://lidan-co-id.pages.dev/api/contacts';
   const TABLE_NAME='kunjungan',BASE_LS_KEY='visit_tracker_',QUERY_PARAM=`tabel=${TABLE_NAME}`;
   function simpleHash(str){let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return Math.abs(h).toString(16)}
   function getTodayDate(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
@@ -2510,36 +3043,32 @@ async function kreplinSelesai(){
 <!-- ══ TOMBOL TOKEN MENGAMBANG ══ -->
 <button id="btnTokenFloat"
   onclick="bukaPopupToken()"
-  style="position:fixed;bottom:80px;right:12px;z-index:2147483647;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:'Segoe UI',sans-serif;display:none;">
+  style="display:none !important;position:fixed;bottom:80px;right:12px;z-index:2147483647;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:'Segoe UI',sans-serif;">
   🔑 Token
 </button>
 
-<!-- ══ OVERLAY LOGIN TOKEN (modal layar penuh — menutupi form pendaftaran) ══ -->
-<div id="popupToken" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#f1f5f9;align-items:center;justify-content:center;">
-  <div style="background:white;border-radius:16px;padding:28px 26px;box-shadow:0 12px 40px rgba(0,0,0,.18);width:320px;max-width:90%;border:2px solid #c7d2fe;">
-    <div style="font-size:16px;font-weight:700;color:#4338ca;margin-bottom:6px;">🔑 Login dengan Token</div>
-    <p style="font-size:12.5px;color:#64748b;line-height:1.5;margin-bottom:14px;">Masukkan token yang sudah Anda dapatkan untuk melanjutkan ke pengerjaan tes.</p>
-    <input id="inputToken" type="text" placeholder="Masukkan token..." autocomplete="off" spellcheck="false"
-      style="width:100%;padding:12px 14px;border:2px solid #c7d2fe;border-radius:10px;font-size:14px;font-family:'Courier New',monospace;outline:none;box-sizing:border-box;margin-bottom:10px;"
-      onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#c7d2fe'"
-      onkeydown="if(event.key==='Enter')loginDenganToken()">
-    <div id="tokenErrBox" style="display:none;padding:8px 11px;background:#fee2e2;color:#dc2626;border-radius:8px;font-size:12.5px;font-weight:600;margin-bottom:10px;"></div>
-    <div style="display:flex;gap:8px;">
-      <button id="btnBatalToken" onclick="tutupPopupToken()"
-        style="flex:1;padding:10px;background:#f1f5f9;color:#64748b;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">
-        Batal
-      </button>
-      <button id="btnLoginToken" onclick="loginDenganToken()"
-        style="flex:2;padding:10px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">
-        Masuk →
-      </button>
-    </div>
+<!-- ══ POPUP INPUT TOKEN ══ -->
+<div id="popupToken" style="display:none;position:fixed;bottom:116px;right:12px;z-index:2147483647;background:white;border-radius:14px;padding:18px;box-shadow:0 8px 32px rgba(0,0,0,.2);width:280px;border:2px solid #c7d2fe;">
+  <div style="font-size:13px;font-weight:700;color:#4338ca;margin-bottom:10px;">🔑 Login dengan Token</div>
+  <input id="inputToken" type="text" placeholder="Masukkan token..." autocomplete="off" spellcheck="false"
+    style="width:100%;padding:9px 12px;border:2px solid #c7d2fe;border-radius:8px;font-size:13px;font-family:'Courier New',monospace;outline:none;box-sizing:border-box;margin-bottom:8px;"
+    onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#c7d2fe'"
+    onkeydown="if(event.key==='Enter')loginDenganToken()">
+  <div id="tokenErrBox" style="display:none;padding:7px 10px;background:#fee2e2;color:#dc2626;border-radius:7px;font-size:12px;font-weight:600;margin-bottom:8px;"></div>
+  <div style="display:flex;gap:8px;">
+    <button onclick="tutupPopupToken()"
+      style="flex:1;padding:8px;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
+      Batal
+    </button>
+    <button id="btnLoginToken" onclick="loginDenganToken()"
+      style="flex:2;padding:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">
+      Masuk →
+    </button>
   </div>
 </div>
 
 <button id="btnLogoutPeserta" style="display:none;position:fixed;bottom:46px;right:12px;z-index:2147483647;background:#dc2626;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);font-family:'Segoe UI',sans-serif;" onclick="doLogout(localStorage.getItem('db_id'))">🔓 Ganti Peserta</button>
 <div id="topBarId" style="display:none;position:fixed;bottom:12px;right:12px;z-index:2147483647;font-size:.78em;font-weight:700;color:#4338ca;background:#e0e7ff;border:2px solid #6366f1;border-radius:8px;padding:4px 12px;font-family:'Courier New',monospace;box-shadow:0 2px 8px rgba(0,0,0,.2);pointer-events:none;">ID: —</div>
-
 
 <!-- ══ OVERLAY PERINGATAN REFRESH ══ -->
 <div id="refreshWarningOverlay" style="display:none;position:fixed;inset:0;z-index:2147483646;background:rgba(15,23,42,.82);backdrop-filter:blur(4px);align-items:center;justify-content:center;">

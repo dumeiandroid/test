@@ -553,19 +553,17 @@ const CONFIG = {
   // ── 1. PAKET ──────────────────────────────────────────────
   paket: {
     // Paket aktif untuk file index.html ini (harus cocok dgn x_01 di tabel alat_tes)
-    aktif: 'cpmi-sumut',
+    aktif: '1',
     // Paket yang langsung aktif tanpa perlu admin klik "aktifkan" dulu
-    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'cpmi-sumut'],
+    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', '1'],
   },
 
   // ── 2. FRAGMENT (form biodata & layar penutup) ───────────────
   fragment: {
     base: 'https://lidan.co.id/test/',
-    // biodata-1.html    → ringkas, tanpa radio kesediaan (corporate)
-    // biodata-2.html    → ringkas, dengan radio kesediaan (free/premium)
-    // biodata-cpmi2.html → LENGKAP: NIK, riwayat pendidikan/kerja/keluarga,
-    //                       kuesioner STAR, dll (khusus program CPMI)
-    biodataFile: 'biodata-cpmi2.html',
+    // biodata-1.html → tanpa radio kesediaan (corporate)
+    // biodata-2.html → dengan radio kesediaan (free/premium)
+    biodataFile: 'biodata-2.html',
     // penutup-1.html → ucapan terima kasih + laporan diproses
     // penutup-2.html → pilihan paket harga berbayar
     penutupFile: 'penutup-2.html',
@@ -583,7 +581,7 @@ const CONFIG = {
   kreplinOverride: {
     // true  = pakai detikPerKolom di bawah ini (mengabaikan nilai dari kreplin.txt).
     // false = pakai durasi asli dari file soal (biasanya 30 detik/kolom).
-    aktif: true,
+    aktif: false,
     // Durasi per kolom (detik) saat override aktif. Contoh: 3 = tiap kolom cuma 3 detik,
     // supaya testing alur cepat tanpa harus menunggu 45 kolom x 30 detik.
     detikPerKolom: 3,
@@ -617,18 +615,10 @@ const CONFIG = {
 
   // ── 5. TOKEN ──────────────────────────────────────────────
   token: {
-    // Skema checkpoint (urutan langkah, BUKAN jumlah subtes):
-    //   0 = token diminta LANGSUNG DI DEPAN, sebelum biodata (perilaku lama).
-    //   1 = token diminta setelah BIODATA selesai, SEBELUM selfie.
-    //   2 = token diminta setelah SELFIE selesai (biodata+selfie sudah tersimpan).
-    //   3 = token diminta setelah urutan PERTAMA di paket (x_02) selesai.
-    //   4 = setelah urutan kedua di paket selesai. 5=urutan ketiga. Dst.
-    //   (rumus umum untuk N>=3: token diminta setelah urutan ke-(N-2) di paket selesai)
-    // Kalau angka SENGAJA dibuat lebih besar dari total langkah yang ada (biodata+
-    // selfie+seluruh subtes di paket), checkpoint TIDAK PERNAH ke-trigger — tes
-    // berjalan terus sampai selesai tanpa minta token di tengah, karena token
-    // sudah otomatis tersimpan di localStorage sejak biodata pertama disimpan.
-    mintaSetelah: 3,
+    // 0 = minta token langsung di awal (perilaku lama).
+    // N>0 = mode checkpoint: token diminta diam-diam setelah N subtes selesai.
+    // Lihat penjelasan lengkap di KETERANGAN_VARIABLE.txt poin 6.
+    mintaSetelah: 2,
     chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   },
 
@@ -706,10 +696,6 @@ const API_W=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis6`;
 const API_R=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
 // Paket alat_tes selalu diambil dari server 1, tidak ikut SERVER aktif
 const API_R_PAKET=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
-// admin_kontrol (status buka/tutup tes) juga HARUS selalu dari server 1,
-// supaya toggle admin di 1 tempat berlaku untuk semua folder /1/ /2/ /3/ /4/.
-// (sebelumnya ikut ACTIVE_DOMAIN/API_R per-folder — itu bug: status bisa beda2 per server)
-const API_R_KONTROL=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
 const TBL=CONFIG.database.tbl, TBL_P=CONFIG.database.tblPaket, TBL_K=CONFIG.database.tblKontrol,
       AUTH=CONFIG.database.auth, WHO_B=CONFIG.database.whoEndpoint;
 
@@ -894,21 +880,6 @@ async function loginDenganTokenMain() {
       $('biodataContainer').style.display = 'block';
       return;
     }
-    // Biodata sudah ada tapi SELFIE belum (mis. mode checkpoint N=1: token diminta
-    // tepat setelah biodata, sebelum selfie) → arahkan langsung ke kamera selfie,
-    // BUKAN ke form biodata (sudah terisi) atau langsung ke tes (selfie wajib dulu).
-    if (!bioCek.foto_selfie) {
-      hl();
-      _updateExistingId = String(cu.id_x);
-      _pendingBio = bioCek;
-      localStorage.setItem('token', tok);
-      localStorage.setItem('db_id', String(cu.id_x));
-      localStorage.setItem('_p', AUTO_PAKET);
-      tampilTopBarId();
-      $('tokenLoginBox').style.display = 'none';
-      bukaKameraSelfie();
-      return;
-    }
 
     localStorage.setItem('token', tok);
     localStorage.setItem('db_id', String(cu.id_x));
@@ -1066,8 +1037,8 @@ async function kirimSelfie(){
     localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',_pendingPnm);
     cu={id_x:res.id_x,x_01:tok,x_02:bio};
 
-    // Mode checkpoint N=2: token diminta TEPAT setelah selfie, sebelum subtes apapun dimulai.
-    if(MINTA_TOKEN_SETELAH===2){
+    // Mode checkpoint N=1: token diminta TEPAT setelah biodata, sebelum subtes apapun dimulai.
+    if(MINTA_TOKEN_SETELAH===1){
       try{
         let bioObj={};try{bioObj=JSON.parse(bio||'{}')}catch{}
         bioObj.checkpoint_lewat=true;
@@ -1092,39 +1063,6 @@ async function kirimSelfie(){
     $('selfieActions').style.display='flex';
     alert('⚠ '+e.message);
   }
-}
-
-// ── PENGUMPUL BIODATA DINAMIS ──────────────────────────────────
-// Membaca SEMUA elemen form (input/select/textarea) di dalam #biodataContainer,
-// apapun id/name/strukturnya. Tujuannya: kalau fragment biodata (biodata-1.html,
-// biodata-2.html, biodata-cpmi2.html, atau fragment baru apapun ke depannya)
-// diubah/ditambah fieldnya, x_02 yang tersimpan OTOMATIS ikut lengkap tanpa
-// perlu edit kode ini lagi.
-// Field genap (fieldset radio) dikelompokkan per `name`, hanya nilai yang
-// checked yang diambil. Checkbox disimpan sebagai boolean.
-// Elemen bisa ditandai `data-skip-autocollect="true"` untuk dikecualikan
-// (mis. input pencarian/autocomplete yang bukan bagian dari data final).
-// CATATAN: ini menangkap field FLAT (satu nilai per elemen). Untuk data
-// bertingkat/berulang (tabel riwayat pendidikan/kerja/keluarga dengan banyak
-// baris dinamis), fragment tetap perlu menyediakan fungsi khusus seperti
-// window.getBiodataCpmi() — hasilnya digabung setelah ini di handleDaftar()
-// dan menimpa field yang tumpang tindih (karena lebih detail/terstruktur).
-function collectBiodataDinamis(){
-  const c=document.getElementById('biodataContainer');
-  if(!c)return{};
-  const hasil={};
-  c.querySelectorAll('input[id], select[id], textarea[id]').forEach(el=>{
-    if(['button','submit','file','radio'].includes(el.type))return;
-    if(el.dataset&&el.dataset.skipAutocollect==='true')return;
-    hasil[el.id]=el.type==='checkbox'?el.checked:el.value;
-  });
-  const radioNames=new Set();
-  c.querySelectorAll('input[type="radio"][name]').forEach(el=>radioNames.add(el.name));
-  radioNames.forEach(name=>{
-    const checked=c.querySelector(`input[type="radio"][name="${CSS.escape(name)}"]:checked`);
-    hasil[name]=checked?checked.value:'';
-  });
-  return hasil;
 }
 
 async function handleDaftar(){
@@ -1159,11 +1097,6 @@ async function handleDaftar(){
   // sedangkan key "pendidikan" ringkas adalah STRING (sekolah terakhir, dari bioPend).
   // Supaya keduanya tetap tersimpan tanpa saling timpa, array lengkapnya disalin
   // ke key baru "riwayatPendidikan" sebelum digabung.
-  // Urutan penggabungan (yang belakang menimpa yang depan kalau key sama):
-  //  1. bioDinamis  → SEMUA field flat dari form apapun (otomatis, ikut berubah kalau HTML fragment berubah)
-  //  2. bioLengkap  → data array/bertingkat dari fungsi khusus fragment (kalau ada), lebih detail
-  //  3. field ringkas hasil normalisasi (nama, usia, dst) → nama key konsisten untuk laporan/fungsi lain
-  const bioDinamis=collectBiodataDinamis();
   let bioLengkap={};
   if(typeof window.getBiodataCpmi==='function'){
     try{ bioLengkap=window.getBiodataCpmi()||{}; }catch(e){ console.warn('[handleDaftar] getBiodataCpmi gagal:',e); }
@@ -1173,7 +1106,6 @@ async function handleDaftar(){
     delete bioLengkap.pendidikan;
   }
   _pendingBio={
-    ...bioDinamis,
     ...bioLengkap,
     nama:$('bioNama').value.trim(),
     usia:$('bioUsia').value.trim(),
@@ -1185,52 +1117,7 @@ async function handleDaftar(){
     status:IS_AUTO_AKTIF?'aktif':'nonaktif'
   };
   _pendingPid=pid; _pendingPnm=pnm;
-
-  // ── CHECKPOINT N=1: token diminta TEPAT setelah biodata, SEBELUM selfie ──
-  // (skema: 1=setelah biodata sebelum selfie, 2=setelah selfie — lihat CONFIG.token)
-  if(MINTA_TOKEN_SETELAH===1){
-    sl('Menyimpan data...');
-    try{
-      if(_updateExistingId){
-        // Token sudah diketahui peserta sejak awal (mode N=0, login token dulu),
-        // biodata baru diisi sekarang. Tidak perlu logout-paksa — token sudah dipegang
-        // peserta, jadi langsung lanjut ke selfie.
-        const bio=JSON.stringify(_pendingBio);
-        const resU=await aP(_updateExistingId,{x_02:bio}).then(r=>r.json());
-        if(!resU.success)throw new Error(resU.message||'Gagal menyimpan data.');
-        localStorage.setItem('db_id',_updateExistingId);
-        cu={id_x:_updateExistingId,x_01:localStorage.getItem('token'),x_02:bio};
-        _pendingBio=JSON.parse(bio);
-        _updateExistingId=null;
-        hl();
-        bukaKameraSelfie();
-        return;
-      }
-      // Insert baru: simpan biodata, generate token checkpoint diam-diam, lalu logout-paksa
-      // (peserta WAJIB minta token ke admin sebelum bisa lanjut ke selfie).
-      let tok=await genTok(pid);
-      const bio=JSON.stringify(_pendingBio);
-      const res=await aF(`${API_W}?table=${TBL}`,{method:'POST',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_01:tok,x_02:bio})});
-      if(!res.success)throw new Error(res.message||'Gagal menyimpan data.');
-      try{
-        const tokFinal=genTokenDariNama(_pendingBio.nama, res.id_x);
-        await aP(res.id_x,{x_01:tokFinal});
-        tok=tokFinal;
-      }catch(e){console.warn('[checkpoint] gagal update token final:',e)}
-      let bioObj={};try{bioObj=JSON.parse(bio||'{}')}catch{}
-      bioObj.checkpoint_lewat=true;
-      await aP(res.id_x,{x_02:JSON.stringify(bioObj)});
-      localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',pnm);
-      hl();
-      logoutPaksaCheckpoint();
-    }catch(e){
-      hl();
-      eb.textContent='⚠ '+e.message;eb.classList.add('show');
-    }
-    return;
-  }
-
-  // Buka kamera selfie (mode normal / checkpoint lain)
+  // Buka kamera selfie
   bukaKameraSelfie();
 }
 
@@ -1687,11 +1574,8 @@ async function catatSelesaiSubtes(id,taskId,ts,extraFields){
 // ── Helper TERPUSAT: cek & trigger checkpoint MINTA_TOKEN_SETELAH setelah SETIAP
 // jenis subtes selesai (config, WHO, maupun Kraepelin) — supaya hitungannya mengikuti
 // URUTAN PAKET (posisi di x_02) secara utuh, bukan hanya subtes config-type seperti
-// sebelumnya. Skema (lihat juga komentar CONFIG.token.mintaSetelah):
-//   N=3 → checkpoint setelah urutan ke-1 di paket selesai (mis. who:1 kalau dia
-//         paling depan), N=4 → setelah urutan ke-2, dst (target = N-2).
-// (N=0 ditangani di layar awal, N=1 di handleDaftar(), N=2 di kirimSelfie() —
-//  fungsi ini HANYA menangani N>=3, yaitu checkpoint di tengah pengerjaan subtes.)
+// sebelumnya. N=2 → checkpoint setelah urutan ke-1 di paket selesai (mis. who:1 kalau
+// dia paling depan), N=3 → setelah urutan ke-2, dst (target = N-1).
 // PERBAIKAN BUG: dulu hanya endTest() yang mencatat ke log_selesai/cek checkpoint,
 // sehingga WHO & Kraepelin tidak pernah ikut terhitung — kalau WHO ada di urutan
 // awal paket, checkpoint baru kena setelah subtes config PERTAMA, bukan setelah
@@ -1700,7 +1584,7 @@ async function catatSelesaiSubtes(id,taskId,ts,extraFields){
 async function cekTriggerCheckpoint(id,_bioSelesai){
   if(!_bioSelesai)return false;
   const _jmlSelesai=_bioSelesai.log_selesai?Object.keys(_bioSelesai.log_selesai).length:0;
-  if(MINTA_TOKEN_SETELAH>=3 && _jmlSelesai>=(MINTA_TOKEN_SETELAH-2) && !_bioSelesai.checkpoint_lewat){
+  if(MINTA_TOKEN_SETELAH>=2 && _jmlSelesai>=(MINTA_TOKEN_SETELAH-1) && !_bioSelesai.checkpoint_lewat){
     try{
       const _bo2=JSON.parse(JSON.stringify(_bioSelesai));_bo2.checkpoint_lewat=true;
       await aP(id,{x_02:JSON.stringify(_bo2)});
@@ -2106,17 +1990,6 @@ async function prosesCheckpointToken(){
     // '_p' kosong dan fallback ke ALL_CONFIG (mulai dari apm0) sampai halaman di-refresh.
     localStorage.setItem('_p', AUTO_PAKET);
     cu=row;
-    // Biodata sudah ada tapi SELFIE belum (checkpoint N=1: token diminta tepat
-    // setelah biodata, sebelum selfie) → arahkan ke kamera selfie, bukan langsung tes.
-    let bioCek2={};try{bioCek2=JSON.parse(row.x_02||'{}')}catch{}
-    if(!bioCek2.foto_selfie){
-      _updateExistingId=String(row.id_x);
-      _pendingBio=bioCek2;
-      tutupPopupCheckpointToken();
-      hl();
-      bukaKameraSelfie();
-      return;
-    }
     tutupPopupCheckpointToken();
     sl('Memuat tes...');
     await loadAC();
@@ -2181,7 +2054,7 @@ let _kontrolInfo={aktif:false,waktu_mulai:'',link:''};
 
 async function cekKontrol(){
   try{
-    const res=await aF(`${API_R_KONTROL}?table=${TBL_K}&id_x=1`,{headers:{'X-Custom-Auth':AUTH}});
+    const res=await aF(`${API_R}?table=${TBL_K}&id_x=1`,{headers:{'X-Custom-Auth':AUTH}});
     if(!res.success||!res.data)return{aktif:false,waktu_mulai:'',link:''};
     let raw={};try{raw=JSON.parse(res.data.x_01||'{}')}catch{}
     const paketArr=Array.isArray(raw.paket)?raw.paket:[];

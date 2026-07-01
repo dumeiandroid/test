@@ -1,0 +1,193 @@
+==================================================================
+KETERANGAN VARIABLE KONFIGURASI — index.html (Lidan Psikologi)
+Dibuat: 30 Juni 2026
+Tujuan: catatan supaya tidak lupa variable apa yang aman diubah,
+        di baris berapa, dan apa efeknya kalau diubah.
+==================================================================
+
+------------------------------------------------------------------
+1. AUTO_PAKET   (sekitar baris 560)
+------------------------------------------------------------------
+const AUTO_PAKET = 'karakter';
+
+- Menentukan paket tes apa yang dipakai oleh file index.html ini.
+- Nilainya harus sama persis (case-insensitive) dengan kolom x_01
+  pada tabel "alat_tes" (data paket yang diambil via API_R_PAKET).
+- Kalau nilai ini salah / paket tidak ditemukan di server →
+  tampil layar "Paket Tidak Ada" (showPaketNotFoundScreen).
+- GANTI INI kalau file index.html dipakai ulang untuk paket lain
+  (misal mau dipakai untuk paket "iq" atau "asmara").
+
+------------------------------------------------------------------
+2. PAKET_AUTO_AKTIF   (sekitar baris 563)
+------------------------------------------------------------------
+const PAKET_AUTO_AKTIF = ['asmara','potensi','karakter','karir'];
+
+- Daftar nama paket yang BISA LANGSUNG MULAI tanpa perlu admin
+  klik "aktifkan" dulu di dashboard (auto-aktif).
+- Paket yang TIDAK ada di daftar ini (misal "iq") akan masuk ke
+  screenTunggu dan WAJIB menunggu admin set status jadi "aktif"
+  dulu sebelum bisa mulai tes.
+- IS_AUTO_AKTIF (baris 564) otomatis dihitung dari daftar ini,
+  TIDAK perlu diubah manual.
+- GANTI INI kalau ada paket baru yang sifatnya harus auto-aktif
+  atau sebaliknya (harus dikontrol admin).
+
+------------------------------------------------------------------
+3. ALL_CONFIG   (sekitar baris 567–597)
+------------------------------------------------------------------
+const ALL_CONFIG = [ {id:'apm0', dataUrl:..., type:'image_single', saveField:'x_05'}, ... ];
+
+- Daftar MASTER semua subtes yang TERSEDIA di sistem (bukan urutan
+  pengerjaan — urutan asli per paket diambil dari server lewat
+  loadAC()/expand(), field x_03 di tabel alat_tes).
+- id        = kode unik subtes (dipakai di log_selesai, vMap, dll)
+- dataUrl   = lokasi file soal (.txt/json) di server BASE
+- type      = jenis render soal (image_single, image_multi,
+              ab_choice, text_choice, text_input, text_input_scored,
+              digit_check, ranking, kreplin)
+- saveField = kolom database (x_05/x_06) tempat jawaban disimpan
+- HATI-HATI: jangan asal ubah/hapus baris di sini kalau subtes itu
+  masih dipakai oleh paket yang aktif — data jawaban yang sudah
+  tersimpan memakai "id" ini sebagai kunci, kalau id diganti maka
+  riwayat lama jadi tidak terbaca lagi.
+- Boleh ditambah entry baru kalau ada jenis subtes baru, tapi harus
+  juga didaftarkan urutannya di field x_03 paket terkait (server).
+
+------------------------------------------------------------------
+4. SERVER_DEFAULT & SERVERS   (sekitar baris 604–612)
+------------------------------------------------------------------
+const SERVER_DEFAULT = 2;
+const SERVERS = [
+  { label:'1', domain:'lidan-co-id.pages.dev' },
+  { label:'2', domain:'tabi.my.id' },
+  { label:'3', domain:'mobeli.my.id' },
+  { label:'4', domain:'talentmap.my.id' },
+];
+
+- Daftar domain Cloudflare Pages yang bisa dipakai sebagai backend
+  API (API_W / API_R) untuk membaca/menulis data peserta.
+- SERVER aktif otomatis dideteksi dari NAMA FOLDER tempat file ini
+  diletakkan (misal /test/3/index.html → otomatis pakai server 3
+  / mobeli.my.id), TANPA perlu ubah kode.
+- SERVER_DEFAULT dipakai HANYA kalau file tidak diletakkan di
+  folder angka, atau angkanya di luar daftar SERVERS.
+- TAMBAH server baru: tinggal tambah baris baru di array SERVERS,
+  urutan menentukan nomor server (index ke-1 = server '1', dst).
+- API_R_PAKET (baris 622) SENGAJA selalu mengambil dari SERVERS[0]
+  (server 1) — artinya data master "alat_tes" (daftar paket) HARUS
+  selalu disimpan di server 1, tidak ikut server aktif. Jangan ubah
+  ini kecuali memang mau pindahkan sumber data paket.
+
+------------------------------------------------------------------
+5. TBL, TBL_P, TBL_K, AUTH, WHO_B   (baris 623)
+------------------------------------------------------------------
+const TBL='nilai1_json', TBL_P='alat_tes', TBL_K='admin_kontrol',
+      AUTH='admin', WHO_B='https://cipta.my.id/who2/';
+
+- TBL    = nama tabel database tempat data peserta (biodata+jawaban)
+           disimpan. JANGAN diubah sembarangan — semua fitur (login
+           token, dashboard admin, dll) mengacu ke tabel ini.
+- TBL_P  = nama tabel "alat_tes" (master daftar paket tes).
+- TBL_K  = nama tabel "admin_kontrol" (untuk cek status aktif/non-
+           aktif keseluruhan sistem, lihat cekKontrol()).
+- AUTH   = header otorisasi sederhana (X-Custom-Auth) yang dipakai
+           tiap request API. Harus SAMA dengan yang dikonfigurasi
+           di backend Cloudflare Worker/API.
+- WHO_B  = endpoint untuk fitur "who" (penanda pelacakan/identitas
+           tambahan), jarang perlu diubah.
+- Variable ini bagian dari "tulang punggung" sistem — HANYA ubah
+  kalau memang struktur database di backend juga ikut diubah.
+
+------------------------------------------------------------------
+6. MINTA_TOKEN_SETELAH   (baris 633)  ⭐ FITUR BARU
+------------------------------------------------------------------
+const MINTA_TOKEN_SETELAH = 0;
+
+  Mengontrol KAPAN peserta diminta memasukkan token (yang dibuat &
+  dilihat admin) untuk bisa lanjut mengerjakan tes.
+
+  NILAI 0 (default / perilaku LAMA):
+  - Begitu buka halaman, peserta LANGSUNG diminta isi token di
+    form awal (screenDaftar → tokenLoginBox tampil).
+  - Tidak ada logout-paksa di tengah tes.
+
+  NILAI N (angka > 0, misal 1, 2, 3, dst) — MODE CHECKPOINT:
+  - Form token TIDAK muncul di awal. Peserta langsung diarahkan ke
+    form biodata (tanpa diminta token apapun).
+  - Setelah isi biodata, sistem MEMBUAT TOKEN SENDIRI secara
+    otomatis & diam-diam (format: namaDepan + 2 huruf acak + id_x,
+    contoh "budixy245") — peserta TIDAK melihat token ini.
+  - Peserta lanjut mengerjakan subtes 1, 2, 3, ... seperti biasa,
+    tanpa diminta apapun.
+  - Begitu jumlah subtes yang SELESAI mencapai N, sistem otomatis:
+      a) menandai checkpoint sudah lewat (field "checkpoint_lewat"
+         di x_02, supaya tidak logout-paksa berulang kali),
+      b) LOGOUT PAKSA — bersihkan localStorage, kembali ke
+         screenDaftar (tampilan form biodata kosong + tombol kecil
+         "🔑 Sudah punya token? Klik di sini").
+  - Peserta harus menghubungi admin untuk minta tokennya (admin
+    bisa melihat token otomatis itu di dashboard, sama seperti
+    token manual biasa, karena tersimpan di kolom x_01 tabel TBL).
+  - Setelah peserta klik tombol kecil tsb dan masukkan token yang
+    benar di popup, sistem validasi ke server lalu LANJUT OTOMATIS
+    ke subtes ke-(N+1) dst (subtes 1..N TIDAK diulang, karena sudah
+    tercatat selesai).
+
+  CONTOH PEMAKAIAN:
+  - MINTA_TOKEN_SETELAH = 0 → semua peserta wajib punya token dari
+    awal (cocok untuk tes yang selalu diawasi/terjadwal admin).
+  - MINTA_TOKEN_SETELAH = 1 → peserta bisa mulai sendiri & kerjakan
+    SATU subtes pertama tanpa pengawasan (misal untuk demo/latihan
+    mandiri), baru setelah itu wajib hubungi admin untuk lanjut ke
+    subtes-subtes berikutnya yang perlu diawasi.
+  - MINTA_TOKEN_SETELAH = 2 → boleh kerjakan 2 subtes pertama tanpa
+    pengawasan, baru checkpoint.
+
+  CATATAN PENTING:
+  - Hitungan "N subtes selesai" berdasarkan jumlah key di
+    log_selesai (field di x_02), BUKAN urutan id subtes spesifik —
+    jadi N=2 berarti "setelah 2 subtes APAPUN yang dikerjakan dalam
+    urutan paket peserta selesai", bukan "setelah subtes bernama
+    tertentu".
+  - Kalau diubah dari N>0 kembali ke 0 di tengah jalan, peserta yang
+    SUDAH lewat alur checkpoint sebelumnya (sudah ada token di
+    database) tetap bisa login normal lewat form token biasa, tidak
+    akan rusak data lama.
+  - Mengubah angka N TIDAK memengaruhi peserta yang sudah lebih dulu
+    menyelesaikan checkpoint dengan N lama (checkpoint_lewat sudah
+    true, jadi tidak akan logout-paksa lagi).
+
+------------------------------------------------------------------
+7. CHARS   (baris 635)
+------------------------------------------------------------------
+const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+- Kumpulan karakter yang dipakai untuk generate token ACAK (fungsi
+  rs() dan genTok()), termasuk 2 huruf acak di token checkpoint
+  (genTokenDariNama()).
+- Boleh diubah kalau mau memperkaya/membatasi karakter token (misal
+  hilangkan huruf besar agar token lebih mudah diketik peserta),
+  TAPI jangan sampai kosong / terlalu sedikit karakter (token bisa
+  jadi mudah ditebak / banyak collision).
+
+------------------------------------------------------------------
+8. BIODATA_FILE / PENUTUP_FILE / FRAGMENT_BASE (jika ada di kode)
+------------------------------------------------------------------
+- Menentukan fragment HTML form biodata & layar penutup yang dimuat
+  secara dinamis (lihat loadFragment, window.onload).
+- Bisa di-override per paket lewat field x_03 (JSON: {"biodata":"...",
+  "penutup":"..."}) di tabel alat_tes — jadi TIDAK selalu perlu ubah
+  langsung di kode index.html, cukup ubah di data paket server.
+
+==================================================================
+RINGKASAN — Variable yang PALING SERING perlu diubah saat
+menyiapkan file index.html untuk paket/lokasi baru:
+==================================================================
+  1. AUTO_PAKET            → ganti sesuai nama paket di server
+  2. SERVER_DEFAULT/SERVERS→ ganti/tambah kalau pindah domain
+  3. MINTA_TOKEN_SETELAH   → atur 0 / N sesuai kebutuhan pengawasan
+
+Variable lain (TBL, TBL_P, TBL_K, AUTH, ALL_CONFIG, CHARS) bersifat
+"struktural" — hanya diubah kalau backend/database ikut berubah.
+==================================================================

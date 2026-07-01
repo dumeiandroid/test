@@ -553,9 +553,9 @@ const CONFIG = {
   // ── 1. PAKET ──────────────────────────────────────────────
   paket: {
     // Paket aktif untuk file index.html ini (harus cocok dgn x_01 di tabel alat_tes)
-    aktif: 'cpmi-sumut',
+    aktif: 'ssc',
     // Paket yang langsung aktif tanpa perlu admin klik "aktifkan" dulu
-    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'cpmi-sumut'],
+    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'ssc'],
   },
 
   // ── 2. FRAGMENT (form biodata & layar penutup) ───────────────
@@ -583,7 +583,7 @@ const CONFIG = {
   kreplinOverride: {
     // true  = pakai detikPerKolom di bawah ini (mengabaikan nilai dari kreplin.txt).
     // false = pakai durasi asli dari file soal (biasanya 30 detik/kolom).
-    aktif: true,
+    aktif: false,
     // Durasi per kolom (detik) saat override aktif. Contoh: 3 = tiap kolom cuma 3 detik,
     // supaya testing alur cepat tanpa harus menunggu 45 kolom x 30 detik.
     detikPerKolom: 3,
@@ -628,7 +628,7 @@ const CONFIG = {
     // selfie+seluruh subtes di paket), checkpoint TIDAK PERNAH ke-trigger — tes
     // berjalan terus sampai selesai tanpa minta token di tengah, karena token
     // sudah otomatis tersimpan di localStorage sejak biodata pertama disimpan.
-    mintaSetelah: 3,
+    mintaSetelah: 0,
     chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   },
 
