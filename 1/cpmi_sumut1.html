@@ -553,9 +553,9 @@ const CONFIG = {
   // ── 1. PAKET ──────────────────────────────────────────────
   paket: {
     // Paket aktif untuk file index.html ini (harus cocok dgn x_01 di tabel alat_tes)
-    aktif: 'ssc',
+    aktif: 'cpmi-sumut',
     // Paket yang langsung aktif tanpa perlu admin klik "aktifkan" dulu
-    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'ssc'],
+    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'cpmi-sumut'],
   },
 
   // ── 2. FRAGMENT (form biodata & layar penutup) ───────────────
@@ -583,7 +583,7 @@ const CONFIG = {
   kreplinOverride: {
     // true  = pakai detikPerKolom di bawah ini (mengabaikan nilai dari kreplin.txt).
     // false = pakai durasi asli dari file soal (biasanya 30 detik/kolom).
-    aktif: false,
+    aktif: true,
     // Durasi per kolom (detik) saat override aktif. Contoh: 3 = tiap kolom cuma 3 detik,
     // supaya testing alur cepat tanpa harus menunggu 45 kolom x 30 detik.
     detikPerKolom: 3,
@@ -628,7 +628,7 @@ const CONFIG = {
     // selfie+seluruh subtes di paket), checkpoint TIDAK PERNAH ke-trigger — tes
     // berjalan terus sampai selesai tanpa minta token di tengah, karena token
     // sudah otomatis tersimpan di localStorage sejak biodata pertama disimpan.
-    mintaSetelah: 0,
+    mintaSetelah: 3,
     chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   },
 
@@ -690,34 +690,6 @@ const KREPLIN_OVERRIDE_DETIK = (CONFIG.kreplinOverride && CONFIG.kreplinOverride
 const AUTO_PAKET = CONFIG.paket.aktif;
 const PAKET_AUTO_AKTIF = CONFIG.paket.autoAktifList;
 const IS_AUTO_AKTIF = PAKET_AUTO_AKTIF.includes(AUTO_PAKET.toLowerCase());
-
-// ════════════════════════════════════════════════════════════
-// NAMESPACE localStorage PER PAKET
-// Semua key sesi (token, db_id, _p, _activeTask, _st_*, dst) di-suffix
-// dengan nama paket aktif file ini (AUTO_PAKET), supaya sesi login/progres
-// di SATU file/paket TIDAK bocor ke file/paket lain walau satu domain.
-// Pakai lsGet/lsSet/lsDel di seluruh kode (bukan localStorage langsung),
-// dan lsClearPaketIni() sebagai ganti localStorage.clear() total.
-// ════════════════════════════════════════════════════════════
-// Nama file (path lengkap tanpa query/hash) ikut jadi pembeda, supaya file HASIL
-// COPY dengan CONFIG.paket.aktif yang sama (mis. ssc.html vs ssc2.html) TETAP
-// dianggap sesi berbeda — bukan cuma dibedakan lewat nama paket saja.
-const _NS_FILE = window.location.pathname;
-const NS_SESI = '__' + AUTO_PAKET + '__' + _NS_FILE;
-function lsK(k){ return k + NS_SESI; }
-function lsGet(k){ return localStorage.getItem(lsK(k)); }
-function lsSet(k, v){ return localStorage.setItem(lsK(k), v); }
-function lsDel(k){ return localStorage.removeItem(lsK(k)); }
-// Hapus HANYA key milik paket AUTO_PAKET ini (bukan seluruh localStorage),
-// supaya sesi peserta di paket/file lain tidak ikut ter-reset.
-function lsClearPaketIni(){
-  const _hapus = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.endsWith(NS_SESI)) _hapus.push(k);
-  }
-  _hapus.forEach(k => localStorage.removeItem(k));
-}
 
 const BASE = CONFIG.subtesBase;
 const ALL_CONFIG = CONFIG.subtes.map(s => ({ ...s, dataUrl: BASE + s.file }));
@@ -816,9 +788,9 @@ async function loginDenganToken(){
       const found = pList.find(p=>(p.x_01||'').trim().toLowerCase()===tokPrefix.toLowerCase());
       if(found) pnm = (found.x_01||'').trim();
     }
-    lsSet('token', tok);
-    lsSet('db_id', String(row.id_x));
-    lsSet('_p', pnm);
+    localStorage.setItem('token', tok);
+    localStorage.setItem('db_id', String(row.id_x));
+    localStorage.setItem('_p', pnm);
     cu = row;
     tutupPopupToken();
     sl('Memuat tes...');
@@ -914,9 +886,9 @@ async function loginDenganTokenMain() {
       // token TETAP yang sudah ada (tidak generate token baru, tidak insert baru — nanti di-UPDATE).
       hl();
       _updateExistingId = String(cu.id_x); // tandai mode update untuk handleDaftar/kirimSelfie
-      lsSet('token', tok);
-      lsSet('db_id', String(cu.id_x));
-      lsSet('_p', AUTO_PAKET);
+      localStorage.setItem('token', tok);
+      localStorage.setItem('db_id', String(cu.id_x));
+      localStorage.setItem('_p', AUTO_PAKET);
       tampilTopBarId();
       $('tokenLoginBox').style.display = 'none';
       $('biodataContainer').style.display = 'block';
@@ -929,18 +901,18 @@ async function loginDenganTokenMain() {
       hl();
       _updateExistingId = String(cu.id_x);
       _pendingBio = bioCek;
-      lsSet('token', tok);
-      lsSet('db_id', String(cu.id_x));
-      lsSet('_p', AUTO_PAKET);
+      localStorage.setItem('token', tok);
+      localStorage.setItem('db_id', String(cu.id_x));
+      localStorage.setItem('_p', AUTO_PAKET);
       tampilTopBarId();
       $('tokenLoginBox').style.display = 'none';
       bukaKameraSelfie();
       return;
     }
 
-    lsSet('token', tok);
-    lsSet('db_id', String(cu.id_x));
-    lsSet('_p', AUTO_PAKET);
+    localStorage.setItem('token', tok);
+    localStorage.setItem('db_id', String(cu.id_x));
+    localStorage.setItem('_p', AUTO_PAKET);
     tampilTopBarId();
     vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
     await loadAC();
@@ -1049,12 +1021,12 @@ async function kirimSelfie(){
       // ── MODE UPDATE: token sudah ada (dari login token), biodata diisi pertama kali ──
       stTxt.textContent='Menyimpan data...';
       const bio=JSON.stringify(_pendingBio);
-      const tok=lsGet('token');
+      const tok=localStorage.getItem('token');
       const resU=await aP(_updateExistingId,{x_02:bio}).then(r=>r.json());
       if(!resU.success)throw new Error(resU.message||'Gagal menyimpan data.');
 
       tutupKameraSelfie();
-      lsSet('db_id',_updateExistingId);
+      localStorage.setItem('db_id',_updateExistingId);
       cu={id_x:_updateExistingId,x_01:tok,x_02:bio};
       _updateExistingId=null;
       stTxt.textContent='Memuat tes...';
@@ -1091,7 +1063,7 @@ async function kirimSelfie(){
 
     // 4. Tutup kamera & lanjutkan alur normal
     tutupKameraSelfie();
-    lsSet('token',tok);lsSet('db_id',String(res.id_x));lsSet('_p',_pendingPnm);
+    localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',_pendingPnm);
     cu={id_x:res.id_x,x_01:tok,x_02:bio};
 
     // Mode checkpoint N=2: token diminta TEPAT setelah selfie, sebelum subtes apapun dimulai.
@@ -1226,8 +1198,8 @@ async function handleDaftar(){
         const bio=JSON.stringify(_pendingBio);
         const resU=await aP(_updateExistingId,{x_02:bio}).then(r=>r.json());
         if(!resU.success)throw new Error(resU.message||'Gagal menyimpan data.');
-        lsSet('db_id',_updateExistingId);
-        cu={id_x:_updateExistingId,x_01:lsGet('token'),x_02:bio};
+        localStorage.setItem('db_id',_updateExistingId);
+        cu={id_x:_updateExistingId,x_01:localStorage.getItem('token'),x_02:bio};
         _pendingBio=JSON.parse(bio);
         _updateExistingId=null;
         hl();
@@ -1248,7 +1220,7 @@ async function handleDaftar(){
       let bioObj={};try{bioObj=JSON.parse(bio||'{}')}catch{}
       bioObj.checkpoint_lewat=true;
       await aP(res.id_x,{x_02:JSON.stringify(bioObj)});
-      lsSet('token',tok);lsSet('db_id',String(res.id_x));lsSet('_p',pnm);
+      localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',pnm);
       hl();
       logoutPaksaCheckpoint();
     }catch(e){
@@ -1263,7 +1235,7 @@ async function handleDaftar(){
 }
 
 async function loadAC(){
-  const p=lsGet('_p');
+  const p=localStorage.getItem('_p');
   function expand(list){const r=[];for(const c of list){if(c.type==='ranking'&&c.totalKolom){for(let k=1;k<=c.totalKolom;k++)r.push({type:'config',ref:{...c,id:c.id+'_k'+k,_baseId:c.id,kolom:k,_taskId:c.id+'_k'+k}})}else r.push({type:'config',ref:c})}return r}
   if(!p){AC=ALL_CONFIG;WTL=[];UT=expand(ALL_CONFIG);return}
   try{
@@ -1289,17 +1261,17 @@ async function goNext2(){
   if(!boleh)return;
 
   // ── RESTORE: kalau ada soal aktif saat refresh, langsung lanjutkan tanpa instruksi ──
-  const activeTask=lsGet('_activeTask');
+  const activeTask=localStorage.getItem('_activeTask');
   if(activeTask){
     const stKey='_st_'+activeTask;
-    const stData=lsGet(stKey);
+    const stData=localStorage.getItem(stKey);
     // Kreplin: state-nya disimpan dengan key berbeda (_kreplinState)
     if(activeTask==='kreplin'){
       const krepSaved=kreplinLoadState();
       if(krepSaved&&krepSaved.introShown){
         const krepRef=UT.find(u=>u.type==='kreplin');
         if(krepRef){hl();await kreplinStart(krepRef.ref);return;}
-      }else{lsDel('_activeTask');}
+      }else{localStorage.removeItem('_activeTask');}
     }else if(stData){
       // State masih ada — coba temukan config-nya dan langsung startTest()
       const isSub=activeTask.includes('_k');
@@ -1315,11 +1287,11 @@ async function goNext2(){
         await startTest();return;
       }
       // Config tidak ditemukan — bersihkan saja dan lanjut normal
-      lsDel('_activeTask');
-      lsDel(stKey);
+      localStorage.removeItem('_activeTask');
+      localStorage.removeItem(stKey);
     }else{
       // State sudah hilang (soal sudah selesai sebelumnya) — bersihkan
-      lsDel('_activeTask');
+      localStorage.removeItem('_activeTask');
     }
   }
 
@@ -1358,7 +1330,7 @@ async function goNext2(){
 function doneAll(){
   stopGlobalPolling();stopPolling();hl();ss('screenUpgrade');tampilTopBarId();startLogoutPoll();
   // Catat waktu semua subtes selesai (selesai_semua) ke x_02
-  const _doneId=lsGet('db_id');
+  const _doneId=localStorage.getItem('db_id');
   if(_doneId){
     (async()=>{
       try{
@@ -1404,17 +1376,17 @@ async function upSelectPaket(nama,harga,el){
   const hariMap={'Dasar':'1 hari','Lengkap':'2 hari','Komprehensif':'3 hari'};
   const hariEl=document.getElementById('upHariEstimasi');
   if(hariEl)hariEl.textContent=hariMap[nama]||'3 hari';
-  const id=lsGet('db_id')||'—';
-  const tok=lsGet('token')||'—';
+  const id=localStorage.getItem('db_id')||'—';
+  const tok=localStorage.getItem('token')||'—';
   const telp=gBio('biotelepon')||(() => {try{return JSON.parse((cu&&cu.x_02)||'{}').telepon||'—'}catch{return'—'}})();
   const msg=encodeURIComponent('Halo Lidan Psikologi, saya ingin memesan laporan hasil Tes IQ.\n\nPaket: '+nama+'\nHarga: Rp '+harga.toLocaleString('id-ID')+'\nID: '+id+'\nToken: '+tok+'\nNo. Telepon: '+telp+'\n\nMohon informasi selanjutnya. Terima kasih.');
   btn.href='https://wa.me/6285159601400?text='+msg;
   btn.onclick=()=>{trackBtn('lap_wa_'+nama.toLowerCase())};
   btn.style.display='flex';
-  const dbId=lsGet('db_id');
+  const dbId=localStorage.getItem('db_id');
   if(dbId){
     try{
-      let bioObj={};try{bioObj=JSON.parse((cu&&cu.x_02)||lsGet('_bio_bak')||'{}')}catch{}
+      let bioObj={};try{bioObj=JSON.parse((cu&&cu.x_02)||localStorage.getItem('_bio_bak')||'{}')}catch{}
       bioObj.paket_laporan=nama;bioObj.harga_laporan='Rp '+harga.toLocaleString('id-ID');bioObj.tgl_pilih_laporan=td();
       const newBio=JSON.stringify(bioObj);await aP(dbId,{x_02:newBio});if(cu)cu.x_02=newBio;
     }catch(e){console.warn('[LAPORAN] Gagal update paket:',e)}
@@ -1435,7 +1407,7 @@ async function cekSebelumInstruksi(){
   }
   // 2) Periksa apakah status peserta masih aktif (kolom aktifkan)
   try{
-    const id=lsGet('db_id');
+    const id=localStorage.getItem('db_id');
     if(id){
       const res=await aF(`${API_R}?table=${TBL}&id_x=${id}`,{headers:{'X-Custom-Auth':AUTH}});
       if(res.success&&res.data){
@@ -1479,13 +1451,13 @@ async function startTest(){
   if(cfg&&cfg._isWho){await wStart();return}
   sl('Memuat soal...');
   // Tandai soal yang sedang aktif agar bisa di-restore saat refresh
-  if(cfg&&cfg._taskId) lsSet('_activeTask', cfg._taskId);
+  if(cfg&&cfg._taskId) localStorage.setItem('_activeTask', cfg._taskId);
   try{
     await loadQ();
-    const sv=lsGet('_st_'+cfg._taskId);
+    const sv=localStorage.getItem('_st_'+cfg._taskId);
     if(sv){const s=JSON.parse(sv),rr=s.rowSelections||Array(12).fill(null);
       if(rr.filter(n=>n!==null).length<12){qi=s.qIndex||0;ua=s.userAnswers||[];sc=s.correctScore||0;tl=s.timeLeft||cfg.timer;rSel=rr;uNum=s.usedNumbers||[];skip=s.skippedIndices||[];ans=s.answeredIndices||[]}
-      else{lsDel('_st_'+cfg._taskId);resetSt()}}
+      else{localStorage.removeItem('_st_'+cfg._taskId);resetSt()}}
     else resetSt();
     $('testTitle').innerText=shortTitle(cfg.title);ss('screenTest');$('timerDisplay').classList.add('hidden');tStarted=false;tampilTopBarId();
     if(cfg.timer>0){updTimer();startTimer()}else startSW();
@@ -1517,7 +1489,7 @@ function startTimer(){
 function startSW(){swEl=0;ti=setInterval(()=>{swEl++;saveSt()},1000)}
 // chkFE (force end check) dihapus — tidak lagi polling tiap 3 detik
 async function syncT(v){
-  const id=lsGet('db_id');if(!id)return;
+  const id=localStorage.getItem('db_id');if(!id)return;
   try{await fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_04:v})})}catch{}
 }
 function updTimer(){
@@ -1527,7 +1499,7 @@ function updTimer(){
   if(el){el.innerText=m+':'+s;el.classList.add('hidden');}
   console.log('[TIMER]',(cfg&&cfg._taskId)||'',m+':'+s);
 }
-function saveSt(){lsSet('_st_'+cfg._taskId,JSON.stringify({qIndex:qi,userAnswers:ua,correctScore:sc,timeLeft:tl,rowSelections:rSel,usedNumbers:uNum,skippedIndices:skip,answeredIndices:ans}))}
+function saveSt(){localStorage.setItem('_st_'+cfg._taskId,JSON.stringify({qIndex:qi,userAnswers:ua,correctScore:sc,timeLeft:tl,rowSelections:rSel,usedNumbers:uNum,skippedIndices:skip,answeredIndices:ans}))}
 
 const SB='<span style="background:#fef3c7;color:#92400e;font-size:.75em;padding:2px 8px;border-radius:99px;font-weight:600">⟳ Dilewati</span>';
 const skB=()=>skip.includes(qi)?' '+SB:'';
@@ -1671,8 +1643,8 @@ function updRankUI(){
   }
 }
 async function saveRank(ds){
-  sl('Menyimpan...');const id=lsGet('db_id');
-  try{let o={};try{o=JSON.parse(cu[cfg.saveField]||'{}')}catch{}o[cfg._taskId]=ds;const v=JSON.stringify(o);await aP(id,{[cfg.saveField]:v});cu[cfg.saveField]=v;lsDel('_st_'+cfg._taskId);lsDel('_activeTask');rSel=Array(12).fill(null);uNum=[];await goNext2()}
+  sl('Menyimpan...');const id=localStorage.getItem('db_id');
+  try{let o={};try{o=JSON.parse(cu[cfg.saveField]||'{}')}catch{}o[cfg._taskId]=ds;const v=JSON.stringify(o);await aP(id,{[cfg.saveField]:v});cu[cfg.saveField]=v;localStorage.removeItem('_st_'+cfg._taskId);localStorage.removeItem('_activeTask');rSel=Array(12).fill(null);uNum=[];await goNext2()}
   catch(e){alert('Gagal: '+e.message)}finally{hl()}
 }
 
@@ -1740,7 +1712,7 @@ async function cekTriggerCheckpoint(id,_bioSelesai){
 }
 
 async function endTest(to){
-  clearInterval(ti);sl('Menyimpan hasil...');const id=lsGet('db_id');
+  clearInterval(ti);sl('Menyimpan hasil...');const id=localStorage.getItem('db_id');
   try{
     const cur=await aG(id),upd={},sf=cfg.saveField;let o={};try{o=JSON.parse(cur.data[sf]||'{}')}catch{}
     if(cfg.type==='ab_choice')o[cfg.id]=ua.join(';')+';';
@@ -1750,8 +1722,8 @@ async function endTest(to){
     if(cfg.logField&&qs.length>0){let lo={};try{lo=JSON.parse(cur.data[cfg.logField]||'{}')}catch{}lo[cfg.id]=ua.map((a,i)=>{const q=qs[i];if(!q)return'';if(cfg.type==='text_input_scored'){return`${i+1}.${a}✗`}return`${i+1}.${a}${String(a).toLowerCase()===String(q.answer||q.correctAnswer||'').toLowerCase()?'✓':'✗'}`}).join(';');upd[cfg.logField]=JSON.stringify(lo)}
     if(cfg.timer>0)upd.x_04='';upd.x_12='';
     await aP(id,upd);
-    lsDel('_st_'+cfg._taskId);
-    lsDel('_activeTask');
+    localStorage.removeItem('_st_'+cfg._taskId);
+    localStorage.removeItem('_activeTask');
     cu=cur.data;cu[sf]=upd[sf];if(cfg.logField)cu[cfg.logField]=upd[cfg.logField];
     // Catat nama_file + waktu selesai subtes ini ke x_02 (tidak menimpa field biodata lain)
     const _bioSelesai=await catatSelesaiSubtes(id, cfg.id, tsNow());
@@ -1765,14 +1737,14 @@ function afterT(){
   try{
     vMap={};if(cu.x_09){try{const v=JSON.parse(cu.x_09);Object.entries(v).forEach(([k,vl])=>{if(k&&/^[a-zA-Z0-9_]+$/.test(k))vMap[k]=parseInt(vl)||0})}catch{}}
     goNext2();
-  }catch(e){console.error('[afterT]',e);farC(lsGet('token'))}
+  }catch(e){console.error('[afterT]',e);farC(localStorage.getItem('token'))}
 }
 async function farC(token){
   sl('Memeriksa...');
   try{
     const res=await aF(`${API_R}?table=${TBL}&x_01_eq=${token}`,{headers:{'X-Custom-Auth':AUTH}});
-    if(!res.success||!res.count){lsClearPaketIni();hl();ss('screenDaftar');loadPaket();return}
-    cu=res.data[0];lsSet('db_id',cu.id_x);
+    if(!res.success||!res.count){localStorage.clear();hl();ss('screenDaftar');loadPaket();return}
+    cu=res.data[0];localStorage.setItem('db_id',cu.id_x);
     vMap={};if(cu.x_09){try{const v=JSON.parse(cu.x_09);Object.entries(v).forEach(([k,vl])=>{if(k&&/^[a-zA-Z0-9_]+$/.test(k))vMap[k]=parseInt(vl)||0})}catch{}}
     await loadAC();await goNext2();
   }catch(e){console.error(e);hl();ss('screenDaftar');loadPaket()}
@@ -1822,7 +1794,7 @@ async function wStart(){
   sl('Memuat soal...');
   try{
     const d=wBL[wBI].data;wQs=d.questions||[];if(!wQs.length)throw new Error('Soal kosong.');
-    const sv=lsGet('_st_'+cfg._taskId);
+    const sv=localStorage.getItem('_st_'+cfg._taskId);
     if(sv){
       const s=JSON.parse(sv);
       wQi=s.qIndex||0;wUA=s.userAnswers||[];wSkip=s.skippedIndices||[];wAns=s.answeredIndices||[];
@@ -1893,7 +1865,7 @@ function wSC_dual(k){
 }
 
 function wSC(k){wMA(wQi);wUA.push(k);wSS();wGN()}
-function wSS(){lsSet('_st_'+cfg._taskId,JSON.stringify({qIndex:wQi,userAnswers:wUA,skippedIndices:wSkip,answeredIndices:wAns,dualFirst:wDualFirst}))}
+function wSS(){localStorage.setItem('_st_'+cfg._taskId,JSON.stringify({qIndex:wQi,userAnswers:wUA,skippedIndices:wSkip,answeredIndices:wAns,dualFirst:wDualFirst}))}
 function wGN(){
   let f=-1;for(let i=wQi+1;i<wQs.length;i++){if(!wAns.includes(i)&&!wSkip.includes(i)){f=i;break}}
   if(f!==-1){wQi=f}else if(wSkip.length>0){wQi=wSkip.shift()}else{wSS();wEnd();return}
@@ -1915,11 +1887,11 @@ function wUP(){const t=wQs.length,d=wAns.length;$('progressBar').style.width=(t?
 // diperbaiki untuk mengecek WHO spesifik sesuai posisinya di urutan paket (UT).
 function wAfT(){goNext2()}
 async function wEnd(){
-  sl('Menyimpan...');const id=lsGet('db_id');
+  sl('Menyimpan...');const id=localStorage.getItem('db_id');
   try{
     const cur=await aG(id),sf=cfg.saveField;let o={};try{o=JSON.parse(cur.data[sf]||'{}')}catch{}
     o[cfg._taskId]=wUA.join(';')+';';const v=JSON.stringify(o);await aP(id,{[sf]:v});
-    lsDel('_st_'+cfg._taskId);wDualFirst=null;cu=cur.data;cu[sf]=v;
+    localStorage.removeItem('_st_'+cfg._taskId);wDualFirst=null;cu=cur.data;cu[sf]=v;
     // Catat selesai ke log_selesai (PERBAIKAN: dulu WHO tidak pernah tercatat di sini,
     // jadi tidak ikut dihitung checkpoint MINTA_TOKEN_SETELAH sesuai urutan paket)
     const _bioSelesai=await catatSelesaiSubtes(id, cfg._taskId, tsNow());
@@ -1932,8 +1904,8 @@ async function wEnd(){
 
 // Monitor
 function visChg(){if(!document.hidden)return;if(!$('screenTest').classList.contains('active'))return;vCnt++;saveV()}
-async function saveV(){const id=lsGet('db_id');if(!id||!cfg)return;try{const k=(cfg._taskId||cfg.id||'').trim();vMap[k]=(vMap[k]||0)+1;await fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_09:JSON.stringify(vMap)})})}catch{}}
-async function trackBtn(key){const id=lsGet('db_id');if(!id)return;try{vMap[key]=(vMap[key]||0)+1;await fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_09:JSON.stringify(vMap)})})}catch{}}
+async function saveV(){const id=localStorage.getItem('db_id');if(!id||!cfg)return;try{const k=(cfg._taskId||cfg.id||'').trim();vMap[k]=(vMap[k]||0)+1;await fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_09:JSON.stringify(vMap)})})}catch{}}
+async function trackBtn(key){const id=localStorage.getItem('db_id');if(!id)return;try{vMap[key]=(vMap[key]||0)+1;await fetch(`${API_W}?table=${TBL}&id_x=${id}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Custom-Auth':AUTH},body:JSON.stringify({x_09:JSON.stringify(vMap)})})}catch{}}
 document.addEventListener('visibilitychange',visChg);
 document.addEventListener('contextmenu',e=>{if(e.target.tagName==='IMG'){e.preventDefault();return false}});
 document.addEventListener('dragstart',e=>{if(e.target.tagName==='IMG'){e.preventDefault();return false}});
@@ -1969,7 +1941,7 @@ function startGlobalPolling(){
         if(kontrol.aktif){
           stopGlobalPolling();
           if(_cdInterval){clearInterval(_cdInterval);_cdInterval=null;}
-          const tok=lsGet('token'),dbId=lsGet('db_id');
+          const tok=localStorage.getItem('token'),dbId=localStorage.getItem('db_id');
           if(tok&&dbId){
             sl('Memeriksa sesi...');
             try{
@@ -1979,7 +1951,7 @@ function startGlobalPolling(){
                 let status='nonaktif';try{status=JSON.parse(cu.x_02||'{}').status||'nonaktif'}catch{}
                 if(status==='aktif'){hl();startGlobalPolling();await goNext2();}
                 else{hl();ss('screenTunggu');showZoomTunggu();startGlobalPolling();}
-              }else{lsClearPaketIni();hl();ss('screenDaftar');loadPaket();}
+              }else{localStorage.clear();hl();ss('screenDaftar');loadPaket();}
             }catch{hl();ss('screenDaftar');loadPaket();}
           }else{hl();ss('screenDaftar');loadPaket();}
         }
@@ -1989,7 +1961,7 @@ function startGlobalPolling(){
       // ── Layar TUNGGU: tunggu peserta diaktifkan ──
       // Hemat D1: 1 request saja (GET peserta), hapus cekKontrol terpisah.
       if(screen==='screenTunggu'){
-        const dbId=lsGet('db_id');
+        const dbId=localStorage.getItem('db_id');
         if(!dbId){_globalPollBusy=false;return;}
         const res=await aF(`${API_R}?table=${TBL}&id_x=${dbId}`,{headers:{'X-Custom-Auth':AUTH}});
         if(!res.success||!res.data){_globalPollBusy=false;return;}
@@ -2039,7 +2011,7 @@ function stopLogoutPoll(){
 // LANGSUNG tampilkan form "masukkan token" (tanpa menunjukkan kembali
 // form/hasil isian biodata). Peserta WAJIB masukkan token dari admin untuk lanjut.
 function logoutPaksaCheckpoint(){
-  lsClearPaketIni();
+  localStorage.clear();
   _updateExistingId=null;
   stopGlobalPolling();
   stopLogoutPoll();
@@ -2125,14 +2097,14 @@ async function prosesCheckpointToken(){
       btn.disabled=false;btn.textContent='Lanjutkan →';return;
     }
     const row=res.data[0];
-    lsSet('token',tok);
-    lsSet('db_id',String(row.id_x));
+    localStorage.setItem('token',tok);
+    localStorage.setItem('db_id',String(row.id_x));
     // PERBAIKAN BUG: '_p' wajib disinkronkan ke AUTO_PAKET di sini juga.
-    // logoutPaksaCheckpoint() sebelumnya memanggil lsClearPaketIni() (menghapus '_p'),
+    // logoutPaksaCheckpoint() sebelumnya memanggil localStorage.clear() (menghapus '_p'),
     // dan jalur token checkpoint ini (beda dari window.onload INIT) tidak pernah
     // menulis ulang '_p' sebelum loadAC() dipanggil — akibatnya loadAC() membaca
     // '_p' kosong dan fallback ke ALL_CONFIG (mulai dari apm0) sampai halaman di-refresh.
-    lsSet('_p', AUTO_PAKET);
+    localStorage.setItem('_p', AUTO_PAKET);
     cu=row;
     // Biodata sudah ada tapi SELFIE belum (checkpoint N=1: token diminta tepat
     // setelah biodata, sebelum selfie) → arahkan ke kamera selfie, bukan langsung tes.
@@ -2171,7 +2143,7 @@ async function doLogout(dbId){
     });
   }catch(e){console.warn('[logout] gagal reset flag:',e)}
   // Bersihkan sesi lokal
-  lsClearPaketIni();
+  localStorage.clear();
   _updateExistingId=null;
   const tlb=$('tokenLoginBox'),bc=$('biodataContainer');
   if(tlb)tlb.style.display='block';
@@ -2188,7 +2160,7 @@ async function doLogout(dbId){
 function tampilTopBarId(){
   const el=document.getElementById('topBarId');
   if(!el)return;
-  const id=lsGet('db_id');
+  const id=localStorage.getItem('db_id');
   if(id){el.textContent='ID: '+id;el.style.display='inline-block';}
   else{el.style.display='none';}
 }
@@ -2232,7 +2204,7 @@ function showZoomTunggu(){
     // Update WA link dengan data peserta jika sudah ada
     const btn=document.getElementById('btnWaLidan');
     if(btn){
-      let nama='';let telp='';let idPeserta=lsGet('db_id')||'';
+      let nama='';let telp='';let idPeserta=localStorage.getItem('db_id')||'';
       if(cu){try{const bio=JSON.parse(cu.x_02||'{}');nama=bio.nama||'';telp=bio.telepon||'';}catch{}}
       const pretext='Halo Lidan Psikologi, saya '+(nama||'peserta')+' sudah mengisi biodata dan siap untuk memulai Tes IQ.'+(telp?' No. WhatsApp saya: '+telp+'.':'')+(idPeserta?' ID Peserta: '+idPeserta+'.':'')+' Mohon konfirmasi dari tester. Saya ingin tahu berapa biayanya?';
       btn.href='https://wa.me/6285159601400?text='+encodeURIComponent(pretext);
@@ -2241,7 +2213,7 @@ function showZoomTunggu(){
   // ── Tampilkan ID peserta ──
   const idBox=document.getElementById('tungguIdBox');
   const idNum=document.getElementById('tungguIdNum');
-  const savedId=lsGet('db_id');
+  const savedId=localStorage.getItem('db_id');
   if(idBox&&idNum&&savedId){idNum.textContent=savedId;idBox.style.display='block';}
 
   if(_kontrolInfo.link){
@@ -2688,7 +2660,7 @@ window.onload = async () => {
     };
     const namaBtn = waIds.find(id => document.getElementById(id) === btn);
     const namaTes = namaMap[namaBtn] || 'Tes';
-    const id  = (cu && cu.id_x) ? String(cu.id_x) : (lsGet('db_id') || '');
+    const id  = (cu && cu.id_x) ? String(cu.id_x) : (localStorage.getItem('db_id') || '');
     const text = 'Halo Admin Lidan, saya baru saja menyelesaikan ' + namaTes
       + ' dan ingin mendapatkan laporan hasil tes serta sertifikat eksklusif saya. Boleh saya tahu berapa biayanya?'
       + (id  ? '\n\nID: ' + id  : '');
@@ -2699,9 +2671,9 @@ window.onload = async () => {
   const kontrol = await cekKontrol();
   if (!kontrol.aktif) { showScreenTutup(kontrol); return; }
 
-  const tok = lsGet('token');
+  const tok = localStorage.getItem('token');
   if (tok) {
-    const _pLama = lsGet('_p');
+    const _pLama = localStorage.getItem('_p');
     // Catat apakah token ini berasal dari paket yang BENAR-BENAR berbeda (bukan sekadar kosong) SEBELUM dioverwrite
     const _paketBeda = !!(_pLama && _pLama !== AUTO_PAKET);
     // PERBAIKAN BUG: '_p' harus tetap disinkronkan ke AUTO_PAKET setiap kali nilainya
@@ -2723,7 +2695,7 @@ window.onload = async () => {
         // Hanya jalan saat BENAR-BENAR pindah paket (_paketBeda), bukan saat '_p' sekadar
         // kosong/null untuk pertama kali (itu bukan perpindahan, jadi tidak perlu reset status).
         if (!IS_AUTO_AKTIF) {
-          const _oldDbId = lsGet('db_id');
+          const _oldDbId = localStorage.getItem('db_id');
           if (_oldDbId) {
             try {
               const _oldData = await aF(`${API_R}?table=${TBL}&id_x=${_oldDbId}`, {headers:{'X-Custom-Auth':AUTH}});
@@ -2741,13 +2713,13 @@ window.onload = async () => {
       }
       // '_p' SELALU disinkronkan ke AUTO_PAKET di sini, baik saat genuine pindah paket
       // maupun saat _pLama sekadar kosong/null — ini bagian inti dari perbaikan bug.
-      lsSet('_p', AUTO_PAKET);
+      localStorage.setItem('_p', AUTO_PAKET);
     }
     sl('Memeriksa sesi...');
     try {
       const res = await aF(`${API_R}?table=${TBL}&x_01_eq=${tok}`, { headers: { 'X-Custom-Auth': AUTH } });
-      if (!res.success || !res.count) { lsClearPaketIni(); hl(); ss('screenDaftar'); return; }
-      cu = res.data[0]; lsSet('db_id', cu.id_x);
+      if (!res.success || !res.count) { localStorage.clear(); hl(); ss('screenDaftar'); return; }
+      cu = res.data[0]; localStorage.setItem('db_id', cu.id_x);
 
       // ── Cek apakah biodata sudah terisi (field 'nama') ──
       let bioCekR = {}; try { bioCekR = JSON.parse(cu.x_02 || '{}'); } catch {}
@@ -2780,7 +2752,7 @@ window.onload = async () => {
         // Token dari paket lain, atau status belum diaktifkan admin → wajib tunggu
         hl(); ss('screenTunggu'); showZoomTunggu(); startGlobalPolling();
       }
-    } catch (e) { lsClearPaketIni(); hl(); ss('screenDaftar'); }
+    } catch (e) { localStorage.clear(); hl(); ss('screenDaftar'); }
     return;
   }
   hl(); ss('screenDaftar');
@@ -2796,7 +2768,7 @@ window.onload = async () => {
 <script>
 // ═══ KREPLIN ENGINE ═══
 let _kCfg={},_kKolom=0,_kSoalIdx=0,_kBenar=0,_kSalah=0,_kTimer=null,_kTL=0,_kLog=[],_kA=0,_kB=0,_kDone=false,_kIsTrial=false;
-const _kSK=lsK('_krep_state');
+const _kSK='_krep_state';
 
 function kreplinSaveState(){
   localStorage.setItem(_kSK,JSON.stringify({
@@ -2848,7 +2820,7 @@ async function kreplinStart(ref){
     _kTL=saved.timeLeft||meta.detikPerKolom;
     _kLog=saved.log||[];
     ss('screenKreplin');hl();
-    lsSet('_activeTask','kreplin');
+    localStorage.setItem('_activeTask','kreplin');
     $('krepTrialNoticeTest').style.display=_kIsTrial?'':'none';
     kreplinRenderKolom();
     kreplinSoalBaru();
@@ -2873,7 +2845,7 @@ async function kreplinStart(ref){
 function kreplinRun(){
   _kKolom=1;_kBenar=0;_kSalah=0;_kBenarPrev=0;_kSalahPrev=0;_kLog=[];_kDone=false;_kSoalIdx=0;
   _kTL=_kCfg.detikPerKolom||30;
-  lsSet('_activeTask','kreplin');
+  localStorage.setItem('_activeTask','kreplin');
   kreplinSaveState();
   ss('screenKreplin');
   $('krepTrialNoticeTest').style.display=_kIsTrial?'':'none';
@@ -2962,7 +2934,7 @@ function kreplinCatatKolom(){
   _kBenarPrev=_kBenar;
   _kSalahPrev=_kSalah;
   // Simpan progress ke server setiap akhir kolom
-  const dbId=lsGet('db_id');
+  const dbId=localStorage.getItem('db_id');
   if(dbId){
     aG(dbId).then(cur=>{
       const sf='x_06';
@@ -3012,8 +2984,8 @@ async function kreplinSelesai(){
   if(_kDone)return;_kDone=true;
   if(_kTimer){clearInterval(_kTimer);_kTimer=null;}
   kreplinClearState();
-  lsDel('_activeTask');
-  const dbId=lsGet('db_id');
+  localStorage.removeItem('_activeTask');
+  const dbId=localStorage.getItem('db_id');
   let _bioSelesai=null;
   if(dbId){
     sl('Menyimpan hasil...');
@@ -3095,7 +3067,7 @@ async function kreplinSelesai(){
   </div>
 </div>
 
-<button id="btnLogoutPeserta" style="display:none;position:fixed;bottom:46px;right:12px;z-index:2147483647;background:#dc2626;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);font-family:'Segoe UI',sans-serif;" onclick="doLogout(lsGet('db_id'))">🔓 Ganti Peserta</button>
+<button id="btnLogoutPeserta" style="display:none;position:fixed;bottom:46px;right:12px;z-index:2147483647;background:#dc2626;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:.82em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);font-family:'Segoe UI',sans-serif;" onclick="doLogout(localStorage.getItem('db_id'))">🔓 Ganti Peserta</button>
 <div id="topBarId" style="display:none;position:fixed;bottom:12px;right:12px;z-index:2147483647;font-size:.78em;font-weight:700;color:#4338ca;background:#e0e7ff;border:2px solid #6366f1;border-radius:8px;padding:4px 12px;font-family:'Courier New',monospace;box-shadow:0 2px 8px rgba(0,0,0,.2);pointer-events:none;">ID: —</div>
 
 <!-- ══ OVERLAY PERINGATAN REFRESH ══ -->
