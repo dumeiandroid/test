@@ -323,13 +323,6 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
     <div style="font-size:1.2em;font-weight:700;color:#1e293b;margin-bottom:4px;">Monitor Peserta</div>
     <div style="font-size:.85em;color:#64748b;margin-bottom:16px;">Masuk sebagai Tester</div>
 
-    <!-- Server Switcher di login -->
-    <div style="margin-bottom:20px;">
-      <div style="font-size:.72em;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Server</div>
-      <div id="loginSrvChips" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;"><!-- filled by JS --></div>
-      <div id="loginSrvUrl" style="margin-top:8px;font-size:.7em;color:#a0aec0;font-family:'Courier New',monospace;word-break:break-all;"></div>
-    </div>
-
     <div style="text-align:left;margin-bottom:14px;">
       <label style="font-size:.8em;font-weight:700;color:#64748b;display:block;margin-bottom:5px;">Username</label>
       <input id="loginUser" type="text" placeholder="Username" autocomplete="username"
@@ -410,19 +403,18 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
 // SERVER LIST — tambah / kurangi di sini saja
 // ============================================================
 const SERVERS = [
-    { label: '1',     domain: 'lidan-co-id.pages.dev' },
-    { label: '2',      domain: 'tabi.my.id'             },
-    { label: '3',    domain: 'mobeli.my.id'           },
+    { label: '1', domain: 'lidan-co-id.pages.dev' },
+    { label: '2', domain: 'tabi.my.id'             },
+    { label: '3', domain: 'mobeli.my.id'           },
     { label: '4', domain: 'talentmap.my.id'        },
+    { label: '5', domain: 'ciptapersada.my.id'     },
+    { label: '6', domain: 'mysupplier.my.id'       },
+    { label: '7', domain: 'goblast.my.id'          },
 ];
 const API_PATH = '/api/contacts_filter_dinamis7';
 const SRV_STORAGE_KEY = 'cpmi_activeSrvIdx';
-// Restore pilihan server terakhir dari localStorage (kalau valid)
+// Login selalu diwajibkan lewat Server 1 — tidak ada restore dari localStorage di sini
 let activeSrvIdx = 0;
-try {
-    const _saved = parseInt(localStorage.getItem(SRV_STORAGE_KEY));
-    if (!isNaN(_saved) && _saved >= 0 && _saved < SERVERS.length) activeSrvIdx = _saved;
-} catch (e) {}
 
 // Getter dinamis — semua fetch pakai ini
 function getApiBase() { return `https://${SERVERS[activeSrvIdx].domain}${API_PATH}`; }
@@ -437,7 +429,7 @@ const AUTH_KEY = 'admin';
 // SERVER SWITCHER — render chips
 // ============================================================
 function renderSrvChips() {
-    // Topnav chips
+    // Topnav chips (switcher server hanya tampil di sini, setelah login)
     const topWrap = document.getElementById('topnavSrvChips');
     if (topWrap) {
         topWrap.innerHTML = SERVERS.map((s, i) => `
@@ -447,19 +439,6 @@ function renderSrvChips() {
                 ${i === activeSrvIdx ? '✓ ' : ''}${s.label}
             </button>`).join('');
     }
-    // Login overlay chips
-    const loginWrap = document.getElementById('loginSrvChips');
-    if (loginWrap) {
-        loginWrap.innerHTML = SERVERS.map((s, i) => `
-            <button class="srv-chip-login${i === activeSrvIdx ? ' active' : ''}"
-                onclick="switchSrcServer(${i})"
-                title="https://${s.domain}">
-                ${i === activeSrvIdx ? '✓ ' : ''}${s.label}
-            </button>`).join('');
-    }
-    // URL display di login
-    const urlEl = document.getElementById('loginSrvUrl');
-    if (urlEl) urlEl.textContent = getApiBase();
 }
 
 function switchSrcServer(idx) {

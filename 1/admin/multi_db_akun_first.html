@@ -375,19 +375,13 @@ const ss = (k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
 const sr = k=>{try{localStorage.removeItem(k);}catch(e){}};
 
 // ══════════════════════════════════════════════════════════
-//  SERVER LIST — tambah / kurangi / ubah akun cukup di sini
-//  id    : nomor urut akun (boleh diubah bebas, tinggal urutkan ulang)
-//  label : nama yang tampil di tombol/chip switcher
-//  domain: domain tempat API-nya berjalan
+//  SERVER LIST — tambah / kurangi domain di sini
 // ══════════════════════════════════════════════════════════
 const SERVERS = [
-  { id: 1, label: '1',        domain: 'lidan-co-id.pages.dev' },
-  { id: 2, label: '2',         domain: 'tabi.my.id'             },
-  { id: 3, label: '3',       domain: 'mobeli.my.id'           },
-  { id: 4, label: '4',    domain: 'talentmap.my.id'        },
-  { id: 5, label: '5', domain: 'ciptapersada.my.id'      },
-  { id: 6, label: '6',   domain: 'mysupplier.my.id'        },
-  { id: 7, label: '7',      domain: 'goblast.my.id'           },
+  { label: 'Lidan',     domain: 'lidan-co-id.pages.dev' },
+  { label: 'Tabi',      domain: 'tabi.my.id'             },
+  { label: 'Mobeli',    domain: 'mobeli.my.id'           },
+  { label: 'TalentMap', domain: 'talentmap.my.id'        },
 ];
 
 // ── Pola API per-database (path setelah domain tetap) ──
