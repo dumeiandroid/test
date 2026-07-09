@@ -323,8 +323,8 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
     <div style="font-size:1.2em;font-weight:700;color:#1e293b;margin-bottom:4px;">Monitor Peserta</div>
     <div style="font-size:.85em;color:#64748b;margin-bottom:16px;">Masuk sebagai Tester</div>
 
-    <!-- Server Switcher di login -->
-    <div style="margin-bottom:20px;">
+    <!-- Server Switcher di login (disembunyikan — server tetap dipakai default via activeSrvIdx, hanya UI-nya yang tidak ditampilkan) -->
+    <div style="margin-bottom:20px;display:none;">
       <div style="font-size:.72em;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Server</div>
       <div id="loginSrvChips" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;"><!-- filled by JS --></div>
       <div id="loginSrvUrl" style="margin-top:8px;font-size:.7em;color:#a0aec0;font-family:'Courier New',monospace;word-break:break-all;"></div>
