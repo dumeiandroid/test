@@ -1661,12 +1661,6 @@ function switchSrcServer(idx) {
     filterPaketData = null;
     filterPaketLoaded = false;
 
-    // Refresh badge "Jadwal & Kontrol Tes" supaya langsung ikut server baru
-    // (jumlah alat_tes & status aktif berbeda tiap server)
-    jadwalLoaded = false;
-    renderBtnKontrol();
-    loadKontrolGlobal();
-
     // Reload halaman yang sedang aktif
     const activePage = document.querySelector('.page.active');
     if (activePage) {
@@ -3087,21 +3081,8 @@ async function aktivasiPeserta(idX, newStatus = 'aktif') {
      ]
    }
 ══════════════════════════════════════════════════════════════════ */
-let jadwalData = [];        // array paket HASIL MERGE (alat_tes + status dari admin_kontrol)
+let jadwalData = [];        // array paket dari admin_kontrol
 let jadwalLoaded = false;
-let paketMasterList = [];   // cache mentah dari tabel alat_tes (sumber kebenaran jumlah paket)
-
-// ── Ambil daftar master paket dari alat_tes (server aktif)
-async function loadPaketMasterList() {
-    try {
-        const res = await fetch(`${API_BASE}?table=alat_tes`, { headers: { 'X-Custom-Auth': AUTH_KEY } });
-        const d = await res.json();
-        paketMasterList = (d.success && d.data) ? d.data : [];
-    } catch(e) {
-        paketMasterList = [];
-    }
-    return paketMasterList;
-}
 
 // ── Hitung berapa paket yg aktif → update tombol navbar
 function renderBtnKontrol() {
@@ -3128,14 +3109,8 @@ function renderBtnKontrol() {
     }
 }
 
-// ── Load data jadwal: gabungkan alat_tes (sumber jumlah paket yg BENAR,
-//    ikut server aktif) dengan status yg tersimpan di admin_kontrol.
-//    Paket yg belum pernah disimpan statusnya otomatis dianggap 'nonaktif',
-//    jadi total & badge SELALU sinkron dgn jumlah alat_tes saat ini.
+// ── Load data jadwal dari API
 async function loadKontrolGlobal() {
-    await loadPaketMasterList();
-
-    let savedPaket = [];
     try {
         const res = await fetch(`${API_BASE}?table=admin_kontrol&id_x=1`, {
             headers: { 'X-Custom-Auth': AUTH_KEY }
@@ -3145,24 +3120,10 @@ async function loadKontrolGlobal() {
         if (data.success && data.data && data.data.x_01) {
             try { raw = JSON.parse(data.data.x_01); } catch(e) {}
         }
-        savedPaket = Array.isArray(raw.paket) ? raw.paket : [];
+        jadwalData = Array.isArray(raw.paket) ? raw.paket : [];
     } catch(e) {
-        savedPaket = [];
+        jadwalData = [];
     }
-
-    jadwalData = paketMasterList.map(p => {
-        const nama = (p.x_01 || '').trim();
-        const existing = savedPaket.find(j => j.nama === nama) || {};
-        return {
-            nama,
-            label: p.x_02 || nama,
-            status: existing.status || 'nonaktif',
-            waktu_mulai: existing.waktu_mulai || '',
-            link: existing.link || '',
-            logout_aktif: existing.logout_aktif || false
-        };
-    });
-
     jadwalLoaded = true;
     renderBtnKontrol();
 }
@@ -3197,9 +3158,30 @@ async function openJadwalModal() {
     const srch = document.getElementById('jadwalSearch');
     if (srch) srch.value = '';
 
-    // Reload jadwalData terbaru (sudah otomatis merge alat_tes + admin_kontrol)
+    // Muat paket dari alat_tes
+    let paketList = [];
+    try {
+        const res = await fetch(`${API_BASE}?table=alat_tes`, { headers: { 'X-Custom-Auth': AUTH_KEY } });
+        const d = await res.json();
+        paketList = (d.success && d.data) ? d.data : [];
+    } catch(e) {}
+
+    // Reload jadwalData terbaru
     await loadKontrolGlobal();
-    const merged = jadwalData;
+
+    // Merge: paket dari alat_tes + data jadwal yg sudah tersimpan
+    const merged = paketList.map(p => {
+        const nama = (p.x_01 || '').trim();
+        const existing = jadwalData.find(j => j.nama === nama) || {};
+        return {
+            nama,
+            label: p.x_02 || nama,
+            status: existing.status || 'nonaktif',
+            waktu_mulai: existing.waktu_mulai || '',
+            link: existing.link || '',
+            logout_aktif: existing.logout_aktif || false
+        };
+    });
 
     // Render kartu per paket
     const list = document.getElementById('jadwalList');

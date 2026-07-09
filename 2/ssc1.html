@@ -553,9 +553,9 @@ const CONFIG = {
   // ── 1. PAKET ──────────────────────────────────────────────
   paket: {
     // Paket aktif untuk file index.html ini (harus cocok dgn x_01 di tabel alat_tes)
-    aktif: 'cpmi-sumut',
+    aktif: 'ssc',
     // Paket yang langsung aktif tanpa perlu admin klik "aktifkan" dulu
-    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'cpmi-sumut'],
+    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'ssc'],
   },
 
   // ── 2. FRAGMENT (form biodata & layar penutup) ───────────────
@@ -583,7 +583,7 @@ const CONFIG = {
   kreplinOverride: {
     // true  = pakai detikPerKolom di bawah ini (mengabaikan nilai dari kreplin.txt).
     // false = pakai durasi asli dari file soal (biasanya 30 detik/kolom).
-    aktif: true,
+    aktif: false,
     // Durasi per kolom (detik) saat override aktif. Contoh: 3 = tiap kolom cuma 3 detik,
     // supaya testing alur cepat tanpa harus menunggu 45 kolom x 30 detik.
     detikPerKolom: 3,
@@ -613,13 +613,6 @@ const CONFIG = {
     tblKontrol: 'admin_kontrol', // tabel status aktif/nonaktif sistem
     auth: 'admin',               // header X-Custom-Auth, harus sama dgn backend
     whoEndpoint: 'https://cipta.my.id/who2/',
-    // true  = daftar paket (alat_tes) SELALU diambil dari server 1 (SERVERS[0]),
-    //         apa pun folder aktifnya (/1/ /2/ /3/ /4/). Ini perilaku lama/default,
-    //         cocok kalau data alat_tes cuma dikelola terpusat di 1 server.
-    // false = alat_tes diambil dari SERVER AKTIF (ikut folder, misal /3/ → server 3).
-    //         Kalau folder bukan angka yang valid, tetap otomatis jatuh ke
-    //         SERVER_DEFAULT (lihat CONFIG.server.default) — tidak perlu diatur terpisah.
-    paketSelaluServer1: false,
   },
 
   // ── 5. TOKEN ──────────────────────────────────────────────
@@ -635,7 +628,7 @@ const CONFIG = {
     // selfie+seluruh subtes di paket), checkpoint TIDAK PERNAH ke-trigger — tes
     // berjalan terus sampai selesai tanpa minta token di tengah, karena token
     // sudah otomatis tersimpan di localStorage sejak biodata pertama disimpan.
-    mintaSetelah: 3,
+    mintaSetelah: 0,
     chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   },
 
@@ -711,22 +704,12 @@ const SERVER = (_folderSrv>=1&&_folderSrv<=SERVERS.length) ? _folderSrv : SERVER
 const ACTIVE_DOMAIN = (SERVERS[SERVER-1] || SERVERS[0]).domain;
 const API_W=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis6`;
 const API_R=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
-// Paket alat_tes: ikut flag CONFIG.database.paketSelaluServer1.
-// true  → selalu dari server 1 (SERVERS[0]), tidak peduli folder aktif.
-// false → ikut SERVER aktif (sudah otomatis fallback ke SERVER_DEFAULT
-//         kalau folder bukan angka yang diizinkan, lihat definisi SERVER di atas).
-const API_R_PAKET = CONFIG.database.paketSelaluServer1
-  ? `https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`
-  : `https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
-// admin_kontrol (status buka/tutup tes) ikut FLAG YANG SAMA dengan API_R_PAKET
-// (CONFIG.database.paketSelaluServer1), supaya daftar alat_tes dan status
-// aktif/nonaktifnya SELALU berasal dari server yang sama. Ini konsisten dengan
-// monitoring_akun.html yang mengelola admin_kontrol per server aktif (activeSrvIdx),
-// bukan terpusat di server 1 — hardcode ke server 1 sebelumnya justru bug,
-// karena status yang diset admin di server 2 tidak pernah terbaca di sini.
-const API_R_KONTROL = CONFIG.database.paketSelaluServer1
-  ? `https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`
-  : `https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
+// Paket alat_tes selalu diambil dari server 1, tidak ikut SERVER aktif
+const API_R_PAKET=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
+// admin_kontrol (status buka/tutup tes) juga HARUS selalu dari server 1,
+// supaya toggle admin di 1 tempat berlaku untuk semua folder /1/ /2/ /3/ /4/.
+// (sebelumnya ikut ACTIVE_DOMAIN/API_R per-folder — itu bug: status bisa beda2 per server)
+const API_R_KONTROL=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
 const TBL=CONFIG.database.tbl, TBL_P=CONFIG.database.tblPaket, TBL_K=CONFIG.database.tblKontrol,
       AUTH=CONFIG.database.auth, WHO_B=CONFIG.database.whoEndpoint;
 

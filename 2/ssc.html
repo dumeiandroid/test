@@ -555,7 +555,7 @@ const CONFIG = {
     // Paket aktif untuk file index.html ini (harus cocok dgn x_01 di tabel alat_tes)
     aktif: 'ssc',
     // Paket yang langsung aktif tanpa perlu admin klik "aktifkan" dulu
-    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'ssc'],
+    autoAktifList: ['asmara', 'ssc', 'potensi', 'karakter', 'karir', 'cpmi-sumut'],
   },
 
   // ── 2. FRAGMENT (form biodata & layar penutup) ───────────────
@@ -583,7 +583,7 @@ const CONFIG = {
   kreplinOverride: {
     // true  = pakai detikPerKolom di bawah ini (mengabaikan nilai dari kreplin.txt).
     // false = pakai durasi asli dari file soal (biasanya 30 detik/kolom).
-    aktif: false,
+    aktif: true,
     // Durasi per kolom (detik) saat override aktif. Contoh: 3 = tiap kolom cuma 3 detik,
     // supaya testing alur cepat tanpa harus menunggu 45 kolom x 30 detik.
     detikPerKolom: 3,
@@ -613,6 +613,13 @@ const CONFIG = {
     tblKontrol: 'admin_kontrol', // tabel status aktif/nonaktif sistem
     auth: 'admin',               // header X-Custom-Auth, harus sama dgn backend
     whoEndpoint: 'https://cipta.my.id/who2/',
+    // true  = daftar paket (alat_tes) SELALU diambil dari server 1 (SERVERS[0]),
+    //         apa pun folder aktifnya (/1/ /2/ /3/ /4/). Ini perilaku lama/default,
+    //         cocok kalau data alat_tes cuma dikelola terpusat di 1 server.
+    // false = alat_tes diambil dari SERVER AKTIF (ikut folder, misal /3/ → server 3).
+    //         Kalau folder bukan angka yang valid, tetap otomatis jatuh ke
+    //         SERVER_DEFAULT (lihat CONFIG.server.default) — tidak perlu diatur terpisah.
+    paketSelaluServer1: false,
   },
 
   // ── 5. TOKEN ──────────────────────────────────────────────
@@ -704,12 +711,22 @@ const SERVER = (_folderSrv>=1&&_folderSrv<=SERVERS.length) ? _folderSrv : SERVER
 const ACTIVE_DOMAIN = (SERVERS[SERVER-1] || SERVERS[0]).domain;
 const API_W=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis6`;
 const API_R=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
-// Paket alat_tes selalu diambil dari server 1, tidak ikut SERVER aktif
-const API_R_PAKET=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
-// admin_kontrol (status buka/tutup tes) juga HARUS selalu dari server 1,
-// supaya toggle admin di 1 tempat berlaku untuk semua folder /1/ /2/ /3/ /4/.
-// (sebelumnya ikut ACTIVE_DOMAIN/API_R per-folder — itu bug: status bisa beda2 per server)
-const API_R_KONTROL=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
+// Paket alat_tes: ikut flag CONFIG.database.paketSelaluServer1.
+// true  → selalu dari server 1 (SERVERS[0]), tidak peduli folder aktif.
+// false → ikut SERVER aktif (sudah otomatis fallback ke SERVER_DEFAULT
+//         kalau folder bukan angka yang diizinkan, lihat definisi SERVER di atas).
+const API_R_PAKET = CONFIG.database.paketSelaluServer1
+  ? `https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`
+  : `https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
+// admin_kontrol (status buka/tutup tes) ikut FLAG YANG SAMA dengan API_R_PAKET
+// (CONFIG.database.paketSelaluServer1), supaya daftar alat_tes dan status
+// aktif/nonaktifnya SELALU berasal dari server yang sama. Ini konsisten dengan
+// monitoring_akun.html yang mengelola admin_kontrol per server aktif (activeSrvIdx),
+// bukan terpusat di server 1 — hardcode ke server 1 sebelumnya justru bug,
+// karena status yang diset admin di server 2 tidak pernah terbaca di sini.
+const API_R_KONTROL = CONFIG.database.paketSelaluServer1
+  ? `https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`
+  : `https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
 const TBL=CONFIG.database.tbl, TBL_P=CONFIG.database.tblPaket, TBL_K=CONFIG.database.tblKontrol,
       AUTH=CONFIG.database.auth, WHO_B=CONFIG.database.whoEndpoint;
 
@@ -811,6 +828,65 @@ async function loginDenganToken(){
 async function chkTok(t){try{const d=await aF(`${API_W}?table=${TBL}&x_01_eq=${encodeURIComponent(t)}`,{headers:{'X-Custom-Auth':AUTH}});return d.success&&d.count>0}catch{return false}}
 async function genTok(pid){for(let i=0;i<10;i++){const t=pid+'-'+rs(i<8?12:14);if(!(await chkTok(t)))return t}return pid+'-'+rs(16)}
 
+// ─── FAILOVER pindah server (MANUAL) ────────────────────────────────────────
+// Skenario: peserta sudah mengerjakan beberapa subtes di server lama (mis. server
+// 2), server itu bermasalah, admin/peserta PINDAH URL SECARA MANUAL ke server lain
+// (mis. server 1) — browser & localStorage sama persis, cuma domain aktifnya beda.
+// Di server yang baru dibuka ini token yang sama SUDAH ADA di tabel (baris kosong/
+// belum ada progres). Yang perlu terjadi: kalau baris di server aktif SEKARANG masih
+// kosong padahal kita punya backup progres lengkap untuk token itu di localStorage,
+// isi kekosongannya dari backup itu — TIDAK menghubungi server lain sama sekali
+// (server lama sedang bermasalah, jadi memang tidak diandalkan).
+function _cuBakKey(tok){return '_cu_bak_'+(tok||'')}
+// Dipanggil setiap kali progres bertambah (biodata, selfie, subtes selesai) supaya
+// backup lokal selalu jadi cerminan paling baru dari data di server.
+function simpanCuBak(){
+  try{
+    const tok=localStorage.getItem('token');
+    if(!tok||!cu)return;
+    const bak={};
+    Object.keys(cu).forEach(k=>{if(k!=='id_x'&&k!=='x_01')bak[k]=cu[k]});
+    localStorage.setItem(_cuBakKey(tok),JSON.stringify(bak));
+  }catch(e){console.warn('[simpanCuBak]',e)}
+}
+// Dipanggil begitu record ditemukan di server yang SEDANG AKTIF (auto-resume /
+// login token manual). Menyinkronkan progres dari backup lokal ke record ini —
+// BUKAN cuma kalau kosong total, tapi juga kalau record ini sudah punya sebagian
+// data tapi backup lokal punya progres yang lebih baru/lebih lengkap (mis. peserta
+// baru saja menyelesaikan subtes di server lain lalu balik lagi ke server ini).
+// Field berbentuk JSON object (biodata x_02, jawaban per-subtes x_07/x_08/dst)
+// DIGABUNG (union) — bukan ditimpa total — supaya progres di kedua sisi tidak
+// saling menghapus satu sama lain.
+async function failoverIsiDariBackupLokal(token){
+  try{
+    const raw=localStorage.getItem(_cuBakKey(token));
+    if(!raw)return false; // tidak ada backup progres untuk token ini
+    const bak=JSON.parse(raw);
+    const upd={};
+    Object.keys(bak).forEach(k=>{
+      const bakVal=bak[k], curVal=cu[k];
+      let bakObj=null, curObj=null;
+      try{bakObj=JSON.parse(bakVal)}catch{}
+      try{curObj=JSON.parse(curVal)}catch{}
+      if(bakObj && typeof bakObj==='object' && !Array.isArray(bakObj)){
+        // Field JSON object → union, backup menang kalau ada key yang sama
+        // (backup selalu dari aktivitas TERAKHIR peserta, di server manapun itu).
+        const merged=Object.assign({}, (curObj&&typeof curObj==='object')?curObj:{}, bakObj);
+        const mergedStr=JSON.stringify(merged);
+        if(mergedStr!==(curVal||''))upd[k]=mergedStr;
+      }else if(bakVal!=null && bakVal!=='' && bakVal!==curVal){
+        // Field biasa (bukan JSON object) → pakai nilai backup kalau beda & tidak kosong
+        upd[k]=bakVal;
+      }
+    });
+    if(Object.keys(upd).length===0)return false; // sudah sinkron, tidak ada yang perlu diubah
+    await aP(cu.id_x,upd);
+    Object.assign(cu,upd);
+    console.log('[FAILOVER] Progres disinkronkan dari backup lokal untuk token:',token,upd);
+    return true;
+  }catch(e){console.warn('[FAILOVER] gagal sinkron dari backup lokal:',e);return false}
+}
+
 // Generate token final untuk mode checkpoint (MINTA_TOKEN_SETELAH>0):
 // format [namaDepan][2 huruf acak][id_x], contoh: "Budi Santoso" + id_x 245 -> "budixy245"
 function genTokenDariNama(nama, id_x){
@@ -871,6 +947,10 @@ async function loginDenganTokenMain() {
       errBox.style.display = 'block'; return;
     }
     cu = res.data[0];
+    // ── FAILOVER pindah server (manual): kalau record token ini di server aktif
+    // masih kosong (mis. baru pindah URL dari server lama yang bermasalah), isi
+    // dari backup progres lokal untuk token yang sama ──
+    await failoverIsiDariBackupLokal(tok);
     const paketToken = (cu.x_04 || '').trim().toLowerCase();
     if (paketToken && paketToken !== AUTO_PAKET.toLowerCase()) {
       hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
@@ -913,6 +993,7 @@ async function loginDenganTokenMain() {
     localStorage.setItem('token', tok);
     localStorage.setItem('db_id', String(cu.id_x));
     localStorage.setItem('_p', AUTO_PAKET);
+    simpanCuBak();
     tampilTopBarId();
     vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
     await loadAC();
@@ -1028,6 +1109,7 @@ async function kirimSelfie(){
       tutupKameraSelfie();
       localStorage.setItem('db_id',_updateExistingId);
       cu={id_x:_updateExistingId,x_01:tok,x_02:bio};
+      simpanCuBak();
       _updateExistingId=null;
       stTxt.textContent='Memuat tes...';
       await loadAC();
@@ -1065,6 +1147,7 @@ async function kirimSelfie(){
     tutupKameraSelfie();
     localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',_pendingPnm);
     cu={id_x:res.id_x,x_01:tok,x_02:bio};
+    simpanCuBak();
 
     // Mode checkpoint N=2: token diminta TEPAT setelah selfie, sebelum subtes apapun dimulai.
     if(MINTA_TOKEN_SETELAH===2){
@@ -1101,10 +1184,18 @@ async function kirimSelfie(){
 // diubah/ditambah fieldnya, x_02 yang tersimpan OTOMATIS ikut lengkap tanpa
 // perlu edit kode ini lagi.
 // Field genap (fieldset radio) dikelompokkan per `name`, hanya nilai yang
-// checked yang diambil. Checkbox disimpan sebagai boolean.
+// checked yang diambil. Checkbox disimpan sebagai boolean, KECUALI kalau
+// beberapa checkbox berbagi `name` yang sama (grup "pilih semua yang sesuai") —
+// dalam kasus itu, semua yang tercentang dikumpulkan jadi satu array per `name`.
 // Elemen bisa ditandai `data-skip-autocollect="true"` untuk dikecualikan
 // (mis. input pencarian/autocomplete yang bukan bagian dari data final).
-// CATATAN: ini menangkap field FLAT (satu nilai per elemen). Untuk data
+// PENTING: kunci field diambil dari `id` KALAU ADA, atau `name` kalau elemen
+// tidak punya `id` sama sekali — supaya pertanyaan baru yang ditambahkan ke
+// fragment HANYA dengan atribut name (pola HTML form yang umum) tetap ikut
+// tertangkap otomatis, bukan hilang diam-diam. Sebelumnya query hanya memilih
+// elemen yang punya [id], sehingga field baru tanpa id tidak pernah tersimpan
+// — inilah penyebab "form makin lengkap tapi data yang tersimpan tetap sama".
+// CATATAN: ini menangkap field FLAT (satu nilai per elemen/grup). Untuk data
 // bertingkat/berulang (tabel riwayat pendidikan/kerja/keluarga dengan banyak
 // baris dinamis), fragment tetap perlu menyediakan fungsi khusus seperti
 // window.getBiodataCpmi() — hasilnya digabung setelah ini di handleDaftar()
@@ -1113,11 +1204,31 @@ function collectBiodataDinamis(){
   const c=document.getElementById('biodataContainer');
   if(!c)return{};
   const hasil={};
-  c.querySelectorAll('input[id], select[id], textarea[id]').forEach(el=>{
-    if(['button','submit','file','radio'].includes(el.type))return;
+
+  // 1) Grup checkbox multi-pilih (>1 checkbox berbagi name yang sama) →
+  //    dikumpulkan sebagai array value yang tercentang.
+  const checkboxGroupNames=new Set();
+  c.querySelectorAll('input[type="checkbox"][name]').forEach(el=>{
     if(el.dataset&&el.dataset.skipAutocollect==='true')return;
-    hasil[el.id]=el.type==='checkbox'?el.checked:el.value;
+    const sameName=c.querySelectorAll(`input[type="checkbox"][name="${CSS.escape(el.name)}"]`);
+    if(sameName.length>1)checkboxGroupNames.add(el.name);
   });
+  checkboxGroupNames.forEach(name=>{
+    hasil[name]=Array.from(c.querySelectorAll(`input[type="checkbox"][name="${CSS.escape(name)}"]:checked`)).map(el=>el.value);
+  });
+
+  // 2) Semua field flat lainnya: input/select/textarea, kunci = id (kalau ada)
+  //    atau name (fallback). File & radio ditangani terpisah; checkbox yang
+  //    sudah masuk grup di langkah 1 dilewati supaya tidak dobel.
+  c.querySelectorAll('input, select, textarea').forEach(el=>{
+    if(['button','submit','file','radio'].includes(el.type))return;
+    if(el.type==='checkbox'&&el.name&&checkboxGroupNames.has(el.name))return;
+    if(el.dataset&&el.dataset.skipAutocollect==='true')return;
+    const key=el.id||el.name;
+    if(!key)return; // elemen tanpa id maupun name tidak punya nama field yang bisa dipakai
+    hasil[key]=el.type==='checkbox'?el.checked:el.value;
+  });
+
   const radioNames=new Set();
   c.querySelectorAll('input[type="radio"][name]').forEach(el=>radioNames.add(el.name));
   radioNames.forEach(name=>{
@@ -1200,6 +1311,7 @@ async function handleDaftar(){
         if(!resU.success)throw new Error(resU.message||'Gagal menyimpan data.');
         localStorage.setItem('db_id',_updateExistingId);
         cu={id_x:_updateExistingId,x_01:localStorage.getItem('token'),x_02:bio};
+        simpanCuBak();
         _pendingBio=JSON.parse(bio);
         _updateExistingId=null;
         hl();
@@ -1221,6 +1333,8 @@ async function handleDaftar(){
       bioObj.checkpoint_lewat=true;
       await aP(res.id_x,{x_02:JSON.stringify(bioObj)});
       localStorage.setItem('token',tok);localStorage.setItem('db_id',String(res.id_x));localStorage.setItem('_p',pnm);
+      cu={id_x:res.id_x,x_01:tok,x_02:JSON.stringify(bioObj)};
+      simpanCuBak();
       hl();
       logoutPaksaCheckpoint();
     }catch(e){
@@ -1680,6 +1794,7 @@ async function catatSelesaiSubtes(id,taskId,ts,extraFields){
     const newBio=JSON.stringify(bioObj);
     await aP(id,{x_02:newBio});
     cu.x_02=newBio;
+    simpanCuBak(); // backup progres lokal (biodata + jawaban) untuk jaga-jaga failover pindah server
     return bioObj;
   }catch(e){console.warn('[catatSelesaiSubtes]',e);return null}
 }
@@ -1745,6 +1860,10 @@ async function farC(token){
     const res=await aF(`${API_R}?table=${TBL}&x_01_eq=${token}`,{headers:{'X-Custom-Auth':AUTH}});
     if(!res.success||!res.count){localStorage.clear();hl();ss('screenDaftar');loadPaket();return}
     cu=res.data[0];localStorage.setItem('db_id',cu.id_x);
+    // ── FAILOVER pindah server (manual): record di server aktif ini bisa saja
+    // masih kosong (mis. baru pindah URL dari server lama yang bermasalah) —
+    // kalau begitu, isi dari backup progres lokal untuk token yang sama ──
+    await failoverIsiDariBackupLokal(token);
     vMap={};if(cu.x_09){try{const v=JSON.parse(cu.x_09);Object.entries(v).forEach(([k,vl])=>{if(k&&/^[a-zA-Z0-9_]+$/.test(k))vMap[k]=parseInt(vl)||0})}catch{}}
     await loadAC();await goNext2();
   }catch(e){console.error(e);hl();ss('screenDaftar');loadPaket()}
@@ -2721,6 +2840,11 @@ window.onload = async () => {
       if (!res.success || !res.count) { localStorage.clear(); hl(); ss('screenDaftar'); return; }
       cu = res.data[0]; localStorage.setItem('db_id', cu.id_x);
 
+      // ── FAILOVER pindah server (manual): record token ini di server aktif bisa
+      // saja masih kosong (mis. baru pindah URL dari server lama yang bermasalah) —
+      // kalau begitu, isi dari backup progres lokal untuk token yang sama ──
+      await failoverIsiDariBackupLokal(tok);
+
       // ── Cek apakah biodata sudah terisi (field 'nama') ──
       let bioCekR = {}; try { bioCekR = JSON.parse(cu.x_02 || '{}'); } catch {}
       // Cek status logout SEGERA setelah login berhasil — tidak peduli biodata sudah diisi atau belum
@@ -2736,6 +2860,7 @@ window.onload = async () => {
       }
 
       vMap = {}; if (cu.x_09) { try { const v = JSON.parse(cu.x_09); Object.entries(v).forEach(([k, vl]) => { if (k && /^[a-zA-Z0-9_]+$/.test(k)) vMap[k] = parseInt(vl) || 0; }); } catch {} }
+      simpanCuBak();
       await loadAC();
       let status = 'nonaktif'; try { status = JSON.parse(cu.x_02 || '{}').status || 'nonaktif'; } catch {}
       // PERBAIKAN BUG: jika paket berbeda (misal sebelumnya asmara, sekarang iq),

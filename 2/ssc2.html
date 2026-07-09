@@ -553,9 +553,9 @@ const CONFIG = {
   // ── 1. PAKET ──────────────────────────────────────────────
   paket: {
     // Paket aktif untuk file index.html ini (harus cocok dgn x_01 di tabel alat_tes)
-    aktif: 'cpmi-sumut',
+    aktif: 'ssc',
     // Paket yang langsung aktif tanpa perlu admin klik "aktifkan" dulu
-    autoAktifList: ['asmara', 'potensi', 'karakter', 'karir', 'cpmi-sumut'],
+    autoAktifList: ['asmara', 'ssc', 'potensi', 'karakter', 'karir', 'cpmi-sumut'],
   },
 
   // ── 2. FRAGMENT (form biodata & layar penutup) ───────────────
@@ -635,7 +635,7 @@ const CONFIG = {
     // selfie+seluruh subtes di paket), checkpoint TIDAK PERNAH ke-trigger — tes
     // berjalan terus sampai selesai tanpa minta token di tengah, karena token
     // sudah otomatis tersimpan di localStorage sejak biodata pertama disimpan.
-    mintaSetelah: 3,
+    mintaSetelah: 0,
     chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   },
 
@@ -1118,10 +1118,18 @@ async function kirimSelfie(){
 // diubah/ditambah fieldnya, x_02 yang tersimpan OTOMATIS ikut lengkap tanpa
 // perlu edit kode ini lagi.
 // Field genap (fieldset radio) dikelompokkan per `name`, hanya nilai yang
-// checked yang diambil. Checkbox disimpan sebagai boolean.
+// checked yang diambil. Checkbox disimpan sebagai boolean, KECUALI kalau
+// beberapa checkbox berbagi `name` yang sama (grup "pilih semua yang sesuai") —
+// dalam kasus itu, semua yang tercentang dikumpulkan jadi satu array per `name`.
 // Elemen bisa ditandai `data-skip-autocollect="true"` untuk dikecualikan
 // (mis. input pencarian/autocomplete yang bukan bagian dari data final).
-// CATATAN: ini menangkap field FLAT (satu nilai per elemen). Untuk data
+// PENTING: kunci field diambil dari `id` KALAU ADA, atau `name` kalau elemen
+// tidak punya `id` sama sekali — supaya pertanyaan baru yang ditambahkan ke
+// fragment HANYA dengan atribut name (pola HTML form yang umum) tetap ikut
+// tertangkap otomatis, bukan hilang diam-diam. Sebelumnya query hanya memilih
+// elemen yang punya [id], sehingga field baru tanpa id tidak pernah tersimpan
+// — inilah penyebab "form makin lengkap tapi data yang tersimpan tetap sama".
+// CATATAN: ini menangkap field FLAT (satu nilai per elemen/grup). Untuk data
 // bertingkat/berulang (tabel riwayat pendidikan/kerja/keluarga dengan banyak
 // baris dinamis), fragment tetap perlu menyediakan fungsi khusus seperti
 // window.getBiodataCpmi() — hasilnya digabung setelah ini di handleDaftar()
@@ -1130,11 +1138,31 @@ function collectBiodataDinamis(){
   const c=document.getElementById('biodataContainer');
   if(!c)return{};
   const hasil={};
-  c.querySelectorAll('input[id], select[id], textarea[id]').forEach(el=>{
-    if(['button','submit','file','radio'].includes(el.type))return;
+
+  // 1) Grup checkbox multi-pilih (>1 checkbox berbagi name yang sama) →
+  //    dikumpulkan sebagai array value yang tercentang.
+  const checkboxGroupNames=new Set();
+  c.querySelectorAll('input[type="checkbox"][name]').forEach(el=>{
     if(el.dataset&&el.dataset.skipAutocollect==='true')return;
-    hasil[el.id]=el.type==='checkbox'?el.checked:el.value;
+    const sameName=c.querySelectorAll(`input[type="checkbox"][name="${CSS.escape(el.name)}"]`);
+    if(sameName.length>1)checkboxGroupNames.add(el.name);
   });
+  checkboxGroupNames.forEach(name=>{
+    hasil[name]=Array.from(c.querySelectorAll(`input[type="checkbox"][name="${CSS.escape(name)}"]:checked`)).map(el=>el.value);
+  });
+
+  // 2) Semua field flat lainnya: input/select/textarea, kunci = id (kalau ada)
+  //    atau name (fallback). File & radio ditangani terpisah; checkbox yang
+  //    sudah masuk grup di langkah 1 dilewati supaya tidak dobel.
+  c.querySelectorAll('input, select, textarea').forEach(el=>{
+    if(['button','submit','file','radio'].includes(el.type))return;
+    if(el.type==='checkbox'&&el.name&&checkboxGroupNames.has(el.name))return;
+    if(el.dataset&&el.dataset.skipAutocollect==='true')return;
+    const key=el.id||el.name;
+    if(!key)return; // elemen tanpa id maupun name tidak punya nama field yang bisa dipakai
+    hasil[key]=el.type==='checkbox'?el.checked:el.value;
+  });
+
   const radioNames=new Set();
   c.querySelectorAll('input[type="radio"][name]').forEach(el=>radioNames.add(el.name));
   radioNames.forEach(name=>{

@@ -718,15 +718,10 @@ const API_R=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
 const API_R_PAKET = CONFIG.database.paketSelaluServer1
   ? `https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`
   : `https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
-// admin_kontrol (status buka/tutup tes) ikut FLAG YANG SAMA dengan API_R_PAKET
-// (CONFIG.database.paketSelaluServer1), supaya daftar alat_tes dan status
-// aktif/nonaktifnya SELALU berasal dari server yang sama. Ini konsisten dengan
-// monitoring_akun.html yang mengelola admin_kontrol per server aktif (activeSrvIdx),
-// bukan terpusat di server 1 — hardcode ke server 1 sebelumnya justru bug,
-// karena status yang diset admin di server 2 tidak pernah terbaca di sini.
-const API_R_KONTROL = CONFIG.database.paketSelaluServer1
-  ? `https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`
-  : `https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
+// admin_kontrol (status buka/tutup tes) juga HARUS selalu dari server 1,
+// supaya toggle admin di 1 tempat berlaku untuk semua folder /1/ /2/ /3/ /4/.
+// (sebelumnya ikut ACTIVE_DOMAIN/API_R per-folder — itu bug: status bisa beda2 per server)
+const API_R_KONTROL=`https://${SERVERS[0].domain}/api/contacts_filter_dinamis7`;
 const TBL=CONFIG.database.tbl, TBL_P=CONFIG.database.tblPaket, TBL_K=CONFIG.database.tblKontrol,
       AUTH=CONFIG.database.auth, WHO_B=CONFIG.database.whoEndpoint;
 
