@@ -422,12 +422,7 @@ const DB_TEMPLATES = [
 ];
 
 // ── State server aktif ──
-// Dipulihkan dari localStorage supaya saat halaman di-refresh, user tetap
-// berada di server yang sama (bukan selalu balik ke Server 1).
-let activeServerIdx = (() => {
-  const saved = parseInt(sg('activeServerIdx'));
-  return (!isNaN(saved) && saved >= 0 && saved < SERVERS.length) ? saved : 0;
-})();
+let activeServerIdx = 0; // default server pertama
 
 // Bangun DBS dari server + template
 function buildDBS(serverIdx){
