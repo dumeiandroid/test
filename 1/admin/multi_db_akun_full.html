@@ -475,10 +475,11 @@ function switchServer(idx){
   DBS = buildDBS(idx);
   ss('activeServerIdx', idx);
 
-  // Reset state tabel
-  allTables  = {};
-  activeDB   = 0;
-  activeTbl  = 'cover';
+  // Pertahankan grup DB & nama tabel yang sedang aktif — tidak lagi direset
+  // ke 'cover'. Kalau tabel dengan nama sama tidak ada di server baru,
+  // loadData() akan menampilkan pesan "Gagal memuat data" / "Tidak ada data"
+  // dan user tinggal pilih tabel lain dari sidebar.
+  allTables = {};
 
   renderLoginServers();
   renderTopbarServers();
@@ -493,10 +494,19 @@ function switchServer(idx){
       sel.innerHTML = DB_TEMPLATES.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
     }
     loadData();
+    // Selalu fetch grup General supaya sidebar tidak kosong
     fetchTables(0).then(()=>{
       const g0 = document.getElementById('grp0');
       if(g0) g0.classList.remove('collapsed');
     });
+    // Kalau grup DB aktif bukan General, fetch juga grupnya supaya
+    // tabel yang sedang aktif ikut ter-highlight di sidebar
+    if(activeDB !== 0){
+      fetchTables(activeDB).then(()=>{
+        const grpA = document.getElementById('grp'+activeDB);
+        if(grpA) grpA.classList.remove('collapsed');
+      });
+    }
   }
 }
 
