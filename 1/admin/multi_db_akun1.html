@@ -91,7 +91,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 .tbl-act-btn.clear:hover{color:#fbbf24;border-color:#fbbf24;background:rgba(251,191,36,.1);}
 .tbl-act-btn.drop:hover{color:var(--danger);border-color:var(--danger);background:rgba(248,113,113,.1);}
 .tbl-act-btn.backup:hover{color:#60a5fa;border-color:#60a5fa;background:rgba(96,165,250,.1);}
-.tbl-act-btn.sql:hover{color:#34d399;border-color:#34d399;background:rgba(52,211,153,.1);}
 .tbl-search-wrap{padding:6px 8px;border-bottom:1px solid var(--border);}
 .tbl-search-inp{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px 5px 26px;font-size:11px;font-family:'DM Mono',monospace;}
 .tbl-search-inp:focus{outline:none;border-color:var(--a1);}
@@ -227,7 +226,9 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
 <div id="loginSection">
   <div class="login-box">
     <div class="login-logo">Multi<span>DB</span></div>
-    <div class="login-sub">Masuk untuk melanjutkan</div>
+    <div class="login-sub">Pilih server lalu masuk</div>
+    <span class="server-label">Server</span>
+    <div class="server-grid" id="loginServerGrid"><!-- filled by JS --></div>
     <form id="loginForm">
       <div class="fg"><label class="lbl">Username</label><input id="uname" type="text" class="inp" placeholder="Username" required autofocus autocomplete="username"></div>
       <div class="fg"><label class="lbl">Password</label><input id="upass" type="password" class="inp" placeholder="••••••" required autocomplete="current-password"></div>
@@ -262,10 +263,6 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
           </select>
           <input id="newTblName" type="text" class="new-tbl-inp" placeholder="nama tabel...">
           <button class="new-tbl-btn" onclick="openNewTable()">+</button>
-        </div>
-        <div class="new-tbl-row" style="margin-top:6px;">
-          <button id="sqlUploadBtn" class="new-tbl-btn" style="flex:1;background:var(--s2);color:var(--text);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:6px;" onclick="document.getElementById('sqlUploadInp').click()"><i class="fa fa-upload"></i> Upload SQL</button>
-          <input type="file" id="sqlUploadInp" accept=".sql,.txt" style="display:none" onchange="handleSQLUpload(event)">
         </div>
       </div>
     </div>
@@ -336,21 +333,6 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
     </div>
 
     <div id="bkpCheckMsg" style="font-size:12px;min-height:20px;margin-bottom:10px;font-family:'DM Mono',monospace;padding:0 2px;"></div>
-
-    <!-- BOX KONFIRMASI TIMPA — muncul jika tabel tujuan sudah ada -->
-    <div id="bkpOverwriteBox" style="display:none;margin-bottom:10px;padding:10px;border:1px solid #f87171;border-radius:8px;background:rgba(248,113,113,.08);">
-      <div style="font-size:12px;color:#f87171;font-family:'DM Mono',monospace;line-height:1.5;margin-bottom:8px;">
-        ⚠ Tabel <code id="bkpOverwriteNameLbl" style="background:var(--s2);padding:1px 5px;border-radius:3px;"></code> sudah ada di tujuan.
-        Jika lanjut, <strong>seluruh data yang ada saat ini di tabel tujuan akan DIHAPUS</strong> lalu diisi ulang dengan data backup ini. Tindakan ini tidak bisa dibatalkan.
-      </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-family:'DM Mono',monospace;">Ketik nama tabel tujuan untuk konfirmasi:</div>
-      <input type="text" class="confirm-inp" id="bkpOverwriteInp" placeholder="Ketik nama tabel tujuan..." autocomplete="off" style="margin-bottom:8px;" oninput="onBkpOverwriteInp()">
-      <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button class="conf-cancel" onclick="cancelOverwriteBackup()">Batal</button>
-        <button class="conf-exec" id="bkpOverwriteConfirmBtn" disabled onclick="confirmOverwriteBackup()" style="background:#f87171;color:#000;opacity:.5;cursor:not-allowed;"><i class="fa fa-triangle-exclamation"></i> Ya, Kosongkan &amp; Timpa</button>
-      </div>
-    </div>
-
     <div id="bkpProgress" style="display:none;margin-bottom:10px;">
       <div id="bkpProgMsg" style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px;min-height:18px;"></div>
       <div style="background:var(--s2);border-radius:6px;height:10px;overflow:hidden;border:1px solid var(--border);">
@@ -422,12 +404,7 @@ const DB_TEMPLATES = [
 ];
 
 // ── State server aktif ──
-// Dipulihkan dari localStorage supaya saat halaman di-refresh, user tetap
-// berada di server yang sama (bukan selalu balik ke Server 1).
-let activeServerIdx = (() => {
-  const saved = parseInt(sg('activeServerIdx'));
-  return (!isNaN(saved) && saved >= 0 && saved < SERVERS.length) ? saved : 0;
-})();
+let activeServerIdx = 0; // default server pertama
 
 // Bangun DBS dari server + template
 function buildDBS(serverIdx){
@@ -475,11 +452,10 @@ function switchServer(idx){
   DBS = buildDBS(idx);
   ss('activeServerIdx', idx);
 
-  // Pertahankan grup DB & nama tabel yang sedang aktif — tidak lagi direset
-  // ke 'cover'. Kalau tabel dengan nama sama tidak ada di server baru,
-  // loadData() akan menampilkan pesan "Gagal memuat data" / "Tidak ada data"
-  // dan user tinggal pilih tabel lain dari sidebar.
-  allTables = {};
+  // Reset state tabel
+  allTables  = {};
+  activeDB   = 0;
+  activeTbl  = 'cover';
 
   renderLoginServers();
   renderTopbarServers();
@@ -494,30 +470,26 @@ function switchServer(idx){
       sel.innerHTML = DB_TEMPLATES.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
     }
     loadData();
-    // Selalu fetch grup General supaya sidebar tidak kosong
     fetchTables(0).then(()=>{
       const g0 = document.getElementById('grp0');
       if(g0) g0.classList.remove('collapsed');
     });
-    // Kalau grup DB aktif bukan General, fetch juga grupnya supaya
-    // tabel yang sedang aktif ikut ter-highlight di sidebar
-    if(activeDB !== 0){
-      fetchTables(activeDB).then(()=>{
-        const grpA = document.getElementById('grp'+activeDB);
-        if(grpA) grpA.classList.remove('collapsed');
-      });
-    }
   }
 }
 
-// ── Server picker di login sudah dihapus: login SELALU lewat server 1. ──
-// (Setelah login, switchServer() masih bisa dipakai untuk browsing data di server lain
-// lewat chip di topbar — hanya proses autentikasi yang dikunci ke server 1.)
+// ── Init server dari localStorage ──
+(function initServer(){
+  const saved = parseInt(sg('activeServerIdx')||'0');
+  if(saved >= 0 && saved < SERVERS.length){
+    activeServerIdx = saved;
+    DBS = buildDBS(saved);
+  }
+  renderLoginServers();
+})();
 
 // Index DB1 & state backup — global agar tersedia sebelum fungsi apapun dipanggil
 const DB1_IDX       = DBS.findIndex(d => d.key === 'db1');
 let   bkpDestVerified = false;
-let   bkpOverwriteMode = false; // true jika user memilih "Kosongkan & Timpa" tabel tujuan yang sudah ada
 
 let activeDB  = 0;
 let activeTbl = 'cover';
@@ -543,19 +515,14 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
   btnEl.disabled=true;
 
   try {
-    // Login DIKUNCI ke Server 1 (lidan-co-id.pages.dev) — tidak bergantung activeServerIdx
-    const loginTpl = DB_TEMPLATES[0]; // General
-    const api = `https://${SERVERS[0].domain}${loginTpl.path}`;
-    const h   = {'Content-Type':'application/json','X-Custom-Auth':loginTpl.auth};
+    // Cek ke tabel 'users' di database General (DBS[0])
+    const api = DBS[0].api;
+    const h   = {'Content-Type':'application/json','X-Custom-Auth':DBS[0].auth};
     const url = `${api}?table=admins&x_01_eq=${encodeURIComponent(username)}&x_02_eq=${encodeURIComponent(password)}`;
     const res = await fetch(url, { headers: h });
     const data = await res.json();
 
     if(data.data && data.data.length > 0){
-      // Pastikan sesi berjalan di server 1 sebagai default setelah login
-      activeServerIdx = 0;
-      DBS = buildDBS(0);
-      ss('activeServerIdx', 0);
       ss('loggedIn','true');
       ss('loggedUser', username);
       showApp();
@@ -677,7 +644,6 @@ function renderTblList(idx, filter=''){
         '<button class="tbl-act-btn clear"  data-act="clear"  data-db="'+idx+'" data-tbl="'+t+'" title="Kosongkan data"><i class="fa fa-eraser"></i></button>'+
         '<button class="tbl-act-btn drop"   data-act="drop"   data-db="'+idx+'" data-tbl="'+t+'" title="Hapus tabel"><i class="fa fa-trash"></i></button>'+
         '<button class="tbl-act-btn backup" data-act="backup" data-db="'+idx+'" data-tbl="'+t+'" title="Backup ke database tujuan"><i class="fa fa-cloud-arrow-up"></i></button>'+
-        '<button class="tbl-act-btn sql"    data-act="sql"    data-db="'+idx+'" data-tbl="'+t+'" title="Download sebagai file SQL"><i class="fa fa-download"></i></button>'+
       '</div>';
     div.addEventListener('click', function(e){
       if(e.target.closest('.tbl-actions')) return;
@@ -686,10 +652,6 @@ function renderTblList(idx, filter=''){
     div.querySelectorAll('.tbl-act-btn').forEach(btn=>{
       btn.addEventListener('click', function(e){
         e.stopPropagation();
-        if(this.dataset.act === 'sql'){
-          downloadTableSQL(parseInt(this.dataset.db), this.dataset.tbl, this);
-          return;
-        }
         askTableAction(this.dataset.act, parseInt(this.dataset.db), this.dataset.tbl);
       });
     });
@@ -747,238 +709,6 @@ function openNewTable(){
   document.getElementById('cnt'+dbIdx).textContent=allTables[dbIdx].length;
   selectTable(dbIdx,name);
   document.getElementById('newTblName').value='';
-}
-
-// ════════════════════════════════════════════════
-//  DOWNLOAD TABEL → FILE SQL
-// ════════════════════════════════════════════════
-async function downloadTableSQL(dbIdx, tblName, btnEl){
-  const origHTML = btnEl ? btnEl.innerHTML : null;
-  if(btnEl){ btnEl.disabled = true; btnEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i>'; }
-  try{
-    const LIMIT = 200;
-    let allRows = [], offset = 0;
-    while(true){
-      const url = `${DBS[dbIdx].api}?table=${tblName}&limit=${LIMIT}&offset=${offset}`;
-      const res = await fetch(url, { headers: hdrs(dbIdx) });
-      if(!res.ok) throw new Error(`Gagal fetch data (${res.status})`);
-      const json = await res.json();
-      const rows = json.data || [];
-      if(rows.length === 0) break;
-      allRows = allRows.concat(rows);
-      if(json.total !== undefined && allRows.length >= json.total) break;
-      if(rows.length < LIMIT) break;
-      offset += rows.length;
-    }
-    if(allRows.length === 0){
-      alert(`Tabel "${tblName}" kosong — tidak ada data untuk di-export.`);
-      return;
-    }
-    // Urutkan berdasarkan id_x ASC agar saat diupload/import ulang, urutan id tetap sama persis
-    // (sumber data bisa mengembalikan urutan DESC sesuai tampilan tabel, jadi perlu di-sort ulang di sini)
-    allRows.sort((a,b) => (Number(a.id_x)||0) - (Number(b.id_x)||0));
-
-    console.log(`[DOWNLOAD SQL] "${tblName}" @ ${DBS[dbIdx].name}: ${allRows.length} baris berhasil ditarik dari sumber (diurutkan id_x ASC).`);
-    window.__lastSqlDownloadRows = allRows;
-    const sqlText = rowsToSQL(tblName, allRows);
-    const blob = new Blob([sqlText], { type: 'application/sql' });
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = `${tblName}_${new Date().toISOString().slice(0,10)}.sql`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(blobUrl);
-  }catch(e){
-    alert(`❌ Gagal export SQL: ${e.message}`);
-  }finally{
-    if(btnEl){ btnEl.disabled = false; btnEl.innerHTML = origHTML; }
-  }
-}
-
-function rowsToSQL(tblName, rows){
-  let sql = `-- Export tabel "${tblName}"\n-- Digenerate ${new Date().toISOString()}\n-- Total baris: ${rows.length}\n\n`;
-  rows.forEach(row=>{
-    const cols = [], vals = [];
-    for(let c=1;c<=20;c++){
-      const col = 'x_'+String(c).padStart(2,'0');
-      if(row[col] !== undefined && row[col] !== null && row[col] !== ''){
-        cols.push(col);
-        vals.push(`'` + String(row[col]).replace(/'/g,"''") + `'`);
-      }
-    }
-    if(!cols.length) return;
-    sql += `INSERT INTO ${tblName} (${cols.join(', ')}) VALUES (${vals.join(', ')});\n`;
-  });
-  return sql;
-}
-
-// ════════════════════════════════════════════════
-//  UPLOAD FILE SQL → IMPORT KE TABEL
-// ════════════════════════════════════════════════
-async function handleSQLUpload(evt){
-  const file = evt.target.files[0];
-  if(!file) return;
-
-  const dbIdx = parseInt(document.getElementById('newTblDb').value);
-  let tblName = document.getElementById('newTblName').value.trim();
-  if(!tblName && activeTbl) tblName = activeTbl;
-  if(!tblName){
-    alert('Isi dulu "nama tabel..." (atau pilih tabel aktif di sidebar) sebagai tujuan sebelum upload SQL.');
-    evt.target.value = '';
-    return;
-  }
-
-  const text = await file.text();
-  const rows = parseSQLToRows(text);
-  if(!rows.length){
-    alert('Tidak ada data INSERT yang bisa dibaca dari file SQL ini.');
-    evt.target.value = '';
-    return;
-  }
-
-  if(!confirm(`Import ${rows.length} baris dari "${file.name}" ke tabel "${tblName}" di ${DBS[dbIdx].name}?`)){
-    evt.target.value = '';
-    return;
-  }
-
-  const uploadBtn = document.getElementById('sqlUploadBtn');
-  const origHTML = uploadBtn.innerHTML;
-  uploadBtn.disabled = true;
-
-  try{
-    const api = DBS[dbIdx].api;
-    const h = hdrs(dbIdx);
-    const CHUNK = 50; // diperkecil dari 100 — chunk besar berisiko kena limit variabel SQL di backend
-    let inserted = 0;
-    const chunkReports = [];
-    console.log(`[UPLOAD SQL] Mulai import ${rows.length} baris ke "${tblName}" @ ${DBS[dbIdx].name}, ${Math.ceil(rows.length/CHUNK)} chunk (${CHUNK} baris/chunk).`);
-    for(let i=0; i<rows.length; i+=CHUNK){
-      const chunk = rows.slice(i, i+CHUNK);
-      const done = Math.min(i+CHUNK, rows.length);
-      const chunkNum = Math.floor(i/CHUNK)+1;
-      uploadBtn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> ${done}/${rows.length}`;
-      const res = await fetch(`${api}?table=${tblName}&action=bulk_insert`, {
-        method: 'POST', headers: h, body: JSON.stringify(chunk)
-      });
-      if(!res.ok){
-        const t = await res.text();
-        console.error(`[UPLOAD SQL] Chunk ${chunkNum} GAGAL total (${res.status}):`, t);
-        chunkReports.push({ chunkNum, sent: chunk.length, inserted: 0, ok: false, error: t });
-        throw new Error(`Bulk insert gagal di chunk ${chunkNum} (${res.status}): ${t}`);
-      }
-      const rj = await res.json();
-      const gotInserted = (typeof rj.inserted === 'number') ? rj.inserted : null;
-      const actualInserted = gotInserted !== null ? gotInserted : chunk.length;
-      inserted += actualInserted;
-      chunkReports.push({ chunkNum, sent: chunk.length, inserted: actualInserted, ok: true, raw: rj });
-      if(gotInserted !== null && gotInserted !== chunk.length){
-        console.warn(`[UPLOAD SQL] ⚠ Chunk ${chunkNum}: kirim ${chunk.length} baris, API bilang hanya masukkan ${gotInserted} baris.`, rj);
-      }
-      if(gotInserted === null){
-        console.warn(`[UPLOAD SQL] ⚠ Chunk ${chunkNum}: API tidak mengembalikan field "inserted" — jumlah diasumsikan penuh (${chunk.length}), TIDAK terverifikasi.`, rj);
-      }
-    }
-    console.table(chunkReports);
-    console.log(`[UPLOAD SQL] Selesai. Total baris dikirim: ${rows.length}, total dilaporkan masuk: ${inserted}.`);
-    window.__lastSqlUploadReport = { tblName, dbIdx, sentRows: rows.length, insertedTotal: inserted, chunkReports, rows };
-
-    alert(`✅ Import selesai: ${inserted} / ${rows.length} baris dilaporkan masuk ke "${tblName}".\n\nBuka Console (F12) untuk detail per-chunk (window.__lastSqlUploadReport).`);
-
-
-    if(!allTables[dbIdx]) allTables[dbIdx] = [];
-    if(!allTables[dbIdx].includes(tblName)) allTables[dbIdx].push(tblName);
-    renderTblList(dbIdx);
-    const cntEl = document.getElementById('cnt'+dbIdx);
-    if(cntEl) cntEl.textContent = allTables[dbIdx].length;
-    if(activeDB === dbIdx && activeTbl === tblName) loadData();
-  }catch(e){
-    alert(`❌ Error: ${e.message}`);
-  }finally{
-    uploadBtn.disabled = false;
-    uploadBtn.innerHTML = origHTML;
-    evt.target.value = '';
-  }
-}
-
-// Pecah seluruh teks SQL jadi daftar statement, HANYA memotong di titik-koma
-// yang berada DI LUAR tanda kutip (agar ';' yang ada di dalam data/teks tidak
-// merusak parsing — ini penyebab baris "hilang" saat upload sebelumnya).
-function splitSQLStatements(sql){
-  const statements = [];
-  let cur = '', inStr = false, strChar = '';
-  for(let i = 0; i < sql.length; i++){
-    const c = sql[i];
-    if(inStr){
-      cur += c;
-      if(c === strChar){
-        if(sql[i+1] === strChar){ cur += sql[i+1]; i++; }
-        else inStr = false;
-      }
-      continue;
-    }
-    if(c === "'" || c === '"'){ inStr = true; strChar = c; cur += c; continue; }
-    if(c === ';'){ statements.push(cur); cur = ''; continue; }
-    cur += c;
-  }
-  if(cur.trim()) statements.push(cur);
-  return statements;
-}
-
-// Parse isi file .sql (statement INSERT INTO ... VALUES ...) jadi array object baris
-function parseSQLToRows(sql){
-  const rows = [];
-  const statements = splitSQLStatements(sql);
-  let insertStmtCount = 0;
-  statements.forEach(stmt=>{
-    const m = stmt.match(/INSERT\s+INTO\s+[`"\[]?[\w.]+[`"\]]?\s*\(([^)]+)\)\s*VALUES\s*([\s\S]*)/i);
-    if(!m) return;
-    insertStmtCount++;
-    const cols = m[1].split(',').map(c => c.trim().replace(/^[`"\[]|[`"\]]$/g,''));
-    const tuples = splitSQLValueTuples(m[2]);
-    tuples.forEach(tuple=>{
-      const obj = {};
-      cols.forEach((col, idx)=>{
-        const key = col.toLowerCase();
-        if(key === 'id_x' || key === 'id') return; // ID auto-generate di tujuan
-        let val = tuple[idx];
-        if(val === undefined) return;
-        if(/^null$/i.test(val)) return;
-        obj[col] = val;
-      });
-      if(Object.keys(obj).length) rows.push(obj);
-    });
-  });
-  console.log(`[parseSQLToRows] statement INSERT ditemukan: ${insertStmtCount}, baris berhasil di-parse: ${rows.length}`);
-  if(insertStmtCount !== rows.length){
-    console.warn(`[parseSQLToRows] ⚠ Jumlah statement (${insertStmtCount}) tidak sama dengan baris hasil parse (${rows.length}) — cek apakah ada baris dengan format VALUES yang tidak biasa.`);
-  }
-  return rows;
-}
-
-// Pecah isi "VALUES (...), (...), ..." jadi array tuple, aman terhadap koma & quote di dalam string
-function splitSQLValueTuples(valuesStr){
-  const tuples = [];
-  let i = 0, n = valuesStr.length;
-  let insideParen = false, inStr = false, strChar = '', curVal = '', curTuple = [];
-  while(i < n){
-    const c = valuesStr[i];
-    if(inStr){
-      if(c === strChar){
-        if(valuesStr[i+1] === strChar){ curVal += c; i += 2; continue; }
-        inStr = false; i++; continue;
-      }
-      curVal += c; i++; continue;
-    }
-    if(c === "'" || c === '"'){ inStr = true; strChar = c; i++; continue; }
-    if(c === '('){ if(!insideParen){ insideParen = true; curTuple = []; curVal = ''; } i++; continue; }
-    if(c === ')'){ curTuple.push(curVal.trim()); tuples.push(curTuple); insideParen = false; curVal = ''; i++; continue; }
-    if(c === ',' && insideParen){ curTuple.push(curVal.trim()); curVal = ''; i++; continue; }
-    if(insideParen) curVal += c;
-    i++;
-  }
-  return tuples;
 }
 
 // ── LOAD DATA ──
@@ -1171,7 +901,6 @@ const ACTION_CFG = {
 function openBackupModal(type, dbIdx, tblName){
   pendingAction = { type, dbIdx, tblName };
   bkpDestVerified = false;
-  bkpOverwriteMode = false;
 
   document.getElementById('bkpIcon').textContent    = '☁️';
   document.getElementById('bkpTitle').innerHTML     = `Backup <span style="color:var(--a1)">${tblName}</span>`;
@@ -1179,8 +908,6 @@ function openBackupModal(type, dbIdx, tblName){
   document.getElementById('bkpExecLbl').textContent = 'Backup';
   document.getElementById('bkpExecBtn').style.background = '#60a5fa';
   document.getElementById('bkpDestInp').value        = tblName;
-  document.getElementById('bkpOverwriteBox').style.display = 'none';
-  document.getElementById('bkpOverwriteInp').value = '';
   document.getElementById('bkpCheckMsg').textContent = '';
   document.getElementById('bkpCheckMsg').style.color = '';
   document.getElementById('bkpProgress').style.display = 'none';
@@ -1369,53 +1096,12 @@ async function execTableAction(){
 
 function resetBkpCheck(){
   bkpDestVerified = false;
-  bkpOverwriteMode = false;
   document.getElementById('bkpCheckMsg').textContent = '';
   document.getElementById('bkpCheckMsg').style.color = '';
   document.getElementById('bkpExecBtn').style.display = 'none';
-  document.getElementById('bkpExecBtn').style.background = '#60a5fa';
-  document.getElementById('bkpExecLbl').textContent = 'Backup';
   document.getElementById('bkpCheckBtn').style.display = '';
   document.getElementById('bkpCheckBtn').disabled = false;
   document.getElementById('bkpCheckBtn').innerHTML = '<i class="fa fa-magnifying-glass"></i> Cek Nama';
-  document.getElementById('bkpOverwriteBox').style.display = 'none';
-  document.getElementById('bkpOverwriteInp').value = '';
-  document.getElementById('bkpOverwriteConfirmBtn').classList.remove('ready');
-  document.getElementById('bkpOverwriteConfirmBtn').disabled = true;
-  document.getElementById('bkpOverwriteConfirmBtn').style.opacity = '.5';
-  document.getElementById('bkpOverwriteConfirmBtn').style.cursor = 'not-allowed';
-}
-
-// Aktif/nonaktifkan tombol konfirmasi timpa — hanya bisa ditekan jika nama tabel diketik persis sama
-function onBkpOverwriteInp(){
-  const destName = document.getElementById('bkpDestInp').value.trim();
-  const typed    = document.getElementById('bkpOverwriteInp').value.trim();
-  const btn      = document.getElementById('bkpOverwriteConfirmBtn');
-  const match    = typed !== '' && typed === destName;
-  btn.disabled = !match;
-  btn.style.opacity = match ? '1' : '.5';
-  btn.style.cursor  = match ? 'pointer' : 'not-allowed';
-  btn.classList.toggle('ready', match);
-}
-
-// User memilih membatalkan opsi timpa → kembali ke kondisi "belum dicek"
-function cancelOverwriteBackup(){
-  resetBkpCheck();
-}
-
-// User mengonfirmasi ingin mengosongkan tabel tujuan lalu mengisinya dengan data backup
-function confirmOverwriteBackup(){
-  const destName = document.getElementById('bkpDestInp').value.trim();
-  bkpDestVerified  = true;
-  bkpOverwriteMode = true;
-  document.getElementById('bkpOverwriteBox').style.display = 'none';
-  const msgEl = document.getElementById('bkpCheckMsg');
-  msgEl.style.color = '#fbbf24';
-  msgEl.innerHTML = `⚠ Mode <b>TIMPA</b> aktif — tabel <code style="background:var(--s2);padding:1px 5px;border-radius:3px;">${destName}</code> akan dikosongkan lalu diisi ulang dengan data backup ini.`;
-  document.getElementById('bkpCheckBtn').style.display = 'none';
-  document.getElementById('bkpExecLbl').textContent = 'Kosongkan & Timpa';
-  document.getElementById('bkpExecBtn').style.background = '#f87171';
-  document.getElementById('bkpExecBtn').style.display = '';
 }
 
 async function checkBackupDest(){
@@ -1440,16 +1126,10 @@ async function checkBackupDest(){
     const existing = (data.tables||[]).map(t => t.toLowerCase());
     if(existing.includes(destName.toLowerCase())){
       msgEl.style.color = 'var(--danger)';
-      msgEl.innerHTML   = `❌ Tabel <code style="background:var(--s2);padding:1px 5px;border-radius:3px;">${destName}</code> sudah ada di tujuan. Gunakan nama lain, atau pilih opsi timpa di bawah.`;
+      msgEl.innerHTML   = `❌ Tabel <code style="background:var(--s2);padding:1px 5px;border-radius:3px;">${destName}</code> sudah ada di tujuan. Gunakan nama lain.`;
       bkpDestVerified = false;
-      checkBtn.style.display = 'none';
-      document.getElementById('bkpOverwriteNameLbl').textContent = destName;
-      document.getElementById('bkpOverwriteInp').value = '';
-      document.getElementById('bkpOverwriteConfirmBtn').disabled = true;
-      document.getElementById('bkpOverwriteConfirmBtn').style.opacity = '.5';
-      document.getElementById('bkpOverwriteConfirmBtn').style.cursor = 'not-allowed';
-      document.getElementById('bkpOverwriteConfirmBtn').classList.remove('ready');
-      document.getElementById('bkpOverwriteBox').style.display = 'block';
+      checkBtn.disabled = false;
+      checkBtn.innerHTML = '<i class="fa fa-magnifying-glass"></i> Cek Nama';
     } else {
       msgEl.style.color = 'var(--a3)';
       msgEl.innerHTML   = `✅ Nama <code style="background:var(--s2);padding:1px 5px;border-radius:3px;">${destName}</code> tersedia di tujuan.`;
@@ -1517,23 +1197,6 @@ async function execBackup(){
       await new Promise(r=>setTimeout(r,1800)); closeModal('modalBackup'); return;
     }
 
-    // Urutkan berdasarkan id_x ASC agar urutan data di tujuan konsisten dengan sumber
-    allRows.sort((a,b) => (Number(a.id_x)||0) - (Number(b.id_x)||0));
-
-    console.log(`[BACKUP] "${tblName}" @ ${DBS[dbIdx].name}: ${allRows.length} baris berhasil ditarik dari sumber (diurutkan id_x ASC).`);
-
-    // ── Jika mode TIMPA aktif: kosongkan dulu tabel tujuan sebelum mengisi data baru ──
-    if(bkpOverwriteMode){
-      setProgress(12, `🗑️ Mengosongkan tabel tujuan <b>${destName}</b> sebelum diisi ulang...`, '');
-      log(`🗑️ Mengosongkan tabel tujuan <b>${destName}</b>...`);
-      const clearRes = await fetch(`${destApi}?table=${destName}&action=clear_table`, { method:'DELETE', headers:destHdrs });
-      const clearTxt = await clearRes.text();
-      console.log(`[BACKUP] clear_table tujuan (${clearRes.status}):`, clearTxt);
-      if(!clearRes.ok){
-        throw new Error(`Gagal mengosongkan tabel tujuan sebelum timpa (${clearRes.status}): ${clearTxt}`);
-      }
-    }
-
     log(`⏳ ${allRows.length} baris ditemukan. Mengirim bulk insert ke → <b>${destName}</b>...`);
     setProgress(15, `⏳ Menyiapkan ${allRows.length} baris untuk dikirim → <b>${destName}</b>...`, `0 / ${allRows.length} baris`);
 
@@ -1547,11 +1210,9 @@ async function execBackup(){
       return r;
     });
 
-    const CHUNK = 50; // diperkecil dari 100 — chunk besar berisiko kena limit variabel SQL di backend
+    const CHUNK = 100;
     let totalInserted = 0;
-    const chunkReports = [];
     const totalChunks = Math.ceil(payload.length / CHUNK);
-    console.log(`[BACKUP] Mengirim ${payload.length} baris dalam ${totalChunks} chunk (${CHUNK} baris/chunk) → ${destName} @ ${destApi}`);
     for(let i = 0; i < payload.length; i += CHUNK){
       const chunk = payload.slice(i, i + CHUNK);
       const chunkNum = Math.floor(i/CHUNK)+1;
@@ -1570,32 +1231,14 @@ async function execBackup(){
       });
       if(!r.ok){
         const txt = await r.text();
-        console.error(`[BACKUP] Chunk ${chunkNum} GAGAL total (${r.status}):`, txt);
-        chunkReports.push({ chunkNum, sent: chunk.length, inserted: 0, ok: false, error: txt });
-        throw new Error(`Bulk insert gagal di chunk ${chunkNum} (${r.status}): ${txt}`);
+        throw new Error(`Bulk insert gagal (${r.status}): ${txt}`);
       }
       const rj = await r.json();
-      const gotInserted = (typeof rj.inserted === 'number') ? rj.inserted : null;
-      const actualInserted = gotInserted !== null ? gotInserted : chunk.length;
-      totalInserted += actualInserted;
-      chunkReports.push({ chunkNum, sent: chunk.length, inserted: actualInserted, ok: true, raw: rj });
-      if(gotInserted !== null && gotInserted !== chunk.length){
-        console.warn(`[BACKUP] ⚠ Chunk ${chunkNum}: kirim ${chunk.length} baris, API bilang hanya masukkan ${gotInserted} baris.`, rj);
-      }
-      if(gotInserted === null){
-        console.warn(`[BACKUP] ⚠ Chunk ${chunkNum}: API tidak mengembalikan field "inserted" — jumlah diasumsikan penuh (${chunk.length}), TIDAK terverifikasi.`, rj);
-      }
+      totalInserted += rj.inserted || chunk.length;
     }
-    console.table(chunkReports);
-    console.log(`[BACKUP] Selesai. Total baris dikirim: ${payload.length}, total dilaporkan masuk: ${totalInserted}.`);
-    window.__lastBackupReport = { tblName, destName, sentRows: payload.length, insertedTotal: totalInserted, chunkReports, payload };
 
-
-    const doneMsg = bkpOverwriteMode
-      ? `✅ Selesai! Tabel <b>${destName}</b> dikosongkan &amp; diisi ulang dengan ${totalInserted} baris. Sumber tidak diubah.`
-      : `✅ Selesai! ${totalInserted} baris dicopy → <b>${destName}</b>. Sumber tidak diubah.`;
-    setProgress(100, doneMsg, `${totalInserted} baris`);
-    log(doneMsg);
+    setProgress(100, `✅ Selesai! ${totalInserted} baris dicopy → <b>${destName}</b>. Sumber tidak diubah.`, `${totalInserted} baris`);
+    log(`✅ Selesai! ${totalInserted} baris dicopy → <b>${destName}</b>. Sumber tidak diubah.`);
 
     // Refresh sidebar DB1 jika tujuan adalah DB1
     const selVal = document.getElementById('bkpDbSel').value;

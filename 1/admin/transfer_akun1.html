@@ -1423,12 +1423,6 @@ function mapData(rawRow) {
     let bioParsed = {};
     try { bioParsed = JSON.parse(rawBio.x_02 || '{}'); } catch(e) {}
 
-    // ── KEL 15-17: Copy PERSIS dari kolom sumber x_05, x_06, x_07 ──
-    // (tidak diolah/diubah sama sekali, disalin apa adanya ke x_15, x_16, x_17 tujuan)
-    const kel15 = rawBio.x_05 !== undefined ? rawBio.x_05 : null;
-    const kel16 = rawBio.x_06 !== undefined ? rawBio.x_06 : null;
-    const kel17 = rawBio.x_07 !== undefined ? rawBio.x_07 : null;
-
     const kel2 = JSON.stringify({
         nama        : identitas.nama       || bioParsed.nama        || '',
         jk          : identitas.jk         || bioParsed.jenis_kelamin|| bioParsed.gender || '',
@@ -1550,9 +1544,6 @@ function mapData(rawRow) {
         x_11 : kel11,         // tanggal transfer
         x_12 : Object.keys(x12_obj).length > 0 ? JSON.stringify(x12_obj) : null,
         x_13 : Object.keys(x13_obj).length > 0 ? JSON.stringify(x13_obj) : null,
-        x_15 : kel15,          // copy persis dari sumber x_05
-        x_16 : kel16,          // copy persis dari sumber x_06
-        x_17 : kel17,          // copy persis dari sumber x_07
     };
 }
 
@@ -1795,9 +1786,6 @@ function showDetailModal(idx) {
         { key: 'x_11',  label: 'Tgl Transfer',       val: m.x_11 },
         { key: 'x_12',  label: 'Karakter (Angka)',   val: m.x_12 },
         { key: 'x_13',  label: 'Karakter (Kalimat)', val: m.x_13 },
-        { key: 'x_15',  label: 'Copy Sumber x_05',   val: m.x_15 },
-        { key: 'x_16',  label: 'Copy Sumber x_06',   val: m.x_16 },
-        { key: 'x_17',  label: 'Copy Sumber x_07',   val: m.x_17 },
     ];
 
     let html = `<table style="width:100%;border-collapse:collapse;font-size:13px">`;
