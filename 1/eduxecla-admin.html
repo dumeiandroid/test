@@ -430,17 +430,17 @@ const AUTH_KEY = 'admin';
 // ============================================================
 // GRUP FILE — filter otomatis berdasarkan nama file HTML ini sendiri
 // ============================================================
-// ssc.html (peserta) sekarang menyimpan key "nama_file" di dalam x_02 setiap
+// eduxecla.html (peserta) sekarang menyimpan key "nama_file" di dalam x_02 setiap
 // kali biodata disimpan, isinya = nama file HTML tempat peserta mengisi
 // (dinamis — ikut apa pun nama filenya, termasuk kalau di-rename/di-copy).
 //
 // Di sisi admin ini, kita deteksi grup dari NAMA FILE ADMIN INI SENDIRI
 // (bagian SEBELUM tanda "-" pertama), lalu dashboard hanya menampilkan data
 // yang grup nama_file-nya SAMA. Contoh:
-//   - File ini "ssc-admin.html"        → grup = "ssc"
-//   - Data dari "ssc.html"             → nama_file grup = "ssc"   → COCOK
-//   - Data dari "ssc-2.html"           → nama_file grup = "ssc"   → COCOK
-//   - Data dari "ssc-korea.html"       → nama_file grup = "ssc"   → COCOK
+//   - File ini "eduxecla-admin.html"        → grup = "eduxecla"
+//   - Data dari "eduxecla.html"             → nama_file grup = "eduxecla"   → COCOK
+//   - Data dari "eduxecla-2.html"           → nama_file grup = "eduxecla"   → COCOK
+//   - Data dari "eduxecla-korea.html"       → nama_file grup = "eduxecla"   → COCOK
 //   - Data dari "cpmi-sumut.html"      → nama_file grup = "cpmi"  → TIDAK cocok
 //
 // Kalau file admin ini di-copy/rename (misal jadi "cpmi-admin.html"), grup

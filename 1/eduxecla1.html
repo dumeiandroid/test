@@ -951,11 +951,12 @@ async function loginDenganTokenMain() {
     // masih kosong (mis. baru pindah URL dari server lama yang bermasalah), isi
     // dari backup progres lokal untuk token yang sama ──
     await failoverIsiDariBackupLokal(tok);
-    // ── DINONAKTIFKAN: pengecekan paket via x_04 dihapus. ──
-    // x_04 juga dipakai sebagai penanda "timer sedang berjalan" (syncT), sehingga
-    // isinya bisa berupa string "START:..." yang salah dikira nama paket dan
-    // memicu pesan palsu "Token ini bukan untuk paket ...". Semua token yang
-    // ditemukan di tabel kini langsung diterima tanpa dicocokkan ke AUTO_PAKET.
+    const paketToken = (cu.x_04 || '').trim().toLowerCase();
+    if (paketToken && paketToken !== AUTO_PAKET.toLowerCase()) {
+      hl(); btn.disabled = false; btn.innerHTML = 'Masuk →';
+      errBox.textContent = '❌ Token ini bukan untuk paket ' + AUTO_PAKET + '.';
+      errBox.style.display = 'block'; return;
+    }
     // ── Cek apakah biodata sudah terisi (field 'nama') ──
     let bioCek = {}; try { bioCek = JSON.parse(cu.x_02 || '{}'); } catch {}
     // Cek status logout SEGERA setelah login berhasil — tidak peduli biodata sudah diisi atau belum

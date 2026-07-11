@@ -1,0 +1,1502 @@
+[
+  {
+    "kekuatan": [
+      "Adanya keyakinan terhadap kemampuan yang dimiliki.",
+      "Terorganisir dengan baik dalam menyusun rencana dan mengatur prioritas pekerjaan.",
+      "Memiliki kemampuan analitis yang baik dalam mengurai dan menyelesaikan persoalan."
+    ],
+    "kelemahan": [
+      "Cenderung terfokus pada gambaran besar sehingga detail-detail kecil sering luput dari perhatian.",
+      "Kadang independensi yang tinggi membuat kesulitan dalam menerima bantuan atau delegasi dari rekan kerja.",
+      "Beban ekspektasi tinggi dapat memengaruhi fokus dan kinerja."
+    ],
+    "rekomendasi": [
+      "Direkomendasikan untuk membiasakan diri melakukan pengecekan ulang secara terstruktur pada setiap hasil pekerjaan, agar detail-detail penting tidak terlewatkan.",
+      "Direkomendasikan untuk aktif terlibat dalam sesi brainstorming atau pengerjaan proyek bersama, agar nilai dari perspektif dan kontribusi orang lain dapat lebih dihargai.",
+      "Penting untuk belajar menetapkan batas yang sehat antara usaha maksimal dan penerimaan terhadap hasil, sehingga semangat berprestasi menjadi pendorong yang sehat dan berkelanjutan."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Ingatan visual lebih kuat dari ingatan suara",
+        "Panduan tertulis lebih disukai dari penjelasan lisan",
+        "Wajah lebih mudah dikenali dari nama",
+        "Nyaman belajar dengan tabel dan bagan",
+        "Catatan bergambar membantu pemahaman"
+      ],
+      "tips": [
+        "Sajikan materi dalam tabel perbandingan",
+        "Ciptakan gambaran mental saat belajar topik baru",
+        "Perkaya pemahaman dengan video edukasi",
+        "Pakai kode warna untuk membedakan topik",
+        "Buat kartu ringkasan bergambar yang praktis"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Sabar dan tenang",
+        "Pendengar yang baik",
+        "Konsisten dan stabil",
+        "Mudah bergaul",
+        "Kemampuan diplomasi yang baik"
+      ],
+      "kelemahan": [
+        "Motivasi diri masih perlu diperkuat",
+        "Jarang bertindak tanpa diminta",
+        "Cenderung menunggu situasi",
+        "Menghindari konflik yang perlu diselesaikan",
+        "Keputusan sering tertunda"
+      ],
+      "tips": [
+        "Tantang dirimu dengan pengalaman baru yang dapat memperkaya perspektifmu",
+        "Percayai pertimbanganmu sendiri dan latih keberanian dalam memutuskan",
+        "Tuliskan tujuanmu secara konkret agar lebih mudah diperjuangkan setiap hari",
+        "Jadilah orang yang pertama bertindak dalam situasi yang membutuhkan solusi",
+        "Selesaikan konflik yang ada sebelum berkembang menjadi masalah yang lebih besar"
+      ]
+    },
+    "id_x": 1
+  },
+  {
+    "kekuatan": [
+      "Menunjukkan ketangguhan dalam menjaga stabilitas emosi dan performa kerja saat menghadapi tantangan.",
+      "Tidak menunggu instruksi dan mampu secara mandiri mengidentifikasi langkah yang perlu diambil.",
+      "Cakap dalam memahami pola tersembunyi dan implikasi jangka panjang dari sebuah situasi."
+    ],
+    "kelemahan": [
+      "Kadang kurang cermat dalam memeriksa kembali detail visual, sehingga berpotensi menimbulkan kesalahan kecil.",
+      "Perlu belajar menyeimbangkan ambisi dengan penerimaan terhadap proses, agar kinerja tidak terbebani secara berlebihan.",
+      "Kadang sulit melepaskan fase persiapan dan beralih ke aksi nyata ketika rencana dirasa belum sempurna."
+    ],
+    "rekomendasi": [
+      "Direkomendasikan untuk membiasakan diri melakukan pengecekan ulang secara terstruktur pada setiap hasil pekerjaan, agar detail-detail penting tidak terlewatkan.",
+      "Penting untuk belajar menetapkan batas yang sehat antara usaha maksimal dan penerimaan terhadap hasil, sehingga semangat berprestasi menjadi pendorong yang sehat dan berkelanjutan.",
+      "Penting untuk membiasakan diri menetapkan tenggat waktu yang ketat untuk setiap tahap perencanaan, sehingga energi dan waktu tidak habis sebelum eksekusi dimulai."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Catatan bergambar membantu pemahaman",
+        "Nyaman belajar dengan tabel dan bagan",
+        "Panduan tertulis lebih disukai dari penjelasan lisan",
+        "Ingatan visual lebih kuat dari ingatan suara",
+        "Wajah lebih mudah dikenali dari nama"
+      ],
+      "tips": [
+        "Perkaya pemahaman dengan video edukasi",
+        "Ciptakan gambaran mental saat belajar topik baru",
+        "Sajikan materi dalam tabel perbandingan",
+        "Pakai kode warna untuk membedakan topik",
+        "Buat kartu ringkasan bergambar yang praktis"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Fleksibel di berbagai situasi",
+        "Pandai menyampaikan gagasan",
+        "Pemikiran segar dan inovatif",
+        "Pembangkit semangat tim",
+        "Penuh energi positif"
+      ],
+      "kelemahan": [
+        "Disiplin masih perlu ditingkatkan",
+        "Cenderung mendominasi percakapan",
+        "Kurang teliti pada detail",
+        "Fokus mudah teralihkan",
+        "Komitmen perlu lebih dijaga"
+      ],
+      "tips": [
+        "Bangun rutinitas yang konsisten untuk mendukung kedisiplinan",
+        "Tuntaskan satu tanggung jawab dulu sebelum beralih ke hal lain",
+        "Catat setiap janji agar kepercayaan orang lain tetap terjaga",
+        "Gunakan to-do list setiap pagi untuk menjaga fokus sepanjang hari",
+        "Berlatih menjadi pendengar aktif dalam setiap percakapan"
+      ]
+    },
+    "id_x": 2
+  },
+  {
+    "kekuatan": [
+      "Memiliki kemampuan yang baik dalam menyelaraskan kepentingan pribadi dengan tujuan bersama kelompok.",
+      "Memiliki pendekatan yang terstruktur sehingga setiap pekerjaan dapat diselesaikan secara efisien.",
+      "Cepat mengenali pola dan perbedaan di lingkungan sekitar."
+    ],
+    "kelemahan": [
+      "Kesulitan membuat keputusan cepat dalam situasi mendesak.",
+      "Kadang terlalu terikat pada cara pandang sendiri sehingga sulit mempertimbangkan perspektif orang lain secara adil.",
+      "Kesulitan dalam berkolaborasi dengan tim, yang dapat memengaruhi hasil kerja."
+    ],
+    "rekomendasi": [
+      "Sebaiknya mengikuti pelatihan khusus yang dirancang untuk pengambilan keputusan di bawah tekanan, agar dapat meningkatkan kecepatan dan ketepatan dalam mengambil keputusan ketika situasi mendesak.",
+      "Penting untuk membangun perspektif bahwa kritik konstruktif adalah alat bantu pertumbuhan, bukan serangan personal, sehingga respons terhadapnya menjadi lebih terbuka.",
+      "Sebaiknya membiasakan diri untuk secara aktif meminta dan mempertimbangkan masukan dari rekan sebelum menyelesaikan pekerjaan secara mandiri, guna menghasilkan output yang lebih komprehensif."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Wajah lebih mudah dikenali dari nama",
+        "Ingatan visual lebih kuat dari ingatan suara",
+        "Catatan bergambar membantu pemahaman",
+        "Panduan tertulis lebih disukai dari penjelasan lisan",
+        "Nyaman belajar dengan tabel dan bagan"
+      ],
+      "tips": [
+        "Cari video atau animasi yang menjelaskan materi",
+        "Gambarkan konsep yang sedang dipelajari",
+        "Tandai poin penting dengan warna berbeda",
+        "Ubah catatan menjadi diagram atau peta pikiran",
+        "Buat kartu belajar dengan ilustrasi pendukung"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Mudah beradaptasi",
+        "Antusiasme tinggi",
+        "Kreatif dan inovatif",
+        "Memotivasi orang lain",
+        "Komunikator yang baik"
+      ],
+      "kelemahan": [
+        "Tidak detail-oriented",
+        "Sulit menepati janji",
+        "Terlalu banyak bicara",
+        "Kurang disiplin",
+        "Mudah terdistraksi"
+      ],
+      "tips": [
+        "Disiplin waktu adalah kunci agar potensimu berkembang maksimal",
+        "Manfaatkan pengingat digital untuk memantau komitmenmu",
+        "Mulai hari dengan menetapkan tiga hal utama yang ingin dicapai",
+        "Latih kesabaran dalam berdiskusi dan beri ruang orang lain berbicara",
+        "Jangan berpindah tugas sebelum yang pertama selesai dengan baik"
+      ]
+    },
+    "id_x": 3
+  },
+  {
+    "kekuatan": [
+      "Menunjukkan sikap kooperatif yang mendukung terciptanya sinergi dalam kelompok.",
+      "Memiliki kemampuan berbahasa yang baik sehingga pesan dapat tersampaikan dengan tepat.",
+      "Dikenal tidak mudah terpengaruh oleh tekanan eksternal dan mampu mempertahankan pendirian secara konsisten."
+    ],
+    "kelemahan": [
+      "Perlu peningkatan dalam memperhatikan elemen-elemen kecil yang turut menentukan ketepatan hasil kerja.",
+      "Beban ekspektasi tinggi dapat memengaruhi fokus dan kinerja.",
+      "Perlu meningkatkan keseimbangan antara kedalaman perencanaan dan kecepatan dalam memulai implementasi."
+    ],
+    "rekomendasi": [
+      "Direkomendasikan untuk membiasakan diri melakukan pengecekan ulang secara terstruktur pada setiap hasil pekerjaan, agar detail-detail penting tidak terlewatkan.",
+      "Sebaiknya membagi tujuan besar menjadi pencapaian-pencapaian kecil yang bisa dinikmati prosesnya, agar semangat berprestasi tetap terjaga tanpa menimbulkan stres berlebihan.",
+      "Disarankan untuk menerapkan prinsip 'good enough to start' dalam setiap perencanaan, yaitu memulai eksekusi ketika rencana sudah cukup solid meski belum sempurna."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan bergerak dan melakukan langsung",
+      "karakteristik": [
+        "Perlu bergerak selama proses belajar",
+        "Praktik langsung jauh lebih efektif dari teori",
+        "Cepat ingin mencoba tanpa banyak menunggu",
+        "Materi lebih diingat saat dilakukan sambil bergerak",
+        "Isyarat fisik sering muncul saat berkomunikasi"
+      ],
+      "tips": [
+        "Kunjungi langsung lokasi yang berkaitan dengan topik",
+        "Buat proyek atau model nyata dari materi",
+        "Gunakan role play atau simulasi",
+        "Ambil jeda singkat dan bergerak setelah belajar",
+        "Tulis atau gambar sambil mendengar penjelasan"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Dapat diandalkan jangka panjang",
+        "Pendekatan diplomatik yang elegan",
+        "Mudah akrab dengan siapa saja",
+        "Tenang dalam situasi tekanan",
+        "Pendengar aktif yang empatik"
+      ],
+      "kelemahan": [
+        "Keputusan sering tertunda",
+        "Jarang bertindak tanpa diminta",
+        "Cenderung menunggu situasi",
+        "Menghindari konflik yang perlu diselesaikan",
+        "Motivasi diri masih perlu diperkuat"
+      ],
+      "tips": [
+        "Tetapkan tujuan jangka pendek yang spesifik agar mudah diukur dan dicapai",
+        "Latih kemampuan pengambilan keputusan dengan mulai dari pilihan-pilihan kecil",
+        "Hadapi konflik yang perlu diselesaikan dengan kepala dingin dan hati terbuka",
+        "Coba hal-hal baru sesekali untuk memperluas wawasan dan kemampuanmu",
+        "Latih diri untuk mengambil inisiatif tanpa harus menunggu diminta"
+      ]
+    },
+    "id_x": 4
+  },
+  {
+    "kekuatan": [
+      "Memiliki kemampuan interpersonal yang baik dalam membangun kedekatan dan kepercayaan.",
+      "Memiliki pendekatan yang terstruktur sehingga setiap pekerjaan dapat diselesaikan secara efisien.",
+      "Memiliki kemampuan analitis yang baik dalam mengurai dan menyelesaikan persoalan."
+    ],
+    "kelemahan": [
+      "Perlu peningkatan dalam kemampuan berbagi peran dan tanggung jawab agar sinergi tim dapat lebih dimaksimalkan.",
+      "Perlu peningkatan dalam memperhatikan elemen-elemen kecil yang turut menentukan ketepatan hasil kerja.",
+      "Cenderung sulit menerima hasil yang dianggap kurang sempurna, sehingga menghambat kemampuan untuk bergerak maju."
+    ],
+    "rekomendasi": [
+      "Penting untuk memahami bahwa kemandirian dan kolaborasi bukan dua hal yang bertentangan, melainkan dua kekuatan yang perlu diseimbangkan untuk mencapai hasil terbaik.",
+      "Penting untuk mengalokasikan waktu khusus untuk review hasil pekerjaan sebelum diselesaikan, guna memastikan tidak ada detail penting yang terlewat.",
+      "Sebaiknya membagi tujuan besar menjadi pencapaian-pencapaian kecil yang bisa dinikmati prosesnya, agar semangat berprestasi tetap terjaga tanpa menimbulkan stres berlebihan."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Lebih mudah mengingat apa yang dilihat",
+        "Suka diagram, grafik, dan gambar",
+        "Mengingat wajah lebih baik dari nama",
+        "Lebih suka membaca instruksi sendiri",
+        "Sering membuat catatan visual atau mind map"
+      ],
+      "tips": [
+        "Gambarkan konsep yang sedang dipelajari",
+        "Cari video atau animasi yang menjelaskan materi",
+        "Ubah catatan menjadi diagram atau peta pikiran",
+        "Tandai poin penting dengan warna berbeda",
+        "Buat kartu belajar dengan ilustrasi pendukung"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Pendekatan diplomatik yang elegan",
+        "Dapat diandalkan jangka panjang",
+        "Mudah akrab dengan siapa saja",
+        "Pendengar aktif yang empatik",
+        "Tenang dalam situasi tekanan"
+      ],
+      "kelemahan": [
+        "Terlalu santai dalam situasi kritis",
+        "Lambat dalam mengambil keputusan",
+        "Inisiatif kurang terlihat",
+        "Potensi belum dimaksimalkan",
+        "Mengorbankan solusi demi kenyamanan"
+      ],
+      "tips": [
+        "Jangan biarkan ketidaknyamanan menghalangimu dari menyelesaikan masalah penting",
+        "Beranikan diri untuk memulai sesuatu tanpa menunggu momen yang tepat",
+        "Keluar dari rutinitas sesekali untuk menemukan potensi baru dalam dirimu",
+        "Biasakan membuat keputusan tepat waktu meskipun belum sempurna",
+        "Buat rencana dengan target yang jelas agar langkahmu lebih terarah"
+      ]
+    },
+    "id_x": 5
+  },
+  {
+    "kekuatan": [
+      "Terorganisir dengan baik dalam menyusun rencana dan mengatur prioritas pekerjaan.",
+      "Menunjukkan empati yang tulus dalam berinteraksi, sehingga hubungan yang dijalin cenderung bertahan lama.",
+      "Tanggap terhadap perubahan visual sehingga mampu merespons situasi dengan sigap."
+    ],
+    "kelemahan": [
+      "Terkadang terlalu berhati-hati dalam mengambil keputusan sehingga terhambat ketika waktu sangat terbatas.",
+      "Cenderung sulit menerima hasil yang dianggap kurang sempurna, sehingga menghambat kemampuan untuk bergerak maju.",
+      "Terkadang bertindak terlalu cepat sebelum mempertimbangkan secara matang dampak dari keputusan yang diambil."
+    ],
+    "rekomendasi": [
+      "Sebaiknya mengikuti pelatihan khusus yang dirancang untuk pengambilan keputusan di bawah tekanan, agar dapat meningkatkan kecepatan dan ketepatan dalam mengambil keputusan ketika situasi mendesak.",
+      "Direkomendasikan untuk secara rutin merayakan keberhasilan kecil sebagai bentuk apresiasi diri, agar motivasi tetap positif dan tidak terkuras oleh ekspektasi yang terlalu tinggi.",
+      "Direkomendasikan untuk membangun kebiasaan konsultasi singkat dengan rekan terpercaya sebelum mengeksekusi inisiatif besar, sehingga risiko dapat dimitigasi lebih awal."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Belajar efektif dengan skema dan ilustrasi",
+        "Informasi visual lebih mudah diingat",
+        "Suka membuat sketsa atau catatan berwarna",
+        "Instruksi tertulis lebih jelas dari arahan lisan",
+        "Lebih mudah ingat wajah daripada nama"
+      ],
+      "tips": [
+        "Buat kartu ringkasan bergambar yang praktis",
+        "Pakai kode warna untuk membedakan topik",
+        "Perkaya pemahaman dengan video edukasi",
+        "Ciptakan gambaran mental saat belajar topik baru",
+        "Sajikan materi dalam tabel perbandingan"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Mudah bergaul",
+        "Pendengar yang baik",
+        "Konsisten dan stabil",
+        "Kemampuan diplomasi yang baik",
+        "Sabar dan tenang"
+      ],
+      "kelemahan": [
+        "Jarang bertindak tanpa diminta",
+        "Cenderung menunggu situasi",
+        "Motivasi diri masih perlu diperkuat",
+        "Menghindari konflik yang perlu diselesaikan",
+        "Keputusan sering tertunda"
+      ],
+      "tips": [
+        "Selesaikan konflik yang ada sebelum berkembang menjadi masalah yang lebih besar",
+        "Tantang dirimu dengan pengalaman baru yang dapat memperkaya perspektifmu",
+        "Jadilah orang yang pertama bertindak dalam situasi yang membutuhkan solusi",
+        "Tuliskan tujuanmu secara konkret agar lebih mudah diperjuangkan setiap hari",
+        "Percayai pertimbanganmu sendiri dan latih keberanian dalam memutuskan"
+      ]
+    },
+    "id_x": 6
+  },
+  {
+    "kekuatan": [
+      "Mampu tampil tenang dan meyakinkan dalam situasi yang membutuhkan keberanian untuk maju.",
+      "Memiliki pendekatan yang terstruktur sehingga setiap pekerjaan dapat diselesaikan secara efisien.",
+      "Memiliki kemampuan analitis yang baik dalam mengurai dan menyelesaikan persoalan."
+    ],
+    "kelemahan": [
+      "Kurang optimal dalam situasi yang menuntut respons cepat tanpa kesempatan analisis mendalam.",
+      "Terkadang membutuhkan waktu lebih lama untuk merasa nyaman dan terbuka di lingkungan yang belum dikenal.",
+      "Kecenderungan untuk segera bertindak kadang mengabaikan analisis risiko yang perlu dilakukan terlebih dahulu."
+    ],
+    "rekomendasi": [
+      "Direkomendasikan untuk secara rutin berlatih dalam situasi yang mensimulasikan tekanan waktu, agar rasa percaya diri dan kecepatan dalam memutuskan dapat terus berkembang.",
+      "Penting untuk membiasakan diri mengambil inisiatif memulai percakapan kecil dalam pertemuan atau acara, sebagai latihan untuk membangun kepercayaan diri sosial secara bertahap.",
+      "Disarankan untuk selalu mempertimbangkan pro dan kontra secara mendalam sebelum mengambil keputusan, agar dapat mengurangi risiko yang mungkin timbul dari keputusan yang terburu-buru."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Informasi visual lebih mudah diingat",
+        "Belajar efektif dengan skema dan ilustrasi",
+        "Suka membuat sketsa atau catatan berwarna",
+        "Instruksi tertulis lebih jelas dari arahan lisan",
+        "Lebih mudah ingat wajah daripada nama"
+      ],
+      "tips": [
+        "Gunakan stabilo warna-warni saat membaca",
+        "Gunakan flashcard dengan gambar",
+        "Buat diagram, flowchart, atau mind map",
+        "Visualisasikan konsep dalam bentuk gambar mental",
+        "Tonton video pembelajaran atau tutorial visual"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Tenang dalam situasi tekanan",
+        "Pendengar aktif yang empatik",
+        "Mudah akrab dengan siapa saja",
+        "Pendekatan diplomatik yang elegan",
+        "Dapat diandalkan jangka panjang"
+      ],
+      "kelemahan": [
+        "Menghindari konflik yang perlu diselesaikan",
+        "Cenderung menunggu situasi",
+        "Motivasi diri masih perlu diperkuat",
+        "Jarang bertindak tanpa diminta",
+        "Keputusan sering tertunda"
+      ],
+      "tips": [
+        "Tetapkan tujuan jangka pendek yang spesifik agar mudah diukur dan dicapai",
+        "Hadapi konflik yang perlu diselesaikan dengan kepala dingin dan hati terbuka",
+        "Latih diri untuk mengambil inisiatif tanpa harus menunggu diminta",
+        "Coba hal-hal baru sesekali untuk memperluas wawasan dan kemampuanmu",
+        "Latih kemampuan pengambilan keputusan dengan mulai dari pilihan-pilihan kecil"
+      ]
+    },
+    "id_x": 7
+  },
+  {
+    "kekuatan": [
+      "Kemampuan bekerjasama individu atau berkelompok.",
+      "Memiliki otonomi kerja yang kuat sehingga mampu dipercaya untuk mengelola tanggung jawab secara penuh.",
+      "Dikenal komunikatif dan mampu menyesuaikan gaya bicara dengan berbagai situasi."
+    ],
+    "kelemahan": [
+      "Cenderung membutuhkan waktu lebih lama untuk mengambil keputusan ketika tekanan waktu meningkat.",
+      "Terkadang tekanan untuk selalu tampil sempurna justru menimbulkan kecemasan yang mengganggu produktivitas.",
+      "Terkadang terjebak dalam perfeksionisme perencanaan sehingga eksekusi menjadi terlambat."
+    ],
+    "rekomendasi": [
+      "Disarankan untuk berlatih skenario pengambilan keputusan cepat melalui simulasi atau permainan strategi, sehingga respons dalam kondisi tekanan dapat semakin terasah.",
+      "Sebaiknya membagi tujuan besar menjadi pencapaian-pencapaian kecil yang bisa dinikmati prosesnya, agar semangat berprestasi tetap terjaga tanpa menimbulkan stres berlebihan.",
+      "Sebaiknya belajar menerima bahwa rencana yang sempurna tidak selalu mungkin dicapai, dan bahwa tindakan nyata yang terarah jauh lebih berharga daripada rencana yang tak pernah dieksekusi."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Informasi yang didengar lebih mudah diingat",
+        "Penjelasan lisan terasa lebih membantu dari teks",
+        "Nama orang lebih mudah diingat dari wajahnya",
+        "Mengulang materi dengan suara adalah cara belajar favorit",
+        "Menyukai sesi diskusi untuk mempertegas pemahaman"
+      ],
+      "tips": [
+        "Biasakan membaca nyaring saat mengulang pelajaran",
+        "Pilih musik tanpa lirik saat mengerjakan tugas",
+        "Rekam ringkasan materi dan putar ulang",
+        "Jadikan diskusi dengan teman sebagai metode belajar",
+        "Bergabung dalam kelompok belajar secara rutin"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Antusias dan bersemangat",
+        "Cepat beradaptasi dengan perubahan",
+        "Berbicara dengan efektif",
+        "Kaya ide dan kreativitas",
+        "Piawai memotivasi orang lain"
+      ],
+      "kelemahan": [
+        "Konsistensi diri masih lemah",
+        "Konsentrasi mudah buyar",
+        "Kurang tepat waktu",
+        "Kurang memberi ruang bicara orang lain",
+        "Kurang perhatian pada hal kecil"
+      ],
+      "tips": [
+        "Catat setiap janji agar kepercayaan orang lain tetap terjaga",
+        "Gunakan to-do list setiap pagi untuk menjaga fokus sepanjang hari",
+        "Bangun rutinitas yang konsisten untuk mendukung kedisiplinan",
+        "Tuntaskan satu tanggung jawab dulu sebelum beralih ke hal lain",
+        "Berlatih menjadi pendengar aktif dalam setiap percakapan"
+      ]
+    },
+    "id_x": 8
+  },
+  {
+    "kekuatan": [
+      "Kemampuan bekerjasama individu atau berkelompok.",
+      "Cakap dalam mengungkapkan gagasan secara verbal baik secara lisan maupun tulisan.",
+      "Mampu mengelola berbagai tugas secara paralel dengan tetap menjaga keteraturan dan fokus."
+    ],
+    "kelemahan": [
+      "Kadang kurang cermat dalam memeriksa kembali detail visual, sehingga berpotensi menimbulkan kesalahan kecil.",
+      "Perlu peningkatan dalam kemampuan beradaptasi secara sosial agar dapat lebih cepat menyesuaikan diri di lingkungan baru.",
+      "Kadang semangat untuk bertindak cepat justru menghasilkan keputusan yang kurang matang dan memerlukan koreksi di kemudian hari."
+    ],
+    "rekomendasi": [
+      "Sebaiknya berlatih menggunakan checklist dalam setiap tahapan pekerjaan, sehingga perhatian terhadap detail kecil dapat terjaga secara konsisten.",
+      "Sangat dianjurkan untuk bergabung dengan kelompok sosial atau komunitas yang diminati, sehingga dapat berlatih keterampilan interaksi dan membangun hubungan yang lebih baik.",
+      "Penting untuk mengembangkan kesadaran bahwa inisiatif yang baik bukan hanya soal kecepatan bertindak, tetapi juga soal ketepatan waktu dan kematangan pertimbangan sebelumnya."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Instruksi tertulis lebih jelas dari arahan lisan",
+        "Lebih mudah ingat wajah daripada nama",
+        "Informasi visual lebih mudah diingat",
+        "Suka membuat sketsa atau catatan berwarna",
+        "Belajar efektif dengan skema dan ilustrasi"
+      ],
+      "tips": [
+        "Ciptakan gambaran mental saat belajar topik baru",
+        "Buat kartu ringkasan bergambar yang praktis",
+        "Perkaya pemahaman dengan video edukasi",
+        "Sajikan materi dalam tabel perbandingan",
+        "Pakai kode warna untuk membedakan topik"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pemimpin yang Kuat",
+      "deskripsi": "Ekstrovert, tegas, dan berorientasi pada tujuan. Suka memimpin dan mengambil keputusan.",
+      "kekuatan": [
+        "Tidak takut mengambil risiko",
+        "Jiwa pemimpin yang menonjol",
+        "Pengambil keputusan yang tegas",
+        "Konsisten menghasilkan hasil terbaik",
+        "Fokus dan terarah pada target"
+      ],
+      "kelemahan": [
+        "Kurang sensitif",
+        "Sulit menerima kritik",
+        "Tidak sabaran",
+        "Workaholic",
+        "Terlalu bossy"
+      ],
+      "tips": [
+        "Ambil napas dalam-dalam sebelum merespons situasi yang memancing emosi",
+        "Beri tim ruang untuk berkembang tanpa pengawasan berlebihan",
+        "Jadikan apresiasi sebagai bagian dari gaya kepemimpinanmu sehari-hari",
+        "Kembangkan kepekaan terhadap perasaan dan kebutuhan orang di sekitarmu",
+        "Tetapkan batas waktu kerja yang sehat agar energimu tetap terjaga"
+      ]
+    },
+    "id_x": 9
+  },
+  {
+    "kekuatan": [
+      "Mampu berkontribusi secara positif dalam lingkungan kerja tim maupun individu.",
+      "Mampu membuat keputusan berdasarkan alasan yang jelas dalam situasi tertentu.",
+      "Kemampuan mengambil tindakan yang diperlukan."
+    ],
+    "kelemahan": [
+      "Terkadang melewatkan informasi visual yang bersifat minor namun berdampak pada kualitas pekerjaan.",
+      "Canggung dalam situasi sosial baru, yang menghambat interaksi.",
+      "Terkadang terjebak dalam perfeksionisme perencanaan sehingga eksekusi menjadi terlambat."
+    ],
+    "rekomendasi": [
+      "Sebaiknya berlatih menggunakan checklist dalam setiap tahapan pekerjaan, sehingga perhatian terhadap detail kecil dapat terjaga secara konsisten.",
+      "Direkomendasikan untuk mengikuti kegiatan sosial atau komunitas secara rutin, sehingga keterampilan berinteraksi dengan orang baru dapat terus terasah dan rasa percaya diri sosial meningkat.",
+      "Sebaiknya tentukan batas waktu untuk setiap fase implementasi, agar tidak terjebak dalam perencanaan yang berlarut-larut dan dapat segera memulai eksekusi."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Wajah lebih mudah dikenali dari nama",
+        "Panduan tertulis lebih disukai dari penjelasan lisan",
+        "Ingatan visual lebih kuat dari ingatan suara",
+        "Catatan bergambar membantu pemahaman",
+        "Nyaman belajar dengan tabel dan bagan"
+      ],
+      "tips": [
+        "Perkaya pemahaman dengan video edukasi",
+        "Ciptakan gambaran mental saat belajar topik baru",
+        "Sajikan materi dalam tabel perbandingan",
+        "Pakai kode warna untuk membedakan topik",
+        "Buat kartu ringkasan bergambar yang praktis"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Antusias dan bersemangat",
+        "Cepat beradaptasi dengan perubahan",
+        "Berbicara dengan efektif",
+        "Kaya ide dan kreativitas",
+        "Piawai memotivasi orang lain"
+      ],
+      "kelemahan": [
+        "Tidak detail-oriented",
+        "Mudah terdistraksi",
+        "Kurang disiplin",
+        "Terlalu banyak bicara",
+        "Sulit menepati janji"
+      ],
+      "tips": [
+        "Latih kesabaran dalam berdiskusi dan beri ruang orang lain berbicara",
+        "Jangan berpindah tugas sebelum yang pertama selesai dengan baik",
+        "Manfaatkan pengingat digital untuk memantau komitmenmu",
+        "Mulai hari dengan menetapkan tiga hal utama yang ingin dicapai",
+        "Disiplin waktu adalah kunci agar potensimu berkembang maksimal"
+      ]
+    },
+    "id_x": 10
+  },
+  {
+    "kekuatan": [
+      "Kemampuan bekerjasama individu atau berkelompok.",
+      "Terorganisir dengan baik dalam menyusun rencana dan mengatur prioritas pekerjaan.",
+      "Terampil dalam menyusun kalimat yang lugas dan mudah dipahami oleh lawan bicara."
+    ],
+    "kelemahan": [
+      "Kurang perhatian terhadap detail yang lebih kecil, yang mempengaruhi hasil akhir.",
+      "Ekspektasi yang terlalu besar terhadap diri sendiri dapat menjadi bumerang dan memperlambat progres.",
+      "Kadang semangat untuk bertindak cepat justru menghasilkan keputusan yang kurang matang dan memerlukan koreksi di kemudian hari."
+    ],
+    "rekomendasi": [
+      "Sebaiknya berlatih menggunakan checklist dalam setiap tahapan pekerjaan, sehingga perhatian terhadap detail kecil dapat terjaga secara konsisten.",
+      "Sebaiknya membagi tujuan besar menjadi pencapaian-pencapaian kecil yang bisa dinikmati prosesnya, agar semangat berprestasi tetap terjaga tanpa menimbulkan stres berlebihan.",
+      "Disarankan untuk selalu mempertimbangkan pro dan kontra secara mendalam sebelum mengambil keputusan, agar dapat mengurangi risiko yang mungkin timbul dari keputusan yang terburu-buru."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Sering membuat catatan visual atau mind map",
+        "Mengingat wajah lebih baik dari nama",
+        "Suka diagram, grafik, dan gambar",
+        "Lebih mudah mengingat apa yang dilihat",
+        "Lebih suka membaca instruksi sendiri"
+      ],
+      "tips": [
+        "Ubah catatan menjadi diagram atau peta pikiran",
+        "Tandai poin penting dengan warna berbeda",
+        "Gambarkan konsep yang sedang dipelajari",
+        "Cari video atau animasi yang menjelaskan materi",
+        "Buat kartu belajar dengan ilustrasi pendukung"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Pembangkit semangat tim",
+        "Fleksibel di berbagai situasi",
+        "Penuh energi positif",
+        "Pandai menyampaikan gagasan",
+        "Pemikiran segar dan inovatif"
+      ],
+      "kelemahan": [
+        "Kurang teliti pada detail",
+        "Cenderung mendominasi percakapan",
+        "Fokus mudah teralihkan",
+        "Disiplin masih perlu ditingkatkan",
+        "Komitmen perlu lebih dijaga"
+      ],
+      "tips": [
+        "Selesaikan satu pekerjaan hingga tuntas sebelum memulai yang baru",
+        "Kelola waktu dengan lebih disiplin agar produktivitas meningkat",
+        "Buatlah daftar prioritas harian agar energimu terarah dengan baik",
+        "Biasakan mencatat janji dan komitmen penting di agenda",
+        "Latih diri untuk mendengarkan lebih banyak sebelum berbicara"
+      ]
+    },
+    "id_x": 11
+  },
+  {
+    "kekuatan": [
+      "Adanya keyakinan terhadap kemampuan yang dimiliki.",
+      "Cakap dalam memahami situasi dan merancang langkah penyelesaian yang tepat.",
+      "Proaktif dalam melihat peluang dan segera bertindak untuk memanfaatkannya."
+    ],
+    "kelemahan": [
+      "Kadang sulit melepaskan fase persiapan dan beralih ke aksi nyata ketika rencana dirasa belum sempurna.",
+      "Kurang perhatian terhadap detail yang lebih kecil, yang mempengaruhi hasil akhir.",
+      "Terkadang membutuhkan waktu lebih lama untuk merasa nyaman dan terbuka di lingkungan yang belum dikenal."
+    ],
+    "rekomendasi": [
+      "Sebaiknya belajar menerima bahwa rencana yang sempurna tidak selalu mungkin dicapai, dan bahwa tindakan nyata yang terarah jauh lebih berharga daripada rencana yang tak pernah dieksekusi.",
+      "Disarankan untuk melatih konsentrasi dengan latihan visual seperti puzzle atau aktivitas yang memerlukan ketelitian tinggi, agar sensitivitas terhadap detail semakin meningkat.",
+      "Direkomendasikan untuk mengikuti kegiatan sosial atau komunitas secara rutin, sehingga keterampilan berinteraksi dengan orang baru dapat terus terasah dan rasa percaya diri sosial meningkat."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Menyukai sesi diskusi untuk mempertegas pemahaman",
+        "Mengulang materi dengan suara adalah cara belajar favorit",
+        "Nama orang lebih mudah diingat dari wajahnya",
+        "Informasi yang didengar lebih mudah diingat",
+        "Penjelasan lisan terasa lebih membantu dari teks"
+      ],
+      "tips": [
+        "Jadikan diskusi dengan teman sebagai metode belajar",
+        "Biasakan membaca nyaring saat mengulang pelajaran",
+        "Rekam ringkasan materi dan putar ulang",
+        "Pilih musik tanpa lirik saat mengerjakan tugas",
+        "Bergabung dalam kelompok belajar secara rutin"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Piawai memotivasi orang lain",
+        "Cepat beradaptasi dengan perubahan",
+        "Antusias dan bersemangat",
+        "Berbicara dengan efektif",
+        "Kaya ide dan kreativitas"
+      ],
+      "kelemahan": [
+        "Sulit menepati janji",
+        "Tidak detail-oriented",
+        "Kurang disiplin",
+        "Terlalu banyak bicara",
+        "Mudah terdistraksi"
+      ],
+      "tips": [
+        "Tuntaskan satu tanggung jawab dulu sebelum beralih ke hal lain",
+        "Bangun rutinitas yang konsisten untuk mendukung kedisiplinan",
+        "Berlatih menjadi pendengar aktif dalam setiap percakapan",
+        "Gunakan to-do list setiap pagi untuk menjaga fokus sepanjang hari",
+        "Catat setiap janji agar kepercayaan orang lain tetap terjaga"
+      ]
+    },
+    "id_x": 12
+  },
+  {
+    "kekuatan": [
+      "Kemampuan bekerjasama individu atau berkelompok.",
+      "Terampil dalam menyusun kalimat yang lugas dan mudah dipahami oleh lawan bicara.",
+      "Mampu mengelola berbagai tugas secara paralel dengan tetap menjaga keteraturan dan fokus."
+    ],
+    "kelemahan": [
+      "Kadang terlalu asyik dengan ide tanpa cukup memikirkan bagaimana mewujudkannya secara praktis.",
+      "Kadang terlalu terikat pada cara pandang sendiri sehingga sulit mempertimbangkan perspektif orang lain secara adil.",
+      "Terkadang lebih nyaman bekerja sendiri hingga kurang optimal dalam situasi yang menuntut kolaborasi erat."
+    ],
+    "rekomendasi": [
+      "Sebaiknya belajar menggunakan alat bantu seperti mind-mapping atau canvas model untuk menstrukturkan ide ke dalam bentuk yang lebih operasional.",
+      "Penting untuk membangun perspektif bahwa kritik konstruktif adalah alat bantu pertumbuhan, bukan serangan personal, sehingga respons terhadapnya menjadi lebih terbuka.",
+      "Penting untuk memahami bahwa kemandirian dan kolaborasi bukan dua hal yang bertentangan, melainkan dua kekuatan yang perlu diseimbangkan untuk mencapai hasil terbaik."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Sering berbicara sendiri saat belajar",
+        "Suka berdiskusi dan menjelaskan kepada orang lain",
+        "Lebih suka mendengarkan penjelasan daripada membaca",
+        "Lebih mudah mengingat apa yang didengar",
+        "Mengingat nama lebih baik dari wajah"
+      ],
+      "tips": [
+        "Jadikan diskusi dengan teman sebagai metode belajar",
+        "Pilih musik tanpa lirik saat mengerjakan tugas",
+        "Bergabung dalam kelompok belajar secara rutin",
+        "Rekam ringkasan materi dan putar ulang",
+        "Biasakan membaca nyaring saat mengulang pelajaran"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pemimpin yang Kuat",
+      "deskripsi": "Ekstrovert, tegas, dan berorientasi pada tujuan. Suka memimpin dan mengambil keputusan.",
+      "kekuatan": [
+        "Berani bertindak di bawah tekanan",
+        "Produktif dan selalu berenergi",
+        "Tidak mudah terpengaruh distraksi",
+        "Pemimpin yang dipercaya tim",
+        "Cepat dan jelas dalam memutuskan"
+      ],
+      "kelemahan": [
+        "Sulit menerima kritik",
+        "Kurang sensitif",
+        "Workaholic",
+        "Terlalu bossy",
+        "Tidak sabaran"
+      ],
+      "tips": [
+        "Delegasikan dengan jelas dan percayai kemampuan timmu",
+        "Latih diri untuk merespons dengan kepala dingin dalam tekanan",
+        "Pelajari cara mendengarkan dengan penuh perhatian tanpa menyela",
+        "Jaga keseimbangan antara ambisi kerja dan kebutuhan pribadimu",
+        "Ungkapkan penghargaan kepada anggota tim atas kontribusi mereka"
+      ]
+    },
+    "id_x": 13
+  },
+  {
+    "kekuatan": [
+      "Terampil dalam menciptakan suasana yang nyaman sehingga orang lain merasa dihargai dan didengar.",
+      "Kemampuan membuat perencanaan & prioritas kerja.",
+      "Mampu mengidentifikasi detail visual dengan baik dalam situasi yang berubah-ubah."
+    ],
+    "kelemahan": [
+      "Tantangan dalam menerjemahkan ide-ide abstrak ke dalam praktik.",
+      "Kadang independensi yang tinggi membuat kesulitan dalam menerima bantuan atau delegasi dari rekan kerja.",
+      "Kewalahan saat menghadapi tekanan yang berkepanjangan."
+    ],
+    "rekomendasi": [
+      "Disarankan untuk melakukan proyek kecil yang akan membantu menerapkan ide-ide abstrak ke dalam praktik nyata, sehingga dapat belajar dari pengalaman dan meningkatkan kemampuan penerapan ide.",
+      "Sebaiknya membiasakan diri untuk secara aktif meminta dan mempertimbangkan masukan dari rekan sebelum menyelesaikan pekerjaan secara mandiri, guna menghasilkan output yang lebih komprehensif.",
+      "Disarankan untuk belajar mengenali tanda-tanda awal kelelahan emosional dan segera mengambil langkah pemulihan, sehingga burnout dapat dicegah sebelum berdampak pada kinerja."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Wajah lebih mudah dikenali dari nama",
+        "Catatan bergambar membantu pemahaman",
+        "Panduan tertulis lebih disukai dari penjelasan lisan",
+        "Nyaman belajar dengan tabel dan bagan",
+        "Ingatan visual lebih kuat dari ingatan suara"
+      ],
+      "tips": [
+        "Gunakan stabilo warna-warni saat membaca",
+        "Gunakan flashcard dengan gambar",
+        "Buat diagram, flowchart, atau mind map",
+        "Tonton video pembelajaran atau tutorial visual",
+        "Visualisasikan konsep dalam bentuk gambar mental"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Berbicara dengan efektif",
+        "Cepat beradaptasi dengan perubahan",
+        "Kaya ide dan kreativitas",
+        "Piawai memotivasi orang lain",
+        "Antusias dan bersemangat"
+      ],
+      "kelemahan": [
+        "Terlalu banyak bicara",
+        "Tidak detail-oriented",
+        "Mudah terdistraksi",
+        "Sulit menepati janji",
+        "Kurang disiplin"
+      ],
+      "tips": [
+        "Disiplin waktu adalah kunci agar potensimu berkembang maksimal",
+        "Latih kesabaran dalam berdiskusi dan beri ruang orang lain berbicara",
+        "Jangan berpindah tugas sebelum yang pertama selesai dengan baik",
+        "Mulai hari dengan menetapkan tiga hal utama yang ingin dicapai",
+        "Manfaatkan pengingat digital untuk memantau komitmenmu"
+      ]
+    },
+    "id_x": 14
+  },
+  {
+    "kekuatan": [
+      "Keinginan untuk mencapai dan meningkatkan prestasi.",
+      "Tidak menunggu instruksi dan mampu secara mandiri mengidentifikasi langkah yang perlu diambil.",
+      "Memiliki kemampuan berbahasa yang baik sehingga pesan dapat tersampaikan dengan tepat."
+    ],
+    "kelemahan": [
+      "Terkadang terlalu berhati-hati dalam mengambil keputusan sehingga terhambat ketika waktu sangat terbatas.",
+      "Cenderung menghabiskan terlalu banyak waktu dalam fase perencanaan hingga menunda tahap pelaksanaan.",
+      "Perlu peningkatan dalam kemampuan beradaptasi secara sosial agar dapat lebih cepat menyesuaikan diri di lingkungan baru."
+    ],
+    "rekomendasi": [
+      "Sangat dianjurkan untuk mempelajari teknik keputusan berbasis prioritas seperti metode Eisenhower Matrix, agar dalam situasi mendesak tetap dapat memilih tindakan yang paling tepat.",
+      "Disarankan untuk menerapkan prinsip 'good enough to start' dalam setiap perencanaan, yaitu memulai eksekusi ketika rencana sudah cukup solid meski belum sempurna.",
+      "Sangat dianjurkan untuk bergabung dengan kelompok sosial atau komunitas yang diminati, sehingga dapat berlatih keterampilan interaksi dan membangun hubungan yang lebih baik."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Melafalkan materi dengan lantang memperkuat ingatan",
+        "Mengingat suara lebih mudah dari tampilan visual",
+        "Belajar dalam kelompok meningkatkan pemahaman",
+        "Memori lebih kuat melalui pendengaran",
+        "Lebih suka mendengar rekaman dari membaca teks panjang"
+      ],
+      "tips": [
+        "Rekam ringkasan materi dan putar ulang",
+        "Bergabung dalam kelompok belajar secara rutin",
+        "Biasakan membaca nyaring saat mengulang pelajaran",
+        "Jadikan diskusi dengan teman sebagai metode belajar",
+        "Pilih musik tanpa lirik saat mengerjakan tugas"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Pendengar aktif yang empatik",
+        "Dapat diandalkan jangka panjang",
+        "Tenang dalam situasi tekanan",
+        "Mudah akrab dengan siapa saja",
+        "Pendekatan diplomatik yang elegan"
+      ],
+      "kelemahan": [
+        "Jarang bertindak tanpa diminta",
+        "Keputusan sering tertunda",
+        "Motivasi diri masih perlu diperkuat",
+        "Menghindari konflik yang perlu diselesaikan",
+        "Cenderung menunggu situasi"
+      ],
+      "tips": [
+        "Tetapkan tujuan jangka pendek yang spesifik agar mudah diukur dan dicapai",
+        "Hadapi konflik yang perlu diselesaikan dengan kepala dingin dan hati terbuka",
+        "Coba hal-hal baru sesekali untuk memperluas wawasan dan kemampuanmu",
+        "Latih diri untuk mengambil inisiatif tanpa harus menunggu diminta",
+        "Latih kemampuan pengambilan keputusan dengan mulai dari pilihan-pilihan kecil"
+      ]
+    },
+    "id_x": 15
+  },
+  {
+    "kekuatan": [
+      "Mampu berkontribusi secara positif dalam lingkungan kerja tim maupun individu.",
+      "Kemampuan mengambil tindakan yang diperlukan.",
+      "Kemampuan memahami proses hitung dan berpikir teratur."
+    ],
+    "kelemahan": [
+      "Perlu peningkatan dalam membuat keputusan yang cepat namun tetap tepat sasaran di bawah tekanan.",
+      "Kadang terkesan kurang inisiatif dalam memulai percakapan dengan orang yang baru dikenal.",
+      "Cenderung menghabiskan terlalu banyak waktu dalam fase perencanaan hingga menunda tahap pelaksanaan."
+    ],
+    "rekomendasi": [
+      "Penting untuk membangun kebiasaan membuat kerangka keputusan sederhana yang bisa digunakan secara cepat, sehingga proses berpikir tidak terhambat ketika waktu sangat terbatas.",
+      "Sebaiknya mulai dengan lingkungan yang lebih kecil dan nyaman terlebih dahulu, lalu secara bertahap perluas jaringan sosial ke lingkaran yang lebih luas.",
+      "Penting untuk membiasakan diri menetapkan tenggat waktu yang ketat untuk setiap tahap perencanaan, sehingga energi dan waktu tidak habis sebelum eksekusi dimulai."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Ingatan visual lebih kuat dari ingatan suara",
+        "Catatan bergambar membantu pemahaman",
+        "Nyaman belajar dengan tabel dan bagan",
+        "Panduan tertulis lebih disukai dari penjelasan lisan",
+        "Wajah lebih mudah dikenali dari nama"
+      ],
+      "tips": [
+        "Buat kartu ringkasan bergambar yang praktis",
+        "Pakai kode warna untuk membedakan topik",
+        "Ciptakan gambaran mental saat belajar topik baru",
+        "Perkaya pemahaman dengan video edukasi",
+        "Sajikan materi dalam tabel perbandingan"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Kinerja yang stabil dan andal",
+        "Membuat orang nyaman bercerita",
+        "Pandai meredakan konflik",
+        "Ramah di berbagai lingkungan",
+        "Tidak mudah terpancing emosi"
+      ],
+      "kelemahan": [
+        "Kurang ambisi",
+        "Sulit membuat keputusan",
+        "Terlalu pasif",
+        "Kurang inisiatif",
+        "Menghindari konfrontasi"
+      ],
+      "tips": [
+        "Latih kemampuan pengambilan keputusan dengan mulai dari pilihan-pilihan kecil",
+        "Coba hal-hal baru sesekali untuk memperluas wawasan dan kemampuanmu",
+        "Tetapkan tujuan jangka pendek yang spesifik agar mudah diukur dan dicapai",
+        "Latih diri untuk mengambil inisiatif tanpa harus menunggu diminta",
+        "Hadapi konflik yang perlu diselesaikan dengan kepala dingin dan hati terbuka"
+      ]
+    },
+    "id_x": 16
+  },
+  {
+    "kekuatan": [
+      "Mampu berkontribusi secara positif dalam lingkungan kerja tim maupun individu.",
+      "Mampu mengelola berbagai tugas secara paralel dengan tetap menjaga keteraturan dan fokus.",
+      "Memiliki kemampuan yang baik dalam mengaitkan ide-ide dari berbagai perspektif secara kreatif."
+    ],
+    "kelemahan": [
+      "Terkadang melewatkan informasi visual yang bersifat minor namun berdampak pada kualitas pekerjaan.",
+      "Beban ekspektasi tinggi dapat memengaruhi fokus dan kinerja.",
+      "Terkadang bertindak terlalu cepat sebelum mempertimbangkan secara matang dampak dari keputusan yang diambil."
+    ],
+    "rekomendasi": [
+      "Disarankan untuk melatih konsentrasi dengan latihan visual seperti puzzle atau aktivitas yang memerlukan ketelitian tinggi, agar sensitivitas terhadap detail semakin meningkat.",
+      "Sangat penting untuk menetapkan tujuan yang realistis dan melakukan evaluasi berkala, agar dapat menjaga motivasi dan fokus pada pencapaian yang lebih terukur.",
+      "Direkomendasikan untuk membangun kebiasaan konsultasi singkat dengan rekan terpercaya sebelum mengeksekusi inisiatif besar, sehingga risiko dapat dimitigasi lebih awal."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Lebih suka mendengar rekaman dari membaca teks panjang",
+        "Memori lebih kuat melalui pendengaran",
+        "Melafalkan materi dengan lantang memperkuat ingatan",
+        "Mengingat suara lebih mudah dari tampilan visual",
+        "Belajar dalam kelompok meningkatkan pemahaman"
+      ],
+      "tips": [
+        "Ikuti diskusi kelompok secara aktif",
+        "Rekam catatan dan dengarkan kembali",
+        "Diskusikan materi dengan teman atau guru",
+        "Bacakan materi dengan keras saat belajar",
+        "Belajar sambil mendengarkan musik instrumental"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Sabar dan tenang",
+        "Pendengar yang baik",
+        "Kemampuan diplomasi yang baik",
+        "Konsisten dan stabil",
+        "Mudah bergaul"
+      ],
+      "kelemahan": [
+        "Sulit membuat keputusan",
+        "Kurang inisiatif",
+        "Terlalu pasif",
+        "Kurang ambisi",
+        "Menghindari konfrontasi"
+      ],
+      "tips": [
+        "Selesaikan konflik yang ada sebelum berkembang menjadi masalah yang lebih besar",
+        "Tuliskan tujuanmu secara konkret agar lebih mudah diperjuangkan setiap hari",
+        "Percayai pertimbanganmu sendiri dan latih keberanian dalam memutuskan",
+        "Jadilah orang yang pertama bertindak dalam situasi yang membutuhkan solusi",
+        "Tantang dirimu dengan pengalaman baru yang dapat memperkaya perspektifmu"
+      ]
+    },
+    "id_x": 17
+  },
+  {
+    "kekuatan": [
+      "Memiliki kemampuan yang baik dalam menyelaraskan kepentingan pribadi dengan tujuan bersama kelompok.",
+      "Dikenal teliti dalam merancang alur kerja yang jelas dan dapat diikuti secara konsisten.",
+      "Cakap dalam memahami situasi dan merancang langkah penyelesaian yang tepat."
+    ],
+    "kelemahan": [
+      "Tantangan dalam menerjemahkan ide-ide abstrak ke dalam praktik.",
+      "Terkadang tekanan untuk selalu tampil sempurna justru menimbulkan kecemasan yang mengganggu produktivitas.",
+      "Kesulitan dalam berkolaborasi dengan tim, yang dapat memengaruhi hasil kerja."
+    ],
+    "rekomendasi": [
+      "Penting untuk melatih diri membuat prototipe atau uji coba kecil dari setiap ide, agar kemampuan mengeksekusi konsep abstrak secara bertahap semakin meningkat.",
+      "Penting untuk belajar menetapkan batas yang sehat antara usaha maksimal dan penerimaan terhadap hasil, sehingga semangat berprestasi menjadi pendorong yang sehat dan berkelanjutan.",
+      "Disarankan untuk secara sadar melatih diri memberikan kepercayaan kepada rekan kerja untuk mengerjakan bagian tertentu, sehingga kemampuan berkolaborasi dapat berkembang secara bertahap."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Informasi yang didengar lebih mudah diingat",
+        "Penjelasan lisan terasa lebih membantu dari teks",
+        "Mengulang materi dengan suara adalah cara belajar favorit",
+        "Menyukai sesi diskusi untuk mempertegas pemahaman",
+        "Nama orang lebih mudah diingat dari wajahnya"
+      ],
+      "tips": [
+        "Rekam ringkasan materi dan putar ulang",
+        "Jadikan diskusi dengan teman sebagai metode belajar",
+        "Biasakan membaca nyaring saat mengulang pelajaran",
+        "Bergabung dalam kelompok belajar secara rutin",
+        "Pilih musik tanpa lirik saat mengerjakan tugas"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pemimpin yang Kuat",
+      "deskripsi": "Ekstrovert, tegas, dan berorientasi pada tujuan. Suka memimpin dan mengambil keputusan.",
+      "kekuatan": [
+        "Pemimpin yang dipercaya tim",
+        "Cepat dan jelas dalam memutuskan",
+        "Berani bertindak di bawah tekanan",
+        "Produktif dan selalu berenergi",
+        "Tidak mudah terpengaruh distraksi"
+      ],
+      "kelemahan": [
+        "Kurang peka terhadap perasaan orang",
+        "Sulit membatasi jam kerja",
+        "Cenderung terlalu mengatur",
+        "Toleransi rendah terhadap kelambatan",
+        "Sulit menerima masukan"
+      ],
+      "tips": [
+        "Sisihkan waktu untuk istirahat dan kehidupan pribadi di luar pekerjaan",
+        "Latih kemampuan empati dengan menempatkan diri pada posisi orang lain",
+        "Percayakan tugas kepada tim tanpa mengatur setiap detailnya",
+        "Biasakan memberikan apresiasi tulus kepada rekan tim secara rutin",
+        "Kenali pemicu amarahmu dan beri jeda sebelum bereaksi"
+      ]
+    },
+    "id_x": 18
+  },
+  {
+    "kekuatan": [
+      "Dikenal sebagai pribadi yang berani mengekspresikan diri dan tidak ragu mengambil peran aktif.",
+      "Terorganisir dengan baik dalam menyusun rencana dan mengatur prioritas pekerjaan.",
+      "Memiliki kemampuan analitis yang baik dalam mengurai dan menyelesaikan persoalan."
+    ],
+    "kelemahan": [
+      "Terkadang melewatkan informasi visual yang bersifat minor namun berdampak pada kualitas pekerjaan.",
+      "Cenderung sulit menerima hasil yang dianggap kurang sempurna, sehingga menghambat kemampuan untuk bergerak maju.",
+      "Cenderung menghabiskan terlalu banyak waktu dalam fase perencanaan hingga menunda tahap pelaksanaan."
+    ],
+    "rekomendasi": [
+      "Sangat dianjurkan untuk mempraktikkan teknik mindfulness yang dapat membantu meningkatkan fokus terhadap detail kecil, sehingga hasil kerja dapat lebih maksimal dan akurat.",
+      "Sebaiknya membagi tujuan besar menjadi pencapaian-pencapaian kecil yang bisa dinikmati prosesnya, agar semangat berprestasi tetap terjaga tanpa menimbulkan stres berlebihan.",
+      "Penting untuk membiasakan diri menetapkan tenggat waktu yang ketat untuk setiap tahap perencanaan, sehingga energi dan waktu tidak habis sebelum eksekusi dimulai."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Lebih mudah mengingat apa yang didengar",
+        "Sering berbicara sendiri saat belajar",
+        "Mengingat nama lebih baik dari wajah",
+        "Suka berdiskusi dan menjelaskan kepada orang lain",
+        "Lebih suka mendengarkan penjelasan daripada membaca"
+      ],
+      "tips": [
+        "Bergabung dalam kelompok belajar secara rutin",
+        "Rekam ringkasan materi dan putar ulang",
+        "Pilih musik tanpa lirik saat mengerjakan tugas",
+        "Jadikan diskusi dengan teman sebagai metode belajar",
+        "Biasakan membaca nyaring saat mengulang pelajaran"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Pemikiran segar dan inovatif",
+        "Pembangkit semangat tim",
+        "Penuh energi positif",
+        "Pandai menyampaikan gagasan",
+        "Fleksibel di berbagai situasi"
+      ],
+      "kelemahan": [
+        "Tidak detail-oriented",
+        "Kurang disiplin",
+        "Sulit menepati janji",
+        "Mudah terdistraksi",
+        "Terlalu banyak bicara"
+      ],
+      "tips": [
+        "Buatlah daftar prioritas harian agar energimu terarah dengan baik",
+        "Selesaikan satu pekerjaan hingga tuntas sebelum memulai yang baru",
+        "Biasakan mencatat janji dan komitmen penting di agenda",
+        "Kelola waktu dengan lebih disiplin agar produktivitas meningkat",
+        "Latih diri untuk mendengarkan lebih banyak sebelum berbicara"
+      ]
+    },
+    "id_x": 19
+  },
+  {
+    "kekuatan": [
+      "Mampu menyelesaikan pekerjaan secara mandiri tanpa harus bergantung pada arahan terus-menerus.",
+      "Mampu tampil tenang dan meyakinkan dalam situasi yang membutuhkan keberanian untuk maju.",
+      "Mampu membuat keputusan berdasarkan alasan yang jelas dalam situasi tertentu."
+    ],
+    "kelemahan": [
+      "Perlu pengembangan lebih lanjut dalam menangani permasalahan yang tidak memiliki solusi tunggal.",
+      "Cenderung sulit menerima hasil yang dianggap kurang sempurna, sehingga menghambat kemampuan untuk bergerak maju.",
+      "Perlu peningkatan dalam mempertimbangkan konsekuensi jangka panjang sebelum mengambil inisiatif yang berisiko."
+    ],
+    "rekomendasi": [
+      "Direkomendasikan untuk mencari mentor yang berpengalaman dan secara rutin mendiskusikan tantangan pekerjaan, sehingga kemampuan memecahkan masalah kompleks dapat terasah secara bertahap.",
+      "Penting untuk belajar menetapkan batas yang sehat antara usaha maksimal dan penerimaan terhadap hasil, sehingga semangat berprestasi menjadi pendorong yang sehat dan berkelanjutan.",
+      "Sebaiknya mempelajari teknik analisis risiko sederhana yang bisa diterapkan secara cepat, agar keputusan yang diambil tetap berani namun tetap terukur dan bertanggung jawab."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Suka membuat sketsa atau catatan berwarna",
+        "Instruksi tertulis lebih jelas dari arahan lisan",
+        "Informasi visual lebih mudah diingat",
+        "Belajar efektif dengan skema dan ilustrasi",
+        "Lebih mudah ingat wajah daripada nama"
+      ],
+      "tips": [
+        "Buat kartu belajar dengan ilustrasi pendukung",
+        "Tandai poin penting dengan warna berbeda",
+        "Gambarkan konsep yang sedang dipelajari",
+        "Cari video atau animasi yang menjelaskan materi",
+        "Ubah catatan menjadi diagram atau peta pikiran"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Sabar dan tenang",
+        "Pendengar yang baik",
+        "Mudah bergaul",
+        "Konsisten dan stabil",
+        "Kemampuan diplomasi yang baik"
+      ],
+      "kelemahan": [
+        "Kurang ambisi",
+        "Kurang inisiatif",
+        "Menghindari konfrontasi",
+        "Terlalu pasif",
+        "Sulit membuat keputusan"
+      ],
+      "tips": [
+        "Biasakan membuat keputusan tepat waktu meskipun belum sempurna",
+        "Keluar dari rutinitas sesekali untuk menemukan potensi baru dalam dirimu",
+        "Buat rencana dengan target yang jelas agar langkahmu lebih terarah",
+        "Jangan biarkan ketidaknyamanan menghalangimu dari menyelesaikan masalah penting",
+        "Beranikan diri untuk memulai sesuatu tanpa menunggu momen yang tepat"
+      ]
+    },
+    "id_x": 20
+  },
+  {
+    "kekuatan": [
+      "Mampu berkomunikasi dengan jelas dan efektif dalam interaksi.",
+      "Dikenal sebagai rekan kerja yang dapat diandalkan dan mendukung keberhasilan tim.",
+      "Menunjukkan keberanian untuk mengambil langkah awal tanpa harus selalu menunggu arahan dari pihak lain."
+    ],
+    "kelemahan": [
+      "Perlu peningkatan dalam kecepatan dan ketepatan saat menangani soal numerik dengan tingkat kerumitan tinggi.",
+      "Canggung dalam situasi sosial baru, yang menghambat interaksi.",
+      "Kadang sulit melepaskan fase persiapan dan beralih ke aksi nyata ketika rencana dirasa belum sempurna."
+    ],
+    "rekomendasi": [
+      "Disarankan untuk berlatih secara rutin dengan soal-soal matematika yang lebih kompleks, agar dapat meningkatkan kecepatan dan pemahaman dalam konsep yang rumit.",
+      "Direkomendasikan untuk mengikuti kegiatan sosial atau komunitas secara rutin, sehingga keterampilan berinteraksi dengan orang baru dapat terus terasah dan rasa percaya diri sosial meningkat.",
+      "Sebaiknya tentukan batas waktu untuk setiap fase implementasi, agar tidak terjebak dalam perencanaan yang berlarut-larut dan dapat segera memulai eksekusi."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Nama orang lebih mudah diingat dari wajahnya",
+        "Penjelasan lisan terasa lebih membantu dari teks",
+        "Menyukai sesi diskusi untuk mempertegas pemahaman",
+        "Informasi yang didengar lebih mudah diingat",
+        "Mengulang materi dengan suara adalah cara belajar favorit"
+      ],
+      "tips": [
+        "Bacakan materi dengan keras saat belajar",
+        "Rekam catatan dan dengarkan kembali",
+        "Diskusikan materi dengan teman atau guru",
+        "Belajar sambil mendengarkan musik instrumental",
+        "Ikuti diskusi kelompok secara aktif"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Memotivasi orang lain",
+        "Komunikator yang baik",
+        "Mudah beradaptasi",
+        "Antusiasme tinggi",
+        "Kreatif dan inovatif"
+      ],
+      "kelemahan": [
+        "Fokus mudah teralihkan",
+        "Kurang teliti pada detail",
+        "Komitmen perlu lebih dijaga",
+        "Cenderung mendominasi percakapan",
+        "Disiplin masih perlu ditingkatkan"
+      ],
+      "tips": [
+        "Disiplin waktu adalah kunci agar potensimu berkembang maksimal",
+        "Latih kesabaran dalam berdiskusi dan beri ruang orang lain berbicara",
+        "Manfaatkan pengingat digital untuk memantau komitmenmu",
+        "Jangan berpindah tugas sebelum yang pertama selesai dengan baik",
+        "Mulai hari dengan menetapkan tiga hal utama yang ingin dicapai"
+      ]
+    },
+    "id_x": 21
+  },
+  {
+    "kekuatan": [
+      "Dikenal mudah bergaul dan mampu menjaga hubungan yang positif dengan berbagai kalangan.",
+      "Dikenal komunikatif dan mampu menyesuaikan gaya bicara dengan berbagai situasi.",
+      "Proaktif dalam melihat peluang dan segera bertindak untuk memanfaatkannya."
+    ],
+    "kelemahan": [
+      "Cenderung membutuhkan waktu lebih lama untuk mengambil keputusan ketika tekanan waktu meningkat.",
+      "Kadang terlalu terikat pada cara pandang sendiri sehingga sulit mempertimbangkan perspektif orang lain secara adil.",
+      "Kadang sulit melepaskan fase persiapan dan beralih ke aksi nyata ketika rencana dirasa belum sempurna."
+    ],
+    "rekomendasi": [
+      "Sebaiknya mengikuti pelatihan khusus yang dirancang untuk pengambilan keputusan di bawah tekanan, agar dapat meningkatkan kecepatan dan ketepatan dalam mengambil keputusan ketika situasi mendesak.",
+      "Penting untuk membangun perspektif bahwa kritik konstruktif adalah alat bantu pertumbuhan, bukan serangan personal, sehingga respons terhadapnya menjadi lebih terbuka.",
+      "Disarankan untuk menerapkan prinsip 'good enough to start' dalam setiap perencanaan, yaitu memulai eksekusi ketika rencana sudah cukup solid meski belum sempurna."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Nyaman belajar dengan tabel dan bagan",
+        "Wajah lebih mudah dikenali dari nama",
+        "Catatan bergambar membantu pemahaman",
+        "Ingatan visual lebih kuat dari ingatan suara",
+        "Panduan tertulis lebih disukai dari penjelasan lisan"
+      ],
+      "tips": [
+        "Visualisasikan konsep dalam bentuk gambar mental",
+        "Gunakan flashcard dengan gambar",
+        "Tonton video pembelajaran atau tutorial visual",
+        "Buat diagram, flowchart, atau mind map",
+        "Gunakan stabilo warna-warni saat membaca"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Cepat beradaptasi dengan perubahan",
+        "Antusias dan bersemangat",
+        "Piawai memotivasi orang lain",
+        "Berbicara dengan efektif",
+        "Kaya ide dan kreativitas"
+      ],
+      "kelemahan": [
+        "Konsentrasi mudah buyar",
+        "Konsistensi diri masih lemah",
+        "Kurang perhatian pada hal kecil",
+        "Kurang memberi ruang bicara orang lain",
+        "Kurang tepat waktu"
+      ],
+      "tips": [
+        "Latih kesabaran dalam berdiskusi dan beri ruang orang lain berbicara",
+        "Mulai hari dengan menetapkan tiga hal utama yang ingin dicapai",
+        "Jangan berpindah tugas sebelum yang pertama selesai dengan baik",
+        "Manfaatkan pengingat digital untuk memantau komitmenmu",
+        "Disiplin waktu adalah kunci agar potensimu berkembang maksimal"
+      ]
+    },
+    "id_x": 22
+  },
+  {
+    "kekuatan": [
+      "Dikenal mudah bergaul dan mampu menjaga hubungan yang positif dengan berbagai kalangan.",
+      "Memiliki kepekaan tinggi dalam membaca informasi visual secara cepat dan akurat.",
+      "Terorganisir dengan baik dalam menyusun rencana dan mengatur prioritas pekerjaan."
+    ],
+    "kelemahan": [
+      "Memerlukan waktu lebih lama untuk memahami konsep matematika yang lebih rumit.",
+      "Terkadang tekanan untuk selalu tampil sempurna justru menimbulkan kecemasan yang mengganggu produktivitas.",
+      "Terkadang terjebak dalam perfeksionisme perencanaan sehingga eksekusi menjadi terlambat."
+    ],
+    "rekomendasi": [
+      "Sebaiknya memulai dari pemahaman konsep dasar yang kuat sebelum beralih ke topik yang lebih kompleks, agar fondasi berpikir numerik semakin kokoh.",
+      "Sebaiknya membagi tujuan besar menjadi pencapaian-pencapaian kecil yang bisa dinikmati prosesnya, agar semangat berprestasi tetap terjaga tanpa menimbulkan stres berlebihan.",
+      "Penting untuk membiasakan diri menetapkan tenggat waktu yang ketat untuk setiap tahap perencanaan, sehingga energi dan waktu tidak habis sebelum eksekusi dimulai."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Suka berdiskusi dan menjelaskan kepada orang lain",
+        "Lebih mudah mengingat apa yang didengar",
+        "Mengingat nama lebih baik dari wajah",
+        "Sering berbicara sendiri saat belajar",
+        "Lebih suka mendengarkan penjelasan daripada membaca"
+      ],
+      "tips": [
+        "Belajar sambil mendengarkan musik instrumental",
+        "Rekam catatan dan dengarkan kembali",
+        "Bacakan materi dengan keras saat belajar",
+        "Diskusikan materi dengan teman atau guru",
+        "Ikuti diskusi kelompok secara aktif"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Periang yang Populer",
+      "deskripsi": "Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.",
+      "kekuatan": [
+        "Pandai menyampaikan gagasan",
+        "Pembangkit semangat tim",
+        "Fleksibel di berbagai situasi",
+        "Pemikiran segar dan inovatif",
+        "Penuh energi positif"
+      ],
+      "kelemahan": [
+        "Kurang tepat waktu",
+        "Kurang perhatian pada hal kecil",
+        "Kurang memberi ruang bicara orang lain",
+        "Konsistensi diri masih lemah",
+        "Konsentrasi mudah buyar"
+      ],
+      "tips": [
+        "Latih diri untuk mendengarkan lebih banyak sebelum berbicara",
+        "Biasakan mencatat janji dan komitmen penting di agenda",
+        "Kelola waktu dengan lebih disiplin agar produktivitas meningkat",
+        "Buatlah daftar prioritas harian agar energimu terarah dengan baik",
+        "Selesaikan satu pekerjaan hingga tuntas sebelum memulai yang baru"
+      ]
+    },
+    "id_x": 23
+  },
+  {
+    "kekuatan": [
+      "Dikenal sebagai pribadi yang berani mengekspresikan diri dan tidak ragu mengambil peran aktif.",
+      "Dikenal teliti dalam merancang alur kerja yang jelas dan dapat diikuti secara konsisten.",
+      "Memiliki kemampuan analitis yang baik dalam mengurai dan menyelesaikan persoalan."
+    ],
+    "kelemahan": [
+      "Kurang sabar dalam mendengarkan pandangan orang lain, yang menghambat komunikasi.",
+      "Terkadang membutuhkan waktu lebih lama untuk merasa nyaman dan terbuka di lingkungan yang belum dikenal.",
+      "Terkadang lebih nyaman bekerja sendiri hingga kurang optimal dalam situasi yang menuntut kolaborasi erat."
+    ],
+    "rekomendasi": [
+      "Penting untuk membiasakan diri menahan respons sejenak dan memastikan pemahaman yang tepat sebelum menjawab, guna menciptakan komunikasi yang lebih saling menghargai.",
+      "Disarankan untuk secara aktif mencari kesempatan untuk berkenalan dengan orang-orang baru dalam berbagai kegiatan, agar rasa canggung dalam situasi sosial baru dapat berkurang.",
+      "Disarankan untuk secara sadar melatih diri memberikan kepercayaan kepada rekan kerja untuk mengerjakan bagian tertentu, sehingga kemampuan berkolaborasi dapat berkembang secara bertahap."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan mendengar dan berbicara",
+      "karakteristik": [
+        "Penjelasan lisan terasa lebih membantu dari teks",
+        "Menyukai sesi diskusi untuk mempertegas pemahaman",
+        "Nama orang lebih mudah diingat dari wajahnya",
+        "Informasi yang didengar lebih mudah diingat",
+        "Mengulang materi dengan suara adalah cara belajar favorit"
+      ],
+      "tips": [
+        "Biasakan membaca nyaring saat mengulang pelajaran",
+        "Jadikan diskusi dengan teman sebagai metode belajar",
+        "Rekam ringkasan materi dan putar ulang",
+        "Bergabung dalam kelompok belajar secara rutin",
+        "Pilih musik tanpa lirik saat mengerjakan tugas"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Membuat orang nyaman bercerita",
+        "Ramah di berbagai lingkungan",
+        "Kinerja yang stabil dan andal",
+        "Tidak mudah terpancing emosi",
+        "Pandai meredakan konflik"
+      ],
+      "kelemahan": [
+        "Potensi belum dimaksimalkan",
+        "Inisiatif kurang terlihat",
+        "Lambat dalam mengambil keputusan",
+        "Mengorbankan solusi demi kenyamanan",
+        "Terlalu santai dalam situasi kritis"
+      ],
+      "tips": [
+        "Latih kemampuan pengambilan keputusan dengan mulai dari pilihan-pilihan kecil",
+        "Latih diri untuk mengambil inisiatif tanpa harus menunggu diminta",
+        "Hadapi konflik yang perlu diselesaikan dengan kepala dingin dan hati terbuka",
+        "Tetapkan tujuan jangka pendek yang spesifik agar mudah diukur dan dicapai",
+        "Coba hal-hal baru sesekali untuk memperluas wawasan dan kemampuanmu"
+      ]
+    },
+    "id_x": 24
+  },
+  {
+    "kekuatan": [
+      "Dikenal tidak mudah terpengaruh oleh tekanan eksternal dan mampu mempertahankan pendirian secara konsisten.",
+      "Mampu berkontribusi secara positif dalam lingkungan kerja tim maupun individu.",
+      "Cakap dalam memahami situasi dan merancang langkah penyelesaian yang tepat."
+    ],
+    "kelemahan": [
+      "Kadang kurang cermat dalam memeriksa kembali detail visual, sehingga berpotensi menimbulkan kesalahan kecil.",
+      "Cenderung sulit menerima hasil yang dianggap kurang sempurna, sehingga menghambat kemampuan untuk bergerak maju.",
+      "Terlalu fokus pada perencanaan, sehingga mengabaikan implementasi."
+    ],
+    "rekomendasi": [
+      "Penting untuk mengalokasikan waktu khusus untuk review hasil pekerjaan sebelum diselesaikan, guna memastikan tidak ada detail penting yang terlewat.",
+      "Sebaiknya membagi tujuan besar menjadi pencapaian-pencapaian kecil yang bisa dinikmati prosesnya, agar semangat berprestasi tetap terjaga tanpa menimbulkan stres berlebihan.",
+      "Direkomendasikan untuk menggunakan metode manajemen proyek seperti Agile atau sprint planning, agar keseimbangan antara perencanaan dan pelaksanaan dapat terjaga dengan lebih baik."
+    ],
+    "vak": {
+      "deskripsi": "Belajar paling efektif dengan melihat dan mengamati",
+      "karakteristik": [
+        "Instruksi tertulis lebih jelas dari arahan lisan",
+        "Informasi visual lebih mudah diingat",
+        "Belajar efektif dengan skema dan ilustrasi",
+        "Suka membuat sketsa atau catatan berwarna",
+        "Lebih mudah ingat wajah daripada nama"
+      ],
+      "tips": [
+        "Tonton video pembelajaran atau tutorial visual",
+        "Buat diagram, flowchart, atau mind map",
+        "Gunakan stabilo warna-warni saat membaca",
+        "Gunakan flashcard dengan gambar",
+        "Visualisasikan konsep dalam bentuk gambar mental"
+      ]
+    },
+    "temperamen": {
+      "tagline": "Si Pendamai yang Tenang",
+      "deskripsi": "Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.",
+      "kekuatan": [
+        "Dapat diandalkan jangka panjang",
+        "Tenang dalam situasi tekanan",
+        "Pendengar aktif yang empatik",
+        "Pendekatan diplomatik yang elegan",
+        "Mudah akrab dengan siapa saja"
+      ],
+      "kelemahan": [
+        "Kurang inisiatif",
+        "Kurang ambisi",
+        "Terlalu pasif",
+        "Menghindari konfrontasi",
+        "Sulit membuat keputusan"
+      ],
+      "tips": [
+        "Coba hal-hal baru sesekali untuk memperluas wawasan dan kemampuanmu",
+        "Latih kemampuan pengambilan keputusan dengan mulai dari pilihan-pilihan kecil",
+        "Hadapi konflik yang perlu diselesaikan dengan kepala dingin dan hati terbuka",
+        "Tetapkan tujuan jangka pendek yang spesifik agar mudah diukur dan dicapai",
+        "Latih diri untuk mengambil inisiatif tanpa harus menunggu diminta"
+      ]
+    },
+    "id_x": 25
+  }
+]
