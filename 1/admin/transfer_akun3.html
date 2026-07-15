@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transfer Data Psikogram JSON</title>
-    <script src="https://psikogram.lidan.co.id/engine1/psikogram-engine-json.js?v=1"></script>
+    <script src="https://psikogram.lidan.co.id/psikogram-engine-json.js?v=1"></script>
+    <script src="https://psikogram.lidan.co.id/karakter_engine.js"></script>
     <script>
         // karakter_engine.js menggunakan const di top-level sehingga tidak otomatis masuk window.
         // Solusi: load ulang via fetch lalu eksekusi dengan window assignment eksplisit.
@@ -22,47 +23,13 @@
 
         // Semua engine dimuat paralel, disimpan sebagai promise untuk di-await
         window._enginesReady = Promise.all([
-            _loadEngine('https://psikogram.lidan.co.id/engine1/karakter_engine.js', 'KarakterEngine'),
-            _loadEngine('https://psikogram.lidan.co.id/engine1/potensi_engine.js',  'PotensiEngine'),
-            _loadEngine('https://psikogram.lidan.co.id/engine1/karir_engine.js',    'KarirEngine'),
-            _loadEngine('https://psikogram.lidan.co.id/engine1/asmara_engine.js',   'AsmaraEngine'),
+            _loadEngine('https://psikogram.lidan.co.id/karakter_engine.js', 'KarakterEngine'),
+            _loadEngine('https://psikogram.lidan.co.id/potensi_engine.js',  'PotensiEngine'),
+            _loadEngine('https://psikogram.lidan.co.id/karir_engine.js',    'KarirEngine'),
+            _loadEngine('https://psikogram.lidan.co.id/asmara_engine.js',   'AsmaraEngine'),
         ]);
         // Backward compat
         window._karakterEngineReady = window._enginesReady;
-
-        // =========================================================
-        // TOGGLE VARIASI KALIMAT: konsisten (per id_x) vs acak murni
-        // Disimpan di localStorage (per-browser/per-admin, sesuai kesepakatan).
-        // 'konsisten' → id_x sama = kalimat pasti sama tiap kali di-generate ulang.
-        // 'acak'      → kalimat boleh berubah setiap kali di-generate ulang,
-        //               walau id_x sama (Math.random murni, tanpa seed).
-        // =========================================================
-        const VARIASI_MODE_KEY = 'lidan_variasi_mode';
-
-        function getVariasiMode() {
-            const m = localStorage.getItem(VARIASI_MODE_KEY);
-            return (m === 'acak') ? 'acak' : 'konsisten'; // default: konsisten
-        }
-
-        function setVariasiMode(mode) {
-            localStorage.setItem(VARIASI_MODE_KEY, mode === 'acak' ? 'acak' : 'konsisten');
-        }
-
-        // getRandFn(seed): satu-satunya sumber fungsi random di file ini.
-        // - Mode konsisten: rand seeded dari `seed` (pakai util PsikogramEngine kalau ada,
-        //   fallback ke seededRandom lokal) → deterministik per seed (biasanya id_x/token).
-        // - Mode acak: Math.random murni, seed diabaikan → beda tiap kali dipanggil.
-        function getRandFn(seed) {
-            if (getVariasiMode() === 'acak') {
-                return function () { return Math.random(); };
-            }
-            const PE = window.PsikogramEngine;
-            if (PE && PE.makeSeededRand && PE.seedFromId) {
-                return PE.makeSeededRand(PE.seedFromId(String(seed)));
-            }
-            // Fallback: pakai seededRandom() yang didefinisikan lebih bawah di file ini.
-            return seededRandom(String(seed));
-        }
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -86,56 +53,6 @@
         }
         .page-header h1 { font-size: 20px; }
         .page-header span { font-size: 13px; opacity: .8; }
-
-        /* ── Toggle Variasi Kalimat (konsisten / acak) ── */
-        .variasi-toggle-box {
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255,255,255,.08);
-            border: 1px solid rgba(255,255,255,.25);
-            border-radius: 10px;
-            padding: 8px 14px;
-            flex-shrink: 0;
-        }
-        .variasi-toggle-box .vt-label {
-            font-size: 12px;
-            line-height: 1.3;
-            text-align: right;
-        }
-        .variasi-toggle-box .vt-label strong { font-size: 13px; }
-        .variasi-toggle-box .vt-mode-text {
-            display: block;
-            font-weight: bold;
-        }
-        .variasi-toggle-box .vt-mode-text.konsisten { color: #6bffb0; }
-        .variasi-toggle-box .vt-mode-text.acak      { color: #ffd93d; }
-        .vt-switch {
-            position: relative;
-            width: 46px;
-            height: 24px;
-            flex-shrink: 0;
-        }
-        .vt-switch input { opacity: 0; width: 0; height: 0; }
-        .vt-slider {
-            position: absolute; cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #888;
-            transition: .2s;
-            border-radius: 24px;
-        }
-        .vt-slider::before {
-            position: absolute;
-            content: "";
-            height: 18px; width: 18px;
-            left: 3px; bottom: 3px;
-            background-color: white;
-            transition: .2s;
-            border-radius: 50%;
-        }
-        .vt-switch input:checked + .vt-slider { background-color: #2ecc71; }
-        .vt-switch input:checked + .vt-slider::before { transform: translateX(22px); }
 
         /* ── Layout ── */
         .main-wrap {
@@ -479,40 +396,7 @@
         <h1>📊 Transfer Data Psikogram JSON: <span id="hdr-src">nilai1_json</span> → <span id="hdr-dst">rekap_nilai1</span></h1>
         <span>Sumber: tabel <strong id="hdr-src2">nilai1_json</strong> &nbsp;|&nbsp; Tujuan: tabel <strong id="hdr-dst2">rekap_nilai1</strong> &nbsp;|&nbsp; Src: <span id="hdr-srv-src" class="hdr-srv-badge">lidan-co-id.pages.dev</span> → Dst: psikogram_db &nbsp;|&nbsp; <strong style="color:#ffd93d;">Format: JSON</strong></span>
     </div>
-
-    <!-- Toggle: Variasi Kalimat — konsisten (id_x sama = kalimat sama) vs acak murni -->
-    <div class="variasi-toggle-box" title="Konsisten: id_x sama selalu dapat kalimat sama. Acak: kalimat bisa berubah tiap kali di-generate ulang, walau id_x sama.">
-        <div class="vt-label">
-            <strong>Variasi Kalimat</strong>
-            <span class="vt-mode-text" id="vt-mode-text">Konsisten</span>
-        </div>
-        <label class="vt-switch">
-            <input type="checkbox" id="vt-switch-input" onchange="onVariasiModeToggle(this.checked)">
-            <span class="vt-slider"></span>
-        </label>
-    </div>
 </div>
-
-<script>
-    // Sinkronkan UI toggle dengan mode tersimpan di localStorage saat halaman dibuka.
-    // checked = ON = 'acak', unchecked = OFF = 'konsisten' (default).
-    function refreshVariasiToggleUI() {
-        const mode = getVariasiMode();
-        const input = document.getElementById('vt-switch-input');
-        const text  = document.getElementById('vt-mode-text');
-        if (!input || !text) return;
-        input.checked = (mode === 'acak');
-        text.textContent = (mode === 'acak') ? 'Acak' : 'Konsisten';
-        text.className = 'vt-mode-text ' + (mode === 'acak' ? 'acak' : 'konsisten');
-    }
-
-    function onVariasiModeToggle(isAcak) {
-        setVariasiMode(isAcak ? 'acak' : 'konsisten');
-        refreshVariasiToggleUI();
-    }
-
-    refreshVariasiToggleUI();
-</script>
 
 <!-- Main Wrap -->
 <div class="main-wrap">
@@ -794,44 +678,44 @@ const DEFAULT_TABLES = { SRC: 'nilai1_json', DST: 'rekap_nilai1' };
 const LEARNING_STYLES = {
     A: {
         name: 'VISUAL', color: '#4a90e2', icon: '👁️',
-        description: 'Belajar paling efektif dengan melihat {dan|serta} mengamati',
+        description: 'Belajar paling efektif dengan melihat dan mengamati',
         characteristicsPool: [
-            ['Lebih {mudah|gampang} mengingat apa yang dilihat','Suka diagram, grafik, {dan|serta} gambar','Mengingat wajah lebih baik dari nama','Lebih suka membaca instruksi sendiri','Sering {membuat|menciptakan} catatan visual {atau|ataupun} mind map'],
-            ['Ingatan visual lebih kuat dari ingatan suara','Nyaman belajar dengan tabel {dan|serta} bagan','Wajah lebih {mudah|gampang} dikenali dari nama','Panduan tertulis lebih disukai dari penjelasan lisan','Catatan bergambar {membantu|menunjang} pemahaman'],
-            ['Informasi visual lebih {mudah|gampang} diingat','Belajar efektif dengan skema {dan|serta} ilustrasi','Lebih {mudah|gampang} ingat wajah daripada nama','Instruksi tertulis lebih jelas dari arahan lisan','Suka {membuat|menciptakan} sketsa {atau|ataupun} catatan berwarna']
+            ['Lebih mudah mengingat apa yang dilihat','Suka diagram, grafik, dan gambar','Mengingat wajah lebih baik dari nama','Lebih suka membaca instruksi sendiri','Sering membuat catatan visual atau mind map'],
+            ['Ingatan visual lebih kuat dari ingatan suara','Nyaman belajar dengan tabel dan bagan','Wajah lebih mudah dikenali dari nama','Panduan tertulis lebih disukai dari penjelasan lisan','Catatan bergambar membantu pemahaman'],
+            ['Informasi visual lebih mudah diingat','Belajar efektif dengan skema dan ilustrasi','Lebih mudah ingat wajah daripada nama','Instruksi tertulis lebih jelas dari arahan lisan','Suka membuat sketsa atau catatan berwarna']
         ],
         tipsPool: [
-            ['{Gunakan|Pakai|Manfaatkan} stabilo warna-warni saat membaca','{Buat|Ciptakan} diagram, flowchart, {atau|ataupun} mind map','Tonton video pembelajaran {atau|ataupun} tutorial visual','{Gunakan|Pakai|Manfaatkan} flashcard dengan gambar','Visualisasikan konsep dalam bentuk gambar mental'],
-            ['Tandai poin {penting|krusial} dengan warna berbeda','Ubah catatan menjadi diagram {atau|ataupun} peta pikiran','Cari video {atau|ataupun} animasi yang menjelaskan materi','{Buat|Ciptakan} kartu belajar dengan ilustrasi pendukung','Gambarkan konsep yang sedang dipelajari'],
-            ['Pakai kode warna {untuk|guna} membedakan topik','Sajikan materi dalam tabel perbandingan','Perkaya pemahaman dengan video edukasi','{Buat|Ciptakan} kartu ringkasan bergambar yang praktis','Ciptakan gambaran mental saat belajar topik baru']
+            ['Gunakan stabilo warna-warni saat membaca','Buat diagram, flowchart, atau mind map','Tonton video pembelajaran atau tutorial visual','Gunakan flashcard dengan gambar','Visualisasikan konsep dalam bentuk gambar mental'],
+            ['Tandai poin penting dengan warna berbeda','Ubah catatan menjadi diagram atau peta pikiran','Cari video atau animasi yang menjelaskan materi','Buat kartu belajar dengan ilustrasi pendukung','Gambarkan konsep yang sedang dipelajari'],
+            ['Pakai kode warna untuk membedakan topik','Sajikan materi dalam tabel perbandingan','Perkaya pemahaman dengan video edukasi','Buat kartu ringkasan bergambar yang praktis','Ciptakan gambaran mental saat belajar topik baru']
         ]
     },
     B: {
         name: 'AUDITORY', color: '#f39c12', icon: '👂',
-        description: 'Belajar paling efektif dengan mendengar {dan|serta} berbicara',
+        description: 'Belajar paling efektif dengan mendengar dan berbicara',
         characteristicsPool: [
-            ['Lebih {mudah|gampang} mengingat apa yang didengar','Suka berdiskusi {dan|serta} menjelaskan kepada orang lain','Mengingat nama lebih baik dari wajah','Lebih suka mendengarkan penjelasan daripada membaca','Sering berbicara sendiri saat belajar'],
-            ['Informasi yang didengar lebih {mudah|gampang} diingat','Menyukai sesi diskusi {untuk|guna} mempertegas pemahaman','Nama orang lebih {mudah|gampang} diingat dari wajahnya','Penjelasan lisan terasa lebih {membantu|menunjang} dari teks','Mengulang materi dengan suara adalah cara belajar favorit'],
-            ['Memori lebih kuat melalui pendengaran','Belajar dalam kelompok meningkatkan pemahaman','Mengingat suara lebih {mudah|gampang} dari tampilan visual','Lebih suka mendengar rekaman dari membaca teks panjang','Melafalkan materi dengan lantang memperkuat ingatan']
+            ['Lebih mudah mengingat apa yang didengar','Suka berdiskusi dan menjelaskan kepada orang lain','Mengingat nama lebih baik dari wajah','Lebih suka mendengarkan penjelasan daripada membaca','Sering berbicara sendiri saat belajar'],
+            ['Informasi yang didengar lebih mudah diingat','Menyukai sesi diskusi untuk mempertegas pemahaman','Nama orang lebih mudah diingat dari wajahnya','Penjelasan lisan terasa lebih membantu dari teks','Mengulang materi dengan suara adalah cara belajar favorit'],
+            ['Memori lebih kuat melalui pendengaran','Belajar dalam kelompok meningkatkan pemahaman','Mengingat suara lebih mudah dari tampilan visual','Lebih suka mendengar rekaman dari membaca teks panjang','Melafalkan materi dengan lantang memperkuat ingatan']
         ],
         tipsPool: [
-            ['Rekam catatan {dan|serta} dengarkan kembali','Diskusikan materi dengan teman {atau|ataupun} guru','Belajar sambil mendengarkan musik instrumental','Bacakan materi dengan keras saat belajar','Ikuti diskusi kelompok secara aktif'],
-            ['Rekam ringkasan materi {dan|serta} putar ulang','Jadikan diskusi dengan teman sebagai metode belajar','Pilih musik tanpa lirik saat mengerjakan tugas','Biasakan membaca nyaring saat mengulang pelajaran','Bergabung dalam kelompok belajar secara rutin'],
-            ['Simpan catatan dalam format rekaman suara','Ajak teman saling menjelaskan topik belajar','Dengarkan podcast {atau|ataupun} audio edukasi yang relevan','Ulang materi dengan cara mengajarkan kembali','Aktif dalam forum {atau|ataupun} diskusi online']
+            ['Rekam catatan dan dengarkan kembali','Diskusikan materi dengan teman atau guru','Belajar sambil mendengarkan musik instrumental','Bacakan materi dengan keras saat belajar','Ikuti diskusi kelompok secara aktif'],
+            ['Rekam ringkasan materi dan putar ulang','Jadikan diskusi dengan teman sebagai metode belajar','Pilih musik tanpa lirik saat mengerjakan tugas','Biasakan membaca nyaring saat mengulang pelajaran','Bergabung dalam kelompok belajar secara rutin'],
+            ['Simpan catatan dalam format rekaman suara','Ajak teman saling menjelaskan topik belajar','Dengarkan podcast atau audio edukasi yang relevan','Ulang materi dengan cara mengajarkan kembali','Aktif dalam forum atau diskusi online']
         ]
     },
     C: {
         name: 'KINESTETIK', color: '#2ecc71', icon: '🤸',
-        description: 'Belajar paling efektif dengan bergerak {dan|serta} melakukan langsung',
+        description: 'Belajar paling efektif dengan bergerak dan melakukan langsung',
         characteristicsPool: [
-            ['Belajar lebih efektif dengan praktik langsung','Suka eksperimen {dan|serta} mencoba sendiri','Susah diam dalam waktu lama','Mengingat apa yang dilakukan bukan yang dibaca','Ekspresif dengan gerakan tubuh'],
-            ['Pemahaman terbentuk lewat pengalaman langsung','Senang mencoba tanpa {harus|wajib} menunggu arahan','Duduk lama {membuat|menciptakan} konsentrasi buyar','Ingatan terkuat dari hal yang pernah dilakukan','Bahasa tubuh adalah ekspresi alami saat bicara'],
+            ['Belajar lebih efektif dengan praktik langsung','Suka eksperimen dan mencoba sendiri','Susah diam dalam waktu lama','Mengingat apa yang dilakukan bukan yang dibaca','Ekspresif dengan gerakan tubuh'],
+            ['Pemahaman terbentuk lewat pengalaman langsung','Senang mencoba tanpa harus menunggu arahan','Duduk lama membuat konsentrasi buyar','Ingatan terkuat dari hal yang pernah dilakukan','Bahasa tubuh adalah ekspresi alami saat bicara'],
             ['Praktik langsung jauh lebih efektif dari teori','Cepat ingin mencoba tanpa banyak menunggu','Perlu bergerak selama proses belajar','Materi lebih diingat saat dilakukan sambil bergerak','Isyarat fisik sering muncul saat berkomunikasi']
         ],
         tipsPool: [
-            ['{Buat|Ciptakan} proyek {atau|ataupun} model nyata dari materi','Ambil jeda singkat {dan|serta} bergerak setelah belajar','{Gunakan|Pakai|Manfaatkan} role play {atau|ataupun} simulasi','Tulis {atau|ataupun} gambar sambil mendengar penjelasan','Kunjungi langsung lokasi yang berkaitan dengan topik'],
-            ['Wujudkan materi dalam bentuk karya nyata','Sisipkan gerakan ringan {setiap|tiap} 30–45 menit belajar','Coba peran {atau|ataupun} situasi nyata {untuk|guna} memahami materi','Tuliskan poin {penting|krusial} sambil menyimak','Perkuat pemahaman dengan kunjungan ke tempat relevan'],
-            ['Jadikan materi sebagai bahan uji coba nyata','Manfaatkan jeda aktif {untuk|guna} {menjaga|mempertahankan} fokus belajar','Praktikkan konsep dalam permainan peran sederhana','Coret-coret {atau|ataupun} gambar kasar sambil menyimak','Perkaya belajar dengan pengalaman di lapangan']
+            ['Buat proyek atau model nyata dari materi','Ambil jeda singkat dan bergerak setelah belajar','Gunakan role play atau simulasi','Tulis atau gambar sambil mendengar penjelasan','Kunjungi langsung lokasi yang berkaitan dengan topik'],
+            ['Wujudkan materi dalam bentuk karya nyata','Sisipkan gerakan ringan setiap 30–45 menit belajar','Coba peran atau situasi nyata untuk memahami materi','Tuliskan poin penting sambil menyimak','Perkuat pemahaman dengan kunjungan ke tempat relevan'],
+            ['Jadikan materi sebagai bahan uji coba nyata','Manfaatkan jeda aktif untuk menjaga fokus belajar','Praktikkan konsep dalam permainan peran sederhana','Coret-coret atau gambar kasar sambil menyimak','Perkaya belajar dengan pengalaman di lapangan']
         ]
     }
 };
@@ -840,97 +724,97 @@ const TEMPERAMENTS = {
     A: {
         name: 'SANGUINIS', color: '#f1c40f', icon: '😄',
         tagline: 'Si Periang yang Populer',
-        description: 'Ekstrovert, antusias, {dan|serta} sosial. Suka menjadi pusat perhatian {dan|serta} {membuat|menciptakan} orang lain senang.',
-        characteristics: ['Ceria, optimis, {dan|serta} penuh semangat','{Mudah|Gampang} bergaul {dan|serta} populer','Suka berbicara {dan|serta} menghibur','Spontan {dan|serta} kreatif','Tidak suka rutinitas yang membosankan','Emosional {dan|serta} ekspresif'],
-        strengths: ['Komunikator yang baik','Memotivasi orang lain','{Mudah|Gampang} beradaptasi','Antusiasme tinggi','Kreatif {dan|serta} inovatif'],
-        weaknesses: ['Kurang disiplin','{Mudah|Gampang} terdistraksi','Tidak detail-oriented','Terlalu banyak bicara','Sulit menepati janji'],
+        description: 'Ekstrovert, antusias, dan sosial. Suka menjadi pusat perhatian dan membuat orang lain senang.',
+        characteristics: ['Ceria, optimis, dan penuh semangat','Mudah bergaul dan populer','Suka berbicara dan menghibur','Spontan dan kreatif','Tidak suka rutinitas yang membosankan','Emosional dan ekspresif'],
+        strengths: ['Komunikator yang baik','Memotivasi orang lain','Mudah beradaptasi','Antusiasme tinggi','Kreatif dan inovatif'],
+        weaknesses: ['Kurang disiplin','Mudah terdistraksi','Tidak detail-oriented','Terlalu banyak bicara','Sulit menepati janji'],
         strengthsPool: [
-            ['Komunikator yang baik','Memotivasi orang lain','{Mudah|Gampang} beradaptasi','Antusiasme tinggi','Kreatif {dan|serta} inovatif'],
-            ['Pandai menyampaikan gagasan','Pembangkit semangat tim','Fleksibel di berbagai situasi','Penuh energi positif','Pemikiran segar {dan|serta} inovatif'],
-            ['Berbicara dengan efektif','Piawai memotivasi orang lain','Cepat beradaptasi dengan perubahan','Antusias {dan|serta} bersemangat','Kaya ide {dan|serta} kreativitas']
+            ['Komunikator yang baik','Memotivasi orang lain','Mudah beradaptasi','Antusiasme tinggi','Kreatif dan inovatif'],
+            ['Pandai menyampaikan gagasan','Pembangkit semangat tim','Fleksibel di berbagai situasi','Penuh energi positif','Pemikiran segar dan inovatif'],
+            ['Berbicara dengan efektif','Piawai memotivasi orang lain','Cepat beradaptasi dengan perubahan','Antusias dan bersemangat','Kaya ide dan kreativitas']
         ],
         weaknessesPool: [
-            ['Kurang disiplin','{Mudah|Gampang} terdistraksi','Tidak detail-oriented','Terlalu banyak bicara','Sulit menepati janji'],
-            ['Disiplin masih perlu ditingkatkan','Fokus {mudah|gampang} teralihkan','Kurang teliti pada detail','Cenderung mendominasi percakapan','Komitmen perlu lebih dijaga'],
-            ['Konsistensi diri masih lemah','Konsentrasi {mudah|gampang} buyar','Kurang perhatian pada hal kecil','Kurang memberi ruang bicara orang lain','Kurang tepat waktu']
+            ['Kurang disiplin','Mudah terdistraksi','Tidak detail-oriented','Terlalu banyak bicara','Sulit menepati janji'],
+            ['Disiplin masih perlu ditingkatkan','Fokus mudah teralihkan','Kurang teliti pada detail','Cenderung mendominasi percakapan','Komitmen perlu lebih dijaga'],
+            ['Konsistensi diri masih lemah','Konsentrasi mudah buyar','Kurang perhatian pada hal kecil','Kurang memberi ruang bicara orang lain','Kurang tepat waktu']
         ],
         careers: ['Sales & Marketing','Public Relations','Event Organizer','Entertainer','Presenter','Teacher'],
         tipsPool: [
-            ['Buatlah daftar prioritas harian {agar|supaya} energimu terarah dengan baik','{Latih|Asah} diri {untuk|guna} mendengarkan lebih banyak sebelum berbicara','{Selesaikan|Tuntaskan} satu pekerjaan hingga tuntas sebelum memulai yang baru','Biasakan mencatat janji {dan|serta} komitmen {penting|krusial} di agenda','Kelola waktu dengan lebih disiplin {agar|supaya} produktivitas meningkat'],
-            ['{Gunakan|Pakai|Manfaatkan} to-do list {setiap|tiap} pagi {untuk|guna} {menjaga|mempertahankan} fokus sepanjang hari','{Berlatih|Latihlah} menjadi pendengar aktif dalam {setiap|tiap} percakapan','{Tuntaskan|Selesaikan} satu tanggung jawab dulu sebelum beralih ke hal lain','{Catat|Tuliskan} {setiap|tiap} janji {agar|supaya} kepercayaan orang lain {tetap|senantiasa} terjaga','{Bangun|Ciptakan} rutinitas yang konsisten {untuk|guna} mendukung kedisiplinan'],
-            ['Mulai hari dengan menetapkan tiga hal utama yang ingin dicapai','{Latih|Asah} kesabaran dalam berdiskusi {dan|serta} beri ruang orang lain berbicara','Jangan berpindah tugas sebelum yang pertama selesai dengan baik','Manfaatkan pengingat digital {untuk|guna} memantau komitmenmu','Disiplin waktu adalah kunci {agar|supaya} potensimu berkembang maksimal']
+            ['Buatlah daftar prioritas harian agar energimu terarah dengan baik','Latih diri untuk mendengarkan lebih banyak sebelum berbicara','Selesaikan satu pekerjaan hingga tuntas sebelum memulai yang baru','Biasakan mencatat janji dan komitmen penting di agenda','Kelola waktu dengan lebih disiplin agar produktivitas meningkat'],
+            ['Gunakan to-do list setiap pagi untuk menjaga fokus sepanjang hari','Berlatih menjadi pendengar aktif dalam setiap percakapan','Tuntaskan satu tanggung jawab dulu sebelum beralih ke hal lain','Catat setiap janji agar kepercayaan orang lain tetap terjaga','Bangun rutinitas yang konsisten untuk mendukung kedisiplinan'],
+            ['Mulai hari dengan menetapkan tiga hal utama yang ingin dicapai','Latih kesabaran dalam berdiskusi dan beri ruang orang lain berbicara','Jangan berpindah tugas sebelum yang pertama selesai dengan baik','Manfaatkan pengingat digital untuk memantau komitmenmu','Disiplin waktu adalah kunci agar potensimu berkembang maksimal']
         ]
     },
     B: {
         name: 'KOLERIS', color: '#e67e22', icon: '💪',
         tagline: 'Si Pemimpin yang Kuat',
-        description: 'Ekstrovert, tegas, {dan|serta} berorientasi pada tujuan. Suka memimpin {dan|serta} mengambil keputusan.',
-        characteristics: ['Tegas {dan|serta} percaya diri','Berorientasi pada hasil','Suka tantangan {dan|serta} kompetisi','Pengambil keputusan yang {cepat|segera}','Produktif {dan|serta} efisien','Tidak sabaran dengan ketidakefisienan'],
+        description: 'Ekstrovert, tegas, dan berorientasi pada tujuan. Suka memimpin dan mengambil keputusan.',
+        characteristics: ['Tegas dan percaya diri','Berorientasi pada hasil','Suka tantangan dan kompetisi','Pengambil keputusan yang cepat','Produktif dan efisien','Tidak sabaran dengan ketidakefisienan'],
         strengths: ['Kepemimpinan alami','Berani mengambil risiko','Orientasi tujuan yang kuat','Tegas dalam keputusan','Produktivitas tinggi'],
         weaknesses: ['Terlalu bossy','Kurang sensitif','Tidak sabaran','Sulit menerima kritik','Workaholic'],
         strengthsPool: [
             ['Kepemimpinan alami','Berani mengambil risiko','Orientasi tujuan yang kuat','Tegas dalam keputusan','Produktivitas tinggi'],
-            ['Jiwa pemimpin yang menonjol','Tidak takut mengambil risiko','Fokus {dan|serta} terarah pada target','Pengambil keputusan yang tegas','Konsisten menghasilkan hasil terbaik'],
-            ['Pemimpin yang dipercaya tim','Berani bertindak di bawah tekanan','Tidak {mudah|gampang} terpengaruh distraksi','Cepat {dan|serta} jelas dalam memutuskan','Produktif {dan|serta} {selalu|senantiasa} berenergi']
+            ['Jiwa pemimpin yang menonjol','Tidak takut mengambil risiko','Fokus dan terarah pada target','Pengambil keputusan yang tegas','Konsisten menghasilkan hasil terbaik'],
+            ['Pemimpin yang dipercaya tim','Berani bertindak di bawah tekanan','Tidak mudah terpengaruh distraksi','Cepat dan jelas dalam memutuskan','Produktif dan selalu berenergi']
         ],
         weaknessesPool: [
             ['Terlalu bossy','Kurang sensitif','Tidak sabaran','Sulit menerima kritik','Workaholic'],
             ['Cenderung terlalu mengatur','Kurang peka terhadap perasaan orang','Toleransi rendah terhadap kelambatan','Sulit menerima masukan','Sulit membatasi jam kerja'],
-            ['Terlalu dominan dalam tim','Empati masih perlu dikembangkan','{Mudah|Gampang} tidak sabar','Defensif terhadap kritik','Cenderung mengabaikan istirahat']
+            ['Terlalu dominan dalam tim','Empati masih perlu dikembangkan','Mudah tidak sabar','Defensif terhadap kritik','Cenderung mengabaikan istirahat']
         ],
         careers: ['CEO/Manager','Entrepreneur','Politisi','Direktur','Pilot','Lawyer'],
         tipsPool: [
-            ['{Latih|Asah} {kemampuan|kecakapan} empati dengan menempatkan diri pada posisi orang lain','Biasakan memberikan apresiasi tulus kepada rekan tim secara rutin','Kenali pemicu amarahmu {dan|serta} beri jeda sebelum bereaksi','Percayakan tugas kepada tim tanpa mengatur {setiap|tiap} detailnya','Sisihkan waktu {untuk|guna} istirahat {dan|serta} kehidupan pribadi di luar pekerjaan'],
-            ['Pelajari cara mendengarkan dengan penuh perhatian tanpa menyela','Ungkapkan penghargaan kepada anggota tim atas kontribusi mereka','{Latih|Asah} diri {untuk|guna} merespons dengan kepala dingin dalam tekanan','Delegasikan dengan jelas {dan|serta} percayai {kemampuan|kecakapan} timmu','{Jaga|Pertahankan} keseimbangan antara ambisi kerja {dan|serta} kebutuhan pribadimu'],
-            ['Kembangkan kepekaan terhadap perasaan {dan|serta} kebutuhan orang di sekitarmu','Jadikan apresiasi sebagai bagian dari gaya kepemimpinanmu sehari-hari','Ambil napas dalam-dalam sebelum merespons situasi yang memancing emosi','Beri tim ruang {untuk|guna} berkembang tanpa pengawasan berlebihan','Tetapkan batas waktu kerja yang sehat {agar|supaya} energimu {tetap|senantiasa} terjaga']
+            ['Latih kemampuan empati dengan menempatkan diri pada posisi orang lain','Biasakan memberikan apresiasi tulus kepada rekan tim secara rutin','Kenali pemicu amarahmu dan beri jeda sebelum bereaksi','Percayakan tugas kepada tim tanpa mengatur setiap detailnya','Sisihkan waktu untuk istirahat dan kehidupan pribadi di luar pekerjaan'],
+            ['Pelajari cara mendengarkan dengan penuh perhatian tanpa menyela','Ungkapkan penghargaan kepada anggota tim atas kontribusi mereka','Latih diri untuk merespons dengan kepala dingin dalam tekanan','Delegasikan dengan jelas dan percayai kemampuan timmu','Jaga keseimbangan antara ambisi kerja dan kebutuhan pribadimu'],
+            ['Kembangkan kepekaan terhadap perasaan dan kebutuhan orang di sekitarmu','Jadikan apresiasi sebagai bagian dari gaya kepemimpinanmu sehari-hari','Ambil napas dalam-dalam sebelum merespons situasi yang memancing emosi','Beri tim ruang untuk berkembang tanpa pengawasan berlebihan','Tetapkan batas waktu kerja yang sehat agar energimu tetap terjaga']
         ]
     },
     C: {
         name: 'MELANKOLIS', color: '#9b59b6', icon: '🤔',
         tagline: 'Si Pemikir yang Perfeksionis',
-        description: 'Introvert, analitis, {dan|serta} detail-oriented. Suka kesempurnaan {dan|serta} kedalaman.',
-        characteristics: ['Perfeksionis {dan|serta} teliti','Berpikir mendalam {dan|serta} analitis','Sensitif {dan|serta} idealis','Loyal {dan|serta} setia','Suka keteraturan {dan|serta} struktur','Cenderung pesimistis'],
-        strengths: ['Perhatian pada detail','Analisis mendalam','Standar tinggi','Kreatif {dan|serta} artistik','{Dapat|Bisa|Mampu} diandalkan'],
-        weaknesses: ['Terlalu kritis','Overthinking','Perfeksionisme berlebihan','Sulit puas','{Mudah|Gampang} depresi'],
+        description: 'Introvert, analitis, dan detail-oriented. Suka kesempurnaan dan kedalaman.',
+        characteristics: ['Perfeksionis dan teliti','Berpikir mendalam dan analitis','Sensitif dan idealis','Loyal dan setia','Suka keteraturan dan struktur','Cenderung pesimistis'],
+        strengths: ['Perhatian pada detail','Analisis mendalam','Standar tinggi','Kreatif dan artistik','Dapat diandalkan'],
+        weaknesses: ['Terlalu kritis','Overthinking','Perfeksionisme berlebihan','Sulit puas','Mudah depresi'],
         strengthsPool: [
-            ['Perhatian pada detail','Analisis mendalam','Standar kerja tinggi','Kreatif {dan|serta} artistik','{Dapat|Bisa|Mampu} diandalkan'],
-            ['Teliti {dan|serta} cermat','Berpikir secara mendalam','Berkomitmen pada kualitas','Jiwa seni yang kuat','Konsisten {dan|serta} terpercaya'],
-            ['Tidak {mudah|gampang} melewatkan detail','Analitis {dan|serta} kritis','Menghasilkan pekerjaan berkualitas','Kreativitas yang mendalam','Stabil {dan|serta} {bisa|dapat|mampu} diandalkan']
+            ['Perhatian pada detail','Analisis mendalam','Standar kerja tinggi','Kreatif dan artistik','Dapat diandalkan'],
+            ['Teliti dan cermat','Berpikir secara mendalam','Berkomitmen pada kualitas','Jiwa seni yang kuat','Konsisten dan terpercaya'],
+            ['Tidak mudah melewatkan detail','Analitis dan kritis','Menghasilkan pekerjaan berkualitas','Kreativitas yang mendalam','Stabil dan bisa diandalkan']
         ],
         weaknessesPool: [
             ['Terlalu kritis','Overthinking','Perfeksionisme berlebihan','Sulit merasa puas','Rentan terhadap tekanan emosi'],
-            ['{Mudah|Gampang} mengkritik diri sendiri','Terlalu lama menganalisis','Standar terlalu tinggi','Kepuasan sulit dicapai','Sensitif terhadap tekanan'],
-            ['Kritis terhadap diri {dan|serta} orang lain','Terjebak dalam analisis berlebih','Sulit menerima hasil yang tidak sempurna','Ekspektasi yang sulit terpenuhi','Emosi {mudah|gampang} terpengaruh situasi']
+            ['Mudah mengkritik diri sendiri','Terlalu lama menganalisis','Standar terlalu tinggi','Kepuasan sulit dicapai','Sensitif terhadap tekanan'],
+            ['Kritis terhadap diri dan orang lain','Terjebak dalam analisis berlebih','Sulit menerima hasil yang tidak sempurna','Ekspektasi yang sulit terpenuhi','Emosi mudah terpengaruh situasi']
         ],
         careers: ['Scientist','Analyst','Artist','Writer','Programmer','Accountant'],
         tipsPool: [
-            ['Terimalah bahwa hasil yang cukup baik jauh lebih berharga dari yang tidak selesai','{Latih|Asah} diri {untuk|guna} segera mengambil tindakan tanpa menunggu kondisi sempurna','Rayakan {setiap|tiap} kemajuan kecil sebagai bagian dari perjalanan panjang','Pandanglah kritik sebagai masukan berharga yang {membantu|menunjang} pertumbuhanmu','Tetapkan standar yang realistis {agar|supaya} kamu tidak {mudah|gampang} kelelahan'],
-            ['Ingat bahwa kesempurnaan adalah perjalanan, bukan tujuan akhir','Kurangi waktu analisis berlebih {dan|serta} mulailah melangkah lebih {cepat|segera}','Fokus pada proses {dan|serta} pembelajaran, bukan hanya hasil akhir','{Latih|Asah} keterbukaan dalam menerima masukan dari orang-orang tepercaya','Kenali batasmu {dan|serta} beri dirimu izin {untuk|guna} tidak {selalu|senantiasa} sempurna'],
-            ['Bebaskan dirimu dari tekanan {harus|wajib} sempurna dalam {setiap|tiap} hal','Ambil keputusan dengan informasi yang cukup, bukan yang lengkap','Jadikan {setiap|tiap} langkah maju sebagai pencapaian yang layak disyukuri','Ubah cara pandang terhadap kritik menjadi bahan bakar perbaikan diri','Sesuaikan ekspektasi {agar|supaya} kamu {dapat|bisa|mampu} menikmati prosesnya']
+            ['Terimalah bahwa hasil yang cukup baik jauh lebih berharga dari yang tidak selesai','Latih diri untuk segera mengambil tindakan tanpa menunggu kondisi sempurna','Rayakan setiap kemajuan kecil sebagai bagian dari perjalanan panjang','Pandanglah kritik sebagai masukan berharga yang membantu pertumbuhanmu','Tetapkan standar yang realistis agar kamu tidak mudah kelelahan'],
+            ['Ingat bahwa kesempurnaan adalah perjalanan, bukan tujuan akhir','Kurangi waktu analisis berlebih dan mulailah melangkah lebih cepat','Fokus pada proses dan pembelajaran, bukan hanya hasil akhir','Latih keterbukaan dalam menerima masukan dari orang-orang tepercaya','Kenali batasmu dan beri dirimu izin untuk tidak selalu sempurna'],
+            ['Bebaskan dirimu dari tekanan harus sempurna dalam setiap hal','Ambil keputusan dengan informasi yang cukup, bukan yang lengkap','Jadikan setiap langkah maju sebagai pencapaian yang layak disyukuri','Ubah cara pandang terhadap kritik menjadi bahan bakar perbaikan diri','Sesuaikan ekspektasi agar kamu dapat menikmati prosesnya']
         ]
     },
     D: {
         name: 'PHLEGMATIS', color: '#3498db', icon: '😌',
         tagline: 'Si Pendamai yang Tenang',
-        description: 'Introvert, tenang, {dan|serta} damai. Suka harmoni {dan|serta} menghindari konflik.',
-        characteristics: ['Tenang {dan|serta} sabar','Pendamai {dan|serta} diplomatik','Pendengar yang baik','Stabil {dan|serta} konsisten','Tidak suka konflik','Santai {dan|serta} easy-going'],
-        strengths: ['{Kemampuan|Kecakapan} diplomasi','Sabar {dan|serta} tenang','Pendengar yang baik','Konsisten {dan|serta} stabil','{Mudah|Gampang} bergaul'],
-        weaknesses: ['Kurang inisiatif','Terlalu pasif','Sulit {membuat|menciptakan} keputusan','Menghindari konfrontasi','Kurang ambisi'],
+        description: 'Introvert, tenang, dan damai. Suka harmoni dan menghindari konflik.',
+        characteristics: ['Tenang dan sabar','Pendamai dan diplomatik','Pendengar yang baik','Stabil dan konsisten','Tidak suka konflik','Santai dan easy-going'],
+        strengths: ['Kemampuan diplomasi','Sabar dan tenang','Pendengar yang baik','Konsisten dan stabil','Mudah bergaul'],
+        weaknesses: ['Kurang inisiatif','Terlalu pasif','Sulit membuat keputusan','Menghindari konfrontasi','Kurang ambisi'],
         strengthsPool: [
-            ['{Kemampuan|Kecakapan} diplomasi yang baik','Sabar {dan|serta} tenang','Pendengar yang baik','Konsisten {dan|serta} stabil','{Mudah|Gampang} bergaul'],
-            ['Pandai meredakan konflik','Tidak {mudah|gampang} terpancing emosi','Membuat orang nyaman bercerita','Kinerja yang stabil {dan|serta} andal','Ramah di berbagai lingkungan'],
-            ['Pendekatan diplomatik yang elegan','Tenang dalam situasi tekanan','Pendengar aktif yang empatik','{Dapat|Bisa|Mampu} diandalkan jangka panjang','{Mudah|Gampang} akrab dengan siapa saja']
+            ['Kemampuan diplomasi yang baik','Sabar dan tenang','Pendengar yang baik','Konsisten dan stabil','Mudah bergaul'],
+            ['Pandai meredakan konflik','Tidak mudah terpancing emosi','Membuat orang nyaman bercerita','Kinerja yang stabil dan andal','Ramah di berbagai lingkungan'],
+            ['Pendekatan diplomatik yang elegan','Tenang dalam situasi tekanan','Pendengar aktif yang empatik','Dapat diandalkan jangka panjang','Mudah akrab dengan siapa saja']
         ],
         weaknessesPool: [
-            ['Kurang inisiatif','Terlalu pasif','Sulit {membuat|menciptakan} keputusan','Menghindari konfrontasi','Kurang ambisi'],
+            ['Kurang inisiatif','Terlalu pasif','Sulit membuat keputusan','Menghindari konfrontasi','Kurang ambisi'],
             ['Jarang bertindak tanpa diminta','Cenderung menunggu situasi','Keputusan sering tertunda','Menghindari konflik yang perlu diselesaikan','Motivasi diri masih perlu diperkuat'],
             ['Inisiatif kurang terlihat','Terlalu santai dalam situasi kritis','Lambat dalam mengambil keputusan','Mengorbankan solusi demi kenyamanan','Potensi belum dimaksimalkan']
         ],
         careers: ['Counselor','Mediator','HR','Customer Service','Nurse','Social Worker'],
         tipsPool: [
-            ['{Latih|Asah} diri {untuk|guna} mengambil inisiatif tanpa {harus|wajib} menunggu diminta','Hadapi konflik yang perlu diselesaikan dengan kepala dingin {dan|serta} hati terbuka','Tetapkan tujuan jangka pendek yang spesifik {agar|supaya} {mudah|gampang} diukur {dan|serta} dicapai','{Latih|Asah} {kemampuan|kecakapan} pengambilan keputusan dengan mulai dari pilihan-pilihan kecil','Coba hal-hal baru sesekali {untuk|guna} memperluas wawasan {dan|serta} kemampuanmu'],
-            ['Beranikan diri {untuk|guna} memulai sesuatu tanpa menunggu momen yang tepat','Jangan biarkan ketidaknyamanan menghalangimu dari menyelesaikan masalah {penting|krusial}','{Buat|Ciptakan} rencana dengan target yang jelas {agar|supaya} langkahmu lebih terarah','Biasakan {membuat|menciptakan} keputusan tepat waktu meskipun belum sempurna','Keluar dari rutinitas sesekali {untuk|guna} menemukan potensi baru dalam dirimu'],
-            ['Jadilah orang yang pertama bertindak dalam situasi yang membutuhkan solusi','{Selesaikan|Tuntaskan} konflik yang ada sebelum berkembang menjadi masalah yang lebih besar','Tuliskan tujuanmu secara konkret {agar|supaya} lebih {mudah|gampang} diperjuangkan {setiap|tiap} hari','Percayai pertimbanganmu sendiri {dan|serta} latih keberanian dalam memutuskan','Tantang dirimu dengan pengalaman baru yang {dapat|bisa|mampu} memperkaya perspektifmu']
+            ['Latih diri untuk mengambil inisiatif tanpa harus menunggu diminta','Hadapi konflik yang perlu diselesaikan dengan kepala dingin dan hati terbuka','Tetapkan tujuan jangka pendek yang spesifik agar mudah diukur dan dicapai','Latih kemampuan pengambilan keputusan dengan mulai dari pilihan-pilihan kecil','Coba hal-hal baru sesekali untuk memperluas wawasan dan kemampuanmu'],
+            ['Beranikan diri untuk memulai sesuatu tanpa menunggu momen yang tepat','Jangan biarkan ketidaknyamanan menghalangimu dari menyelesaikan masalah penting','Buat rencana dengan target yang jelas agar langkahmu lebih terarah','Biasakan membuat keputusan tepat waktu meskipun belum sempurna','Keluar dari rutinitas sesekali untuk menemukan potensi baru dalam dirimu'],
+            ['Jadilah orang yang pertama bertindak dalam situasi yang membutuhkan solusi','Selesaikan konflik yang ada sebelum berkembang menjadi masalah yang lebih besar','Tuliskan tujuanmu secara konkret agar lebih mudah diperjuangkan setiap hari','Percayai pertimbanganmu sendiri dan latih keberanian dalam memutuskan','Tantang dirimu dengan pengalaman baru yang dapat memperkaya perspektifmu']
         ]
     }
 };
@@ -947,53 +831,50 @@ function seededRandom(seed) {
     };
 }
 
-// Resolve spintax {opsi1|opsi2} di tiap kalimat sebuah array, pakai rng yang sama
-// (kelanjutan dari rng yang dipakai untuk pilih versi + acak urutan) supaya tetap
-// deterministik per seed di mode konsisten, dan beda tiap generate di mode acak.
-function resolveSpintaxArr(arr, rng) {
-    const PE = window.PsikogramEngine;
-    if (!PE || !PE.parseSpintax) return arr;
-    return arr.map(s => (typeof s === 'string' ? PE.parseSpintax(s, rng) : s));
-}
-
 function getVariasiTips(temperamenKey, token) {
-    const pool = TEMPERAMENTS[temperamenKey].tipsPool;
-    const rng  = getRandFn(token + temperamenKey);
-    const varIdx = Math.floor(rng() * pool.length);
+    const pool  = TEMPERAMENTS[temperamenKey].tipsPool;
+    let h = 0;
+    for (let i = 0; i < token.length; i++) h = Math.imul(31, h) + token.charCodeAt(i) | 0;
+    const varIdx = Math.abs(h) % pool.length;
     const tips   = [...pool[varIdx]];
+    const rng = seededRandom(token + temperamenKey);
     for (let i = tips.length - 1; i > 0; i--) {
         const j = Math.floor(rng() * (i + 1));
         [tips[i], tips[j]] = [tips[j], tips[i]];
     }
-    return resolveSpintaxArr(tips, rng);
+    return tips;
 }
 
 function getVariasiVak(vakKey, type, token) {
     const pool = LEARNING_STYLES[vakKey][type + 'Pool'];
     if (!pool) return LEARNING_STYLES[vakKey][type === 'characteristics' ? 'characteristics' : 'tips'] || [];
     const seed = token + vakKey + type;
-    const rng  = getRandFn(seed);
-    const varIdx = Math.floor(rng() * pool.length);
-    const items   = [...pool[varIdx]];
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+    const varIdx = Math.abs(h) % pool.length;
+    const items  = [...pool[varIdx]];
+    const rng = seededRandom(seed);
     for (let i = items.length - 1; i > 0; i--) {
         const j = Math.floor(rng() * (i + 1));
         [items[i], items[j]] = [items[j], items[i]];
     }
-    return resolveSpintaxArr(items, rng);
+    return items;
 }
 
 function getVariasiTempAttr(tempKey, type, token) {
     const pool = TEMPERAMENTS[tempKey][type + 'Pool'];
     if (!pool) return TEMPERAMENTS[tempKey][type] || [];
     const seed = token + tempKey + type;
-    const rng  = getRandFn(seed);
-    const varIdx = Math.floor(rng() * pool.length);
-    const items   = [...pool[varIdx]];
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+    const varIdx = Math.abs(h) % pool.length;
+    const items  = [...pool[varIdx]];
+    const rng = seededRandom(seed);
     for (let i = items.length - 1; i > 0; i--) {
         const j = Math.floor(rng() * (i + 1));
         [items[i], items[j]] = [items[j], items[i]];
     }
-    return resolveSpintaxArr(items, rng);
+    return items;
 }
 
 // =========================================================
@@ -1384,29 +1265,6 @@ async function fetchSourceData() {
     }
     // all
     return await fetchAllSource();
-}
-
-// =========================================================
-// RESOLVE VARIASI: proses spintax {opsi1|opsi2|opsi3} di semua string
-// leaf dalam sebuah objek/array secara rekursif (mutasi in-place).
-// Dipakai untuk x_13 (karakter/potensi/karir/asmara) yang teks-nya
-// berasal dari config statis di masing-masing engine (sudah diberi
-// tanda spintax), supaya hasil akhirnya bervariasi tapi tetap
-// konsisten selama rand() yang sama dipakai berurutan (seed dari id_x).
-// =========================================================
-function resolveVariasi(node, rand) {
-    if (typeof node === 'string') {
-        return window.PsikogramEngine.parseSpintax(node, rand);
-    }
-    if (Array.isArray(node)) {
-        for (let i = 0; i < node.length; i++) node[i] = resolveVariasi(node[i], rand);
-        return node;
-    }
-    if (node && typeof node === 'object') {
-        for (const k of Object.keys(node)) node[k] = resolveVariasi(node[k], rand);
-        return node;
-    }
-    return node;
 }
 
 // =========================================================
@@ -1828,8 +1686,7 @@ function mapData(rawRow) {
     // Pastikan engine tersedia
     if (!window.PsikogramEngine) throw new Error('PsikogramEngine belum dimuat. Pastikan psikogram-engine-json.js tersedia.');
 
-    const randPsikogram = getRandFn(String(rawRow.id_x) + '_psikogram');
-    const hasil = window.PsikogramEngine.hitungPsikogram(rawRow, rawRow.id_x, randPsikogram);
+    const hasil = window.PsikogramEngine.hitungPsikogram(rawRow, rawRow.id_x);
     const { kekuatanKelemahan, minatData, aspekPsikologis } = window.PsikogramEngine;
     const {
         identitas, IQ, resultScores, konsistensi,
@@ -1962,15 +1819,6 @@ function mapData(rawRow) {
     if (potensi.x13)  x13_obj.potensi  = potensi.x13;
     if (karir.x13)    x13_obj.karir    = karir.x13;
     if (asmara.x13)   x13_obj.asmara   = asmara.x13;
-
-    // ── Proses variasi spintax {opsi1|opsi2|opsi3} di seluruh kalimat x_13 ──
-    // Seed dari id_x → acak antar peserta, tapi konsisten untuk id_x yang sama
-    // setiap kali di-generate ulang (mis. saat transfer diulang / recap dibuka lagi).
-    const PE = window.PsikogramEngine;
-    if (PE && PE.parseSpintax) {
-        const randX13 = getRandFn(String(rawRow.id_x) + '_x13');
-        resolveVariasi(x13_obj, randX13);
-    }
 
     return {
         x_01 : kel1,          // kode peserta
@@ -2299,22 +2147,6 @@ async function startTransfer() {
 
     for (const row of toTransfer) {
         const pesertaId = row.srcRow.id_x;
-
-        // Hitung ulang mapData() FRESH tepat sebelum kirim — jangan pakai cache preview.
-        // Ini penting untuk mode "acak": tiap kali tombol Transfer diklik (termasuk ke
-        // tabel tujuan berbeda), kalimat harus dihitung baru, bukan pakai hasil preview
-        // yang mungkin sudah lama/dari klik sebelumnya. Di mode "konsisten" hasilnya akan
-        // tetap sama persis (seeded by id_x), jadi aman dihitung ulang di kedua mode.
-        try {
-            row.mapped = mapData(row.srcRow);
-        } catch (e) {
-            log(`❌ GAGAL hitung ulang id_x ${pesertaId} — ${e.message}`, 'err');
-            fail++;
-            done++;
-            updateProgress(done, ok, fail, total);
-            continue;
-        }
-
         const kode = row.mapped.x_01;
         try {
             let result;
