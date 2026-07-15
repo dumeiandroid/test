@@ -956,14 +956,6 @@ function resolveSpintaxArr(arr, rng) {
     return arr.map(s => (typeof s === 'string' ? PE.parseSpintax(s, rng) : s));
 }
 
-// Sama seperti resolveSpintaxArr, tapi untuk satu string tunggal (mis. deskripsi/tagline)
-// yang tidak lewat pool getVariasi*, supaya spintax di dalamnya tidak lolos mentah ke x_18.
-function resolveSpintaxStr(str, rng) {
-    const PE = window.PsikogramEngine;
-    if (!PE || !PE.parseSpintax || typeof str !== 'string') return str;
-    return PE.parseSpintax(str, rng);
-}
-
 function getVariasiTips(temperamenKey, token) {
     const pool = TEMPERAMENTS[temperamenKey].tipsPool;
     const rng  = getRandFn(token + temperamenKey);
@@ -1035,7 +1027,7 @@ function hitungVakTemperamen(rawRow, token) {
         out.vak = {
             dominan       : vakDom,
             nama          : vakS.name,
-            deskripsi     : resolveSpintaxStr(vakS.description, getRandFn(token + vakDom + 'deskripsi')),
+            deskripsi     : vakS.description,
             skor          : vakSkor,
             persentase    : vakPct,
             total         : total,
@@ -1062,8 +1054,8 @@ function hitungVakTemperamen(rawRow, token) {
         out.temperamen = {
             dominan    : tempDom,
             nama       : tempS.name,
-            tagline    : resolveSpintaxStr(tempS.tagline, getRandFn(token + tempDom + 'tagline')),
-            deskripsi  : resolveSpintaxStr(tempS.description, getRandFn(token + tempDom + 'deskripsi')),
+            tagline    : tempS.tagline,
+            deskripsi  : tempS.description,
             skor       : tempSkor,
             persentase : tempPct,
             total      : tempTotal,
