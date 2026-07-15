@@ -364,6 +364,7 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
         📅 Peserta Aktif
         <span style="background:#fef3c7;color:#d97706;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;" id="todayBadgeLabel">Hari Ini</span>
         <span style="background:#dcfce7;color:#166534;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;" id="selesaiBadge">✅ 0 selesai</span>
+        <span onclick="bukaPopupBelumSelesai()" style="background:#fee2e2;color:#b91c1c;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;cursor:pointer;" id="belumSelesaiBadge" title="Klik untuk lihat daftar nama">⏳ 0 belum selesai</span>
       </div>
       <div class="info-bar">
         <!-- kosong, info sudah di topnav -->
@@ -513,6 +514,14 @@ function renderJsonBio(raw) {
             <span style="color:var(--muted);font-size:12px;"> ${escHtml([usia,pend,jk].filter(Boolean).join(' · '))}</span>
         </button>`;
     } catch(e) { return escHtml(raw); }
+}
+
+function extractNamaBio(raw) {
+    if (!raw || raw.trim() === '') return '(tanpa nama)';
+    try {
+        const obj = JSON.parse(raw);
+        return obj.nama || obj.bioNama || '(tanpa nama)';
+    } catch(e) { return '(tanpa nama)'; }
 }
 
 function isPesertaSelesai(raw06, raw07) {
@@ -830,7 +839,8 @@ function buildRows(data) {
             x_09:   renderViolation(row.x_09 || ''),
             aksi:   renderAksi(row.x_04 || '', row.id_x || ''),
             tgl:    `<span style="font-size:12px;color:var(--muted)">${getDateFromX02(row.x_02)}</span>`,
-            _selesai: isPesertaSelesai(row.x_06, row.x_07)
+            _selesai: isPesertaSelesai(row.x_06, row.x_07),
+            _nama: extractNamaBio(row.x_02)
         }));
 }
 
@@ -901,6 +911,9 @@ async function update() {
 
         const jumlahSelesai = rows.filter(r => r._selesai).length;
         document.getElementById('selesaiBadge').textContent = `✅ ${jumlahSelesai} selesai`;
+
+        _belumSelesaiList = rows.filter(r => !r._selesai).map(r => ({ nama: r._nama, token: r.x_01, id_x: r.id_x }));
+        document.getElementById('belumSelesaiBadge').textContent = `⏳ ${_belumSelesaiList.length} belum selesai`;
 
         if (hash === lastHash && testerTable) return; // tidak ada perubahan
         lastHash = hash;
@@ -1142,6 +1155,21 @@ const INSTR_WHO_BASE  = 'https://cipta.my.id/who1/';
 // ═══════════════════════════════════════════════════════════════
 let _biodataStore = [];
 let _progresStore = [];
+let _belumSelesaiList = [];
+
+function bukaPopupBelumSelesai() {
+    const body = document.getElementById('popupBelumSelesaiBody');
+    if (_belumSelesaiList.length === 0) {
+        body.innerHTML = '<p style="color:#166534;font-weight:700;">🎉 Semua peserta sudah selesai!</p>';
+    } else {
+        body.innerHTML = `
+            <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Total <strong>${_belumSelesaiList.length}</strong> peserta belum selesai (belum ada progres EPPS):</p>
+            <ol style="padding-left:20px;margin:0;">
+                ${_belumSelesaiList.map(p => `<li style="font-size:13px;padding:4px 0;border-bottom:1px solid #f1f5f9;"><strong>${escHtml(p.nama)}</strong> <span style="color:var(--muted);font-size:12px;">(${escHtml(p.token)} · ID ${escHtml(p.id_x)})</span></li>`).join('')}
+            </ol>`;
+    }
+    openModal('modalBelumSelesai');
+}
 
 // ── Popup Biodata (klik nama di kolom Biodata) ──
 function bukaPopupBiodata(idx) {
@@ -1754,6 +1782,18 @@ function renderInstruksiDetail(data, key) {
     <div id="popupProgresBody"></div>
     <div style="margin-top:16px;display:flex;justify-content:flex-end;">
       <button class="btn btn-outline" onclick="closeModal('modalProgres')" style="width:auto;padding:8px 20px;">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL BELUM SELESAI ══ -->
+<div class="modal-overlay" id="modalBelumSelesai" style="z-index:10400;">
+  <div class="modal-box" style="max-width:480px;width:96%;max-height:90vh;overflow-y:auto;">
+    <button class="modal-close" onclick="closeModal('modalBelumSelesai')">×</button>
+    <h2 style="font-size:16px;margin-bottom:16px;color:#b91c1c;">⏳ Peserta Belum Selesai</h2>
+    <div id="popupBelumSelesaiBody"></div>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeModal('modalBelumSelesai')" style="width:auto;padding:8px 20px;">Tutup</button>
     </div>
   </div>
 </div>
