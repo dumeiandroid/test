@@ -394,47 +394,10 @@
         .select-all-wrap {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 10px;
             font-size: 13px;
             color: #555;
-        }
-        .select-all-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .preview-search-wrap {
-            position: relative;
-            min-width: 220px;
-        }
-        .preview-search-wrap input {
-            width: 100%;
-            padding: 7px 30px 7px 12px;
-            border: 1px solid #d5d5e0;
-            border-radius: 8px;
-            font-size: 13px;
-            outline: none;
-            transition: border-color .15s;
-        }
-        .preview-search-wrap input:focus {
-            border-color: #6c63ff;
-        }
-        .preview-search-wrap .search-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 13px;
-            color: #999;
-            pointer-events: none;
-        }
-        .preview-search-count {
-            font-size: 11px;
-            color: #999;
-            margin-top: 2px;
         }
 
         /* ── Empty state ── */
@@ -724,17 +687,8 @@
 
             <!-- Select All -->
             <div class="select-all-wrap">
-                <div class="select-all-left">
-                    <input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)">
-                    <label for="chk-all" style="cursor:pointer;">Pilih semua data dalam tabel</label>
-                </div>
-                <div>
-                    <div class="preview-search-wrap">
-                        <input type="text" id="preview-search" placeholder="Cari id_x, kode, atau nama..." oninput="filterPreviewTable(this.value)">
-                        <span class="search-icon">🔍</span>
-                    </div>
-                    <div class="preview-search-count" id="preview-search-count"></div>
-                </div>
+                <input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)">
+                <label for="chk-all" style="cursor:pointer;">Pilih semua data dalam tabel</label>
             </div>
 
             <!-- Table Preview -->
@@ -2066,31 +2020,11 @@ async function fetchPreview(mode) {
     const chkAll       = document.getElementById('chk-all');
 
     cardPreview.style.display = 'none';
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:24px; color:#777;">
-        <div id="preview-progress-wrap" style="max-width:320px; margin:0 auto;">
-            <div style="font-size:13px; margin-bottom:8px;" id="preview-progress-label">Mengambil data sumber...</div>
-            <div style="background:#eee; border-radius:8px; height:10px; overflow:hidden;">
-                <div id="preview-progress-bar" style="background:#5F4EDA; height:100%; width:0%; transition:width .15s;"></div>
-            </div>
-            <div style="font-size:12px; color:#999; margin-top:6px;" id="preview-progress-count">0 / 0</div>
-        </div>
-    </td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px; color:#777;"><div class="spinner-inline" style="border-color:rgba(95,78,218,.3); border-top-color:#5F4EDA; width:24px; height:24px;"></div> Mengambil data...</td></tr>';
     cardPreview.style.display = 'block';
     emptyState.style.display = 'none';
     btnTransfer.disabled = true;
     chkAll.checked = false;
-
-    // Helper untuk update progres di dalam tbody
-    function updatePreviewProgress(done, total, label) {
-        const labelEl = document.getElementById('preview-progress-label');
-        const barEl   = document.getElementById('preview-progress-bar');
-        const countEl = document.getElementById('preview-progress-count');
-        if (!labelEl || !barEl || !countEl) return;
-        if (label) labelEl.textContent = label;
-        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-        barEl.style.width = pct + '%';
-        countEl.textContent = `${done} / ${total}`;
-    }
 
     try {
         // 1. Ambil data sumber
@@ -2104,24 +2038,19 @@ async function fetchPreview(mode) {
 
         // 2. Hitung mapping untuk setiap baris
         const rows = [];
-        updatePreviewProgress(0, srcData.length, 'Memproses data peserta...');
-        for (let i = 0; i < srcData.length; i++) {
-            const raw = srcData[i];
+        for (const raw of srcData) {
             try {
                 const mapped = mapData(raw);
                 rows.push({ srcRow: raw, mapped, existingId: null, status: 'pending', checked: false });
             } catch(e) {
                 rows.push({ srcRow: raw, mapped: null, existingId: null, status: 'error', errMsg: e.message, checked: false });
             }
-            updatePreviewProgress(i + 1, srcData.length, 'Memproses data peserta...');
         }
 
         // 3. Cek apakah x_01 sudah ada di rekap_nilai1
         //    Kumpulkan semua kode x_01 unik, cek satu per satu
         const kodePeserta = [...new Set(rows.filter(r => r.mapped).map(r => r.mapped.x_01))];
-        updatePreviewProgress(0, kodePeserta.length, 'Mengecek status data di rekap_nilai1...');
-        for (let i = 0; i < kodePeserta.length; i++) {
-            const kode = kodePeserta[i];
+        for (const kode of kodePeserta) {
             try {
                 const cek = await apiGet(CFG.DST_TABLE, { x_01_eq: kode }, true, true);
                 if (cek.success && cek.data && cek.data.length > 0) {
@@ -2141,7 +2070,6 @@ async function fetchPreview(mode) {
                     r.status = 'new'; // anggap baru jika gagal cek
                 });
             }
-            updatePreviewProgress(i + 1, kodePeserta.length, 'Mengecek status data di rekap_nilai1...');
         }
 
         previewRows = rows;
@@ -2170,11 +2098,6 @@ function renderPreviewTable() {
         const tr = document.createElement('tr');
         tr.id = `row-${idx}`;
         if (row.checked) tr.classList.add('selected');
-        tr.dataset.search = [
-            row.srcRow.id_x,
-            row.mapped ? row.mapped.x_01 : '',
-            row.mapped ? (() => { try { return JSON.parse(row.mapped.x_02).nama; } catch { return ''; } })() : ''
-        ].join(' ').toLowerCase();
 
         const statusBadge = row.status === 'new'    ? '<span class="badge badge-new">🆕 Baru</span>'   :
                             row.status === 'update' ? '<span class="badge badge-update">✏️ Update</span>' :
@@ -2232,37 +2155,6 @@ function renderPreviewTable() {
             tbody.appendChild(errTr);
         }
     });
-
-    // Terapkan ulang filter pencarian yang sedang aktif (jika ada)
-    const searchInput = document.getElementById('preview-search');
-    filterPreviewTable(searchInput ? searchInput.value : '');
-}
-
-// =========================================================
-// SEARCH / FILTER PREVIEW TABLE
-// =========================================================
-function filterPreviewTable(keyword) {
-    const q = (keyword || '').trim().toLowerCase();
-    const tbody = document.getElementById('preview-tbody');
-    const rows = tbody ? Array.from(tbody.querySelectorAll('tr[id^="row-"]')) : [];
-    let visibleCount = 0;
-
-    rows.forEach(tr => {
-        const match = !q || (tr.dataset.search || '').includes(q);
-        tr.style.display = match ? '' : 'none';
-        if (match) visibleCount++;
-
-        // Sembunyikan juga baris error yang menyertai row terkait
-        const next = tr.nextElementSibling;
-        if (next && !next.id) {
-            next.style.display = match ? '' : 'none';
-        }
-    });
-
-    const countEl = document.getElementById('preview-search-count');
-    if (countEl) {
-        countEl.textContent = q ? `${visibleCount} dari ${rows.length} data cocok` : '';
-    }
 }
 
 // =========================================================
@@ -2283,12 +2175,10 @@ function toggleRow(idx, checked) {
 function toggleSelectAll(checked) {
     previewRows.forEach((row, idx) => {
         if (row.status === 'error') return;
-        const tr = document.getElementById(`row-${idx}`);
-        // Jika sedang ada pencarian aktif, hanya pilih baris yang terlihat (cocok filter)
-        if (tr && tr.style.display === 'none') return;
         row.checked = checked;
         const chk = document.getElementById(`chk-${idx}`);
         if (chk) chk.checked = checked;
+        const tr = document.getElementById(`row-${idx}`);
         if (tr) tr.classList.toggle('selected', checked);
     });
     updateStats();
