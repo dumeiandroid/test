@@ -708,7 +708,7 @@ const _cand1=_folderParts[_folderParts.length-1]; // elemen terakhir (kasus ada 
 const _cand2=_folderParts[_folderParts.length-2]; // elemen sebelum terakhir (kasus URL berakhir di file, misal index.html)
 const _folderSrv=/^\d+$/.test(_cand1)?parseInt(_cand1):(/^\d+$/.test(_cand2)?parseInt(_cand2):NaN);
 const SERVER = (_folderSrv>=1&&_folderSrv<=SERVERS.length) ? _folderSrv : SERVER_DEFAULT;
-const ACTIVE_DOMAIN = (SERVERS[SERVER-1] || SERVERS[0]).domain;
+const ACTIVE_DOMAIN = (SERVERS[SERVER-1] || SERVERS[SERVER_DEFAULT-1] || SERVERS[1] || SERVERS[0]).domain;
 const API_W=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis6`;
 const API_R=`https://${ACTIVE_DOMAIN}/api/contacts_filter_dinamis7`;
 // Paket alat_tes: ikut flag CONFIG.database.paketSelaluServer1.
@@ -2298,6 +2298,17 @@ let _cdInterval=null;
 let _kontrolInfo={aktif:false,waktu_mulai:'',link:''};
 
 async function cekKontrol(){
+  // Paket yang ada di CONFIG.paket.autoAktifList (mis. 'eduxecla') dimaksudkan
+  // SELALU TERBUKA otomatis, tidak bergantung pada saklar admin_kontrol sama
+  // sekali — konsisten dengan IS_AUTO_AKTIF yang sudah dipakai untuk melewati
+  // pengecekan status per-peserta di tempat lain (lihat window.onload). Sebelum
+  // perbaikan ini, paket auto-aktif tetap ikut nge-cek admin_kontrol, jadi kalau
+  // entrinya belum ada di sana (atau belum diaktifkan), layar "Tes Belum Dibuka"
+  // tetap muncul walau paketnya sudah termasuk daftar auto-aktif.
+  if(IS_AUTO_AKTIF){
+    _kontrolInfo={aktif:true,waktu_mulai:'',link:''};
+    return _kontrolInfo;
+  }
   try{
     const res=await aF(`${API_R_KONTROL}?table=${TBL_K}&id_x=1`,{headers:{'X-Custom-Auth':AUTH}});
     if(!res.success||!res.data)return{aktif:false,waktu_mulai:'',link:''};
