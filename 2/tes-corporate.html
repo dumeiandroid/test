@@ -583,10 +583,10 @@ const CONFIG = {
   kreplinOverride: {
     // true  = pakai detikPerKolom di bawah ini (mengabaikan nilai dari kreplin.txt).
     // false = pakai durasi asli dari file soal (biasanya 30 detik/kolom).
-    aktif: true,
+    aktif: false,
     // Durasi per kolom (detik) saat override aktif. Contoh: 3 = tiap kolom cuma 3 detik,
     // supaya testing alur cepat tanpa harus menunggu 45 kolom x 30 detik.
-    detikPerKolom: true,
+    detikPerKolom: 30,
   },
 
   // ── 3. SERVER (backend Cloudflare Pages) ─────────────────────
