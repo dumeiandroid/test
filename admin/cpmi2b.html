@@ -349,11 +349,6 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
         </div>
         <span class="info-pill pill-yellow" id="todayCount">0 peserta</span>
         <span class="info-pill pill-purple" id="todayLastUpdate">-</span>
-        <span id="batchSelectorWrap" style="display:none;align-items:center;gap:6px;">
-            <select id="batchSelector" onchange="changeBatch(this.value)"
-                style="padding:6px 10px;border:2px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;outline:none;cursor:pointer;">
-            </select>
-        </span>
         <button class="btn btn-outline btn-sm" onclick="doRefresh()">🔄 Refresh</button>
         <button class="btn btn-sm" onclick="doLogout()"
           style="background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:700;">
@@ -385,22 +380,8 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
         onchange="onDateChange(this.value)">
       <button class="btn btn-outline btn-sm" onclick="setToday()" id="btnHariIni">Hari Ini</button>
       <button class="btn btn-outline btn-sm" onclick="setAllDates()" id="btnAll">All</button>
-      <button class="btn btn-outline btn-sm" onclick="toggleTabelInput()" id="btnGantiTabel">🗄 Ganti Tabel (<span id="tabelAktifLabel">nilai1_json</span>)</button>
       <!-- hidden tabel input masih ada untuk fungsi loadTable() -->
       <input type="text" id="tableInput" value="nilai1_json" style="display:none">
-    </div>
-
-    <!-- Box ganti tabel (pola sama seperti finishing.html / index_rekap.html) -->
-    <div id="gantiTabelBox" style="display:none; margin-bottom:10px; padding:14px; border:2px solid var(--border); border-radius:10px; background:#fff;">
-      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">GANTI TABEL SUMBER — server aktif: <span id="gantiTabelSrvLabel"></span></div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        <input type="text" id="inputTabelBaru" placeholder="Nama tabel (contoh: nilai1_json)"
-          style="flex:1; min-width:200px; padding:8px 12px; border:2px solid var(--border); border-radius:8px; font-size:13px; outline:none; font-family:inherit;"
-          onkeydown="if(event.key==='Enter') terapkanTabelBaru()">
-        <button class="btn btn-primary btn-sm" onclick="terapkanTabelBaru()">Terapkan</button>
-        <button class="btn btn-outline btn-sm" onclick="toggleTabelInput()">Batal</button>
-      </div>
-      <div id="tabelList" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;"></div>
     </div>
 
     <p class="note-bar">
@@ -462,9 +443,8 @@ function switchSrcServer(idx) {
     try { localStorage.setItem(SRV_STORAGE_KEY, String(idx)); } catch (e) {}
     renderSrvChips();
     // Reset cache & reload data jika sudah login
-    lastHash   = null;
-    rawCache   = [];
-    dataOffset = 0;
+    lastHash = null;
+    rawCache = [];
     if (testerTable) { testerTable.destroy(); testerTable = null; }
     document.getElementById('todayContainer').innerHTML =
         '<div class="loading-block"><div class="spinner"></div><p>Memuat dari server baru...</p></div>';
@@ -494,13 +474,6 @@ let testerInterval = null;
 let rawCache       = [];
 let lastHash       = null;
 let tableName      = 'nilai1_json';
-
-// ── Batch/offset untuk data > 500 baris ──
-// Backend default LIMIT 500 (ORDER BY id_x DESC) → hanya 500 baris terbaru yang tampil.
-// Berguna terutama saat mode "All" aktif, karena bisa saja total data > 500.
-let dataOffset     = 0;
-let dataTotal      = 0;
-const BATCH_SIZE   = 500;
 
 // ============================================================
 // HELPERS
@@ -838,60 +811,11 @@ function renderInsentif(x02Raw) {
 }
 // ============================================================
 async function fetchData() {
-    const url = `${API_BASE}?table=${encodeURIComponent(tableName)}&limit=${BATCH_SIZE}&offset=${dataOffset}`;
-    const res  = await fetch(url, {
+    const res  = await fetch(`${API_BASE}?table=${encodeURIComponent(tableName)}`, {
         headers: { 'X-Custom-Auth': AUTH_KEY }
     });
     const json = await res.json();
-    dataTotal = (json.success && typeof json.total === 'number') ? json.total : 0;
-    renderBatchSelector();
     return (json.success && json.data) ? json.data : [];
-}
-
-// ============================================================
-// BATCH SELECTOR — pilih 500 baris mana yang mau ditampilkan
-// ============================================================
-function renderBatchSelector() {
-    const wrap = document.getElementById('batchSelectorWrap');
-    if (!wrap) return;
-
-    if (dataTotal <= BATCH_SIZE) {
-        wrap.style.display = 'none';
-        return;
-    }
-    wrap.style.display = 'inline-flex';
-
-    const numBatches = Math.ceil(dataTotal / BATCH_SIZE);
-    const sel = document.getElementById('batchSelector');
-    if (!sel) return;
-
-    // Hanya rebuild <option> kalau jumlah batch berubah, supaya selection tidak reset tiap polling
-    if (parseInt(sel.dataset.numBatches || '0') !== numBatches) {
-        sel.dataset.numBatches = numBatches;
-        let opts = '';
-        for (let i = 0; i < numBatches; i++) {
-            const off    = i * BATCH_SIZE;
-            const label  = i === 0
-                ? `📥 500 Terbaru`
-                : `⏮ 500 Sebelumnya (batch ${i + 1})`;
-            opts += `<option value="${off}"${off === dataOffset ? ' selected' : ''}>${label}</option>`;
-        }
-        sel.innerHTML = opts;
-    } else {
-        sel.value = String(dataOffset);
-    }
-}
-
-function changeBatch(offsetVal) {
-    const off = parseInt(offsetVal) || 0;
-    if (off === dataOffset) return;
-    dataOffset = off;
-    lastHash   = null;
-    rawCache   = [];
-    if (testerTable) { testerTable.destroy(); testerTable = null; }
-    document.getElementById('todayContainer').innerHTML =
-        '<div class="loading-block"><div class="spinner"></div><p>Memuat batch data...</p></div>';
-    update();
 }
 
 // ============================================================
@@ -1024,64 +948,13 @@ async function update() {
 // KONTROL
 // ============================================================
 function loadTable() {
-    tableName  = document.getElementById('tableInput').value.trim() || 'nilai1_json';
-    lastHash   = null;
-    rawCache   = [];
-    dataOffset = 0;
+    tableName = document.getElementById('tableInput').value.trim() || 'nilai1_json';
+    lastHash  = null;
+    rawCache  = [];
     if (testerTable) { testerTable.destroy(); testerTable = null; }
     document.getElementById('todayContainer').innerHTML =
         '<div class="loading-block"><div class="spinner"></div><p>Memuat...</p></div>';
     update();
-    const lbl = document.getElementById('tabelAktifLabel');
-    if (lbl) lbl.textContent = tableName;
-}
-
-// ── Ganti tabel (pola sama seperti finishing.html / index_rekap.html) ──
-function toggleTabelInput() {
-    const box = document.getElementById('gantiTabelBox');
-    const isOpen = box.style.display !== 'none';
-    box.style.display = isOpen ? 'none' : 'block';
-    if (!isOpen) {
-        document.getElementById('inputTabelBaru').value = tableName;
-        document.getElementById('gantiTabelSrvLabel').textContent = SERVERS[activeSrvIdx].label + ' — ' + SERVERS[activeSrvIdx].domain;
-        document.getElementById('inputTabelBaru').focus();
-        loadTabelList();
-    }
-}
-
-function terapkanTabelBaru() {
-    const val = document.getElementById('inputTabelBaru').value.trim();
-    if (!val) return;
-    document.getElementById('gantiTabelBox').style.display = 'none';
-    document.getElementById('tableInput').value = val;
-    loadTable();
-}
-
-async function loadTabelList() {
-    try {
-        const res = await fetch(`${API_BASE}?action=list_tables`, {
-            headers: { 'X-Custom-Auth': AUTH_KEY }
-        });
-        const result = await res.json();
-        const container = document.getElementById('tabelList');
-        container.innerHTML = '';
-        (result.tables || []).forEach(t => {
-            const btn = document.createElement('button');
-            btn.textContent = t;
-            btn.style.cssText = `background:${t === tableName ? 'var(--primary)' : '#fff'};
-                color:${t === tableName ? '#fff' : 'var(--muted)'};
-                border:2px solid var(--border); border-radius:8px;
-                padding:5px 12px; font-size:12px; font-family:inherit;
-                cursor:pointer; transition:background .15s;`;
-            btn.onclick = () => {
-                document.getElementById('inputTabelBaru').value = t;
-                document.getElementById('gantiTabelBox').style.display = 'none';
-                document.getElementById('tableInput').value = t;
-                loadTable();
-            };
-            container.appendChild(btn);
-        });
-    } catch (e) { /* silent */ }
 }
 
 async function doRefresh() {
@@ -1178,7 +1051,6 @@ function loadSavedDate() {
 
 function onDateChange(val) {
     showAllDates = false;
-    dataOffset   = 0;
     localStorage.setItem(LS_DATE_KEY, val);
     updateDateBadge(val);
     lastHash = null;
@@ -1190,7 +1062,6 @@ function onDateChange(val) {
 
 function setToday() {
     showAllDates = false;
-    dataOffset   = 0;
     const today = todayString();
     document.getElementById('dateInput').value = today;
     onDateChange(today);
@@ -1198,7 +1069,6 @@ function setToday() {
 
 function setAllDates() {
     showAllDates = true;
-    dataOffset   = 0;
     updateDateBadge(null);
     lastHash = null;
     if (testerTable) { testerTable.destroy(); testerTable = null; }
