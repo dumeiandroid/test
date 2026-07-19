@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create New Token — Psikotest</title>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root {
     --primary: #667eea;
@@ -373,6 +372,11 @@ table.preview-tbl input[type="checkbox"] {
                 <input type="text" class="ctrl-input" id="tableInput" value="nilai1_json">
                 <div class="hint">Token akan dicek keunikannya ke tabel ini, dan saat "Simpan ke Server" juga akan diinsert ke tabel ini (kolom <code>x_01</code>).</div>
             </div>
+            <div class="form-group" id="digitInputGroup">
+                <label>Angka Setelah Nama</label>
+                <input type="text" inputmode="numeric" class="ctrl-input" id="numberSuffixInput" value="2" placeholder="misal: 2">
+                <div class="hint">Angka ini diketik langsung (bukan acak) dan disambung persis setelah nama depan. Contoh: nama "Budi Santoso" + angka "2" → token dasar <code>budi2</code>, lalu saat "Simpan ke Server" otomatis disambung <code>id_x</code> jadi token final (mis. <code>budi2153</code>). Boleh sama untuk banyak nama — id_x yang menjamin token final tetap unik.</div>
+            </div>
         </div>
     </div>
 
@@ -400,19 +404,6 @@ table.preview-tbl input[type="checkbox"] {
             <div class="paste-hint" id="pasteHint">Satu nama per baris. Baris kosong otomatis diabaikan.</div>
             <div class="paste-count" id="pasteCount" style="display:none;"></div>
         </div>
-
-        <div class="form-group" id="digitInputGroup" style="margin-top:14px;">
-            <label>Angka Setelah Nama</label>
-            <input type="text" inputmode="numeric" class="ctrl-input" id="numberSuffixInput" value="2" placeholder="misal: 2">
-            <div class="hint">Angka ini diketik langsung (bukan acak) dan disambung persis setelah nama depan. Contoh: nama "Budi Santoso" + angka "2" → token dasar <code>budi2</code>, lalu saat "Simpan ke Server" otomatis disambung <code>id_x</code> jadi token final (mis. <code>budi2153</code>). Boleh sama untuk banyak nama — id_x yang menjamin token final tetap unik.</div>
-        </div>
-
-        <div id="extraBlocksContainer"></div>
-
-        <div class="btn-row" id="tambahBlokRow" style="margin-top:2px;">
-            <button class="btn btn-outline btn-sm" type="button" onclick="tambahBlokNama()">➕ Tambah Daftar Nama Lain</button>
-        </div>
-        <div class="hint" id="tambahBlokHint" style="margin-top:-6px; margin-bottom:14px;">Gunakan ini kalau ada kelompok nama lain dengan angka suffix yang berbeda (misal kelompok pertama pakai angka 2, kelompok berikutnya pakai angka 3). Semua blok akan digabung jadi satu hasil saat "Generate Token" ditekan.</div>
 
         <div class="btn-row">
             <button class="btn btn-primary" id="btnProcess" onclick="processFile()" disabled>⚡ <span id="btnProcessLabel">Generate Token</span></button>
@@ -596,7 +587,6 @@ function resetStateForServerSwitch() {
   if (resultCard) resultCard.style.display = 'none';
   const logBox = document.getElementById('logBox');
   if (logBox) { logBox.innerHTML = ''; logBox.style.display = 'none'; }
-  hapusSemuaBlokTambahan();
 }
 
 renderSrvChips();
@@ -623,19 +613,6 @@ function onModeChange() {
     const lblSkip    = document.getElementById('statSkippedLabel');
     const pasteInput = document.getElementById('pasteInput');
     const pasteHint  = document.getElementById('pasteHint');
-    const tambahBlokRow = document.getElementById('tambahBlokRow');
-    const tambahBlokHint = document.getElementById('tambahBlokHint');
-    const extraBlocksContainer = document.getElementById('extraBlocksContainer');
-
-    if (srcMode === 'token') {
-        tambahBlokRow.style.display = 'none';
-        tambahBlokHint.style.display = 'none';
-        extraBlocksContainer.style.display = 'none';
-    } else {
-        tambahBlokRow.style.display = '';
-        tambahBlokHint.style.display = '';
-        extraBlocksContainer.style.display = '';
-    }
 
     if (srcMode === 'token') {
         digitGroup.style.display = 'none';
@@ -865,8 +842,6 @@ let rows = [];   // [{ idx, nama, token, status, statusLabel }]
 let existingTokensCache = new Set();   // token yg sudah ada di server (hasil fetch sekali)
 let srcMode = 'nama';   // 'nama' = generate token baru | 'token' = isi file sudah token, cek ke server
 let inputSource = 'upload';   // 'upload' = dari file | 'paste' = dari textarea
-let extraBlocks = [];      // [{ id, textareaId, numberId, displayIndex }] — blok tambahan (paste teks + angka)
-let extraBlockCounter = 0; // penomor unik id blok tambahan, tidak pernah reset walau blok dihapus
 
 /* ══════════════════════════════════════════════════════════════════
    UTIL
@@ -983,71 +958,7 @@ function escHtml(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   BLOK TAMBAHAN — Paste Teks + Angka Setelah Nama (khusus mode Nama Peserta)
-   Setiap blok independen: daftar nama sendiri + angka suffix sendiri.
-   Semua blok (blok utama + blok tambahan) digabung jadi satu hasil
-   saat tombol "Generate Token" ditekan.
-══════════════════════════════════════════════════════════════════ */
-function tambahBlokNama() {
-    extraBlockCounter++;
-    const id = extraBlockCounter;
-    const displayIndex = extraBlocks.length + 2; // blok utama = #1
-    const textareaId = `pasteInputExtra_${id}`;
-    const numberId   = `numberSuffixExtra_${id}`;
-
-    const wrap = document.createElement('div');
-    wrap.className = 'form-group extra-blok';
-    wrap.dataset.blokId = id;
-    wrap.style.cssText = 'border:2px dashed var(--border); border-radius:12px; padding:14px; margin-top:14px; margin-bottom:14px; position:relative; background:#fafbff;';
-    wrap.innerHTML = `
-        <button type="button" onclick="hapusBlokNama(${id})" title="Hapus blok ini"
-            style="position:absolute; top:10px; right:10px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; line-height:1;">✕</button>
-        <label class="blok-label">📋 Daftar Nama Tambahan #${displayIndex}</label>
-        <textarea class="ctrl-input" id="${textareaId}" style="width:100%; min-height:120px; font-family:'Consolas','Courier New',monospace; font-size:13px; resize:vertical; padding:12px; border:2px solid var(--border); border-radius:10px; outline:none; background:white;"
-            placeholder="Tempel daftar nama di sini, satu per baris...&#10;contoh:&#10;Rudi Hartono&#10;Dewi Lestari"></textarea>
-        <div class="hint" style="margin:5px 0 12px 0;">Satu nama per baris. Baris kosong otomatis diabaikan. Kosongkan blok ini kalau tidak jadi dipakai.</div>
-        <label>Angka Setelah Nama (untuk blok ini)</label>
-        <input type="text" inputmode="numeric" class="ctrl-input" id="${numberId}" placeholder="misal: 3">
-    `;
-    document.getElementById('extraBlocksContainer').appendChild(wrap);
-    extraBlocks.push({ id, textareaId, numberId, displayIndex });
-}
-
-function hapusBlokNama(id) {
-    const idx = extraBlocks.findIndex(b => b.id === id);
-    if (idx === -1) return;
-    const wrap = document.querySelector(`.extra-blok[data-blok-id="${id}"]`);
-    if (wrap) wrap.remove();
-    extraBlocks.splice(idx, 1);
-    renumberExtraBlocks();
-}
-
-function renumberExtraBlocks() {
-    extraBlocks.forEach((b, i) => {
-        b.displayIndex = i + 2;
-        const wrap = document.querySelector(`.extra-blok[data-blok-id="${b.id}"]`);
-        if (wrap) {
-            const label = wrap.querySelector('.blok-label');
-            if (label) label.textContent = `📋 Daftar Nama Tambahan #${b.displayIndex}`;
-        }
-    });
-}
-
-function hapusSemuaBlokTambahan() {
-    const container = document.getElementById('extraBlocksContainer');
-    if (container) container.innerHTML = '';
-    extraBlocks = [];
-}
-
 function getResultBadgeText() {
-    if (srcMode === 'nama') {
-        const blokTerisi = extraBlocks.filter(b => {
-            const t = document.getElementById(b.textareaId);
-            return t && t.value.split('\n').map(l => l.trim()).filter(l => l !== '').length > 0;
-        }).length;
-        if (blokTerisi > 0) return `🧩 ${1 + blokTerisi} Blok Digabung`;
-    }
     if (inputSource === 'paste') return '📋 Paste Teks';
     return currentFileType === 'txt' ? '📄 TXT' : '📊 Excel/CSV';
 }
@@ -1127,52 +1038,36 @@ function generateTokenFor(namaSlug, numberSuffix) {
    PROSES UTAMA: file -> generate token
 ══════════════════════════════════════════════════════════════════ */
 async function processFile() {
-    if (srcMode === 'token') {
-        // Mode Token Langsung — tidak melibatkan blok tambahan, alur seperti semula (1 sumber saja)
-        if (inputSource === 'upload' && !currentFile) { alert('Pilih file terlebih dahulu.'); return; }
-        if (inputSource === 'paste' && document.getElementById('pasteInput').value.trim() === '') {
-            alert('Tempel daftar terlebih dahulu.'); return;
-        }
-
-        document.getElementById('uploadLoading').style.display = 'flex';
-        document.getElementById('btnProcess').disabled = true;
-
-        try {
-            let items = [];
-            if (inputSource === 'paste') {
-                const text = document.getElementById('pasteInput').value;
-                items = text.split('\n').map(l => l.trim()).filter(l => l !== '');
-            } else if (currentFileType === 'txt') {
-                items = await readTxtFile(currentFile);
-            } else {
-                items = await readExcelFile(currentFile);
-            }
-
-            if (items.length === 0) {
-                alert('Tidak ada token yang terbaca.');
-                return;
-            }
-
-            await processAsTokens(items);
-            document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (e) {
-            alert('Gagal memproses data: ' + e.message);
-        } finally {
-            document.getElementById('uploadLoading').style.display = 'none';
-            document.getElementById('btnProcess').disabled = false;
-        }
-        return;
+    if (inputSource === 'upload' && !currentFile) { alert('Pilih file terlebih dahulu.'); return; }
+    if (inputSource === 'paste' && document.getElementById('pasteInput').value.trim() === '') {
+        alert('Tempel daftar terlebih dahulu.'); return;
     }
 
-    // Mode Nama Peserta — kumpulkan dari blok utama + semua blok tambahan, lalu gabung jadi satu hasil
     document.getElementById('uploadLoading').style.display = 'flex';
     document.getElementById('btnProcess').disabled = true;
 
     try {
-        const groups = await collectNameGroups();
-        if (groups === null) return; // validasi gagal, alert sudah tampil di collectNameGroups()
+        let items = [];
+        if (inputSource === 'paste') {
+            const text = document.getElementById('pasteInput').value;
+            items = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+        } else if (currentFileType === 'txt') {
+            items = await readTxtFile(currentFile);
+        } else {
+            items = await readExcelFile(currentFile);
+        }
 
-        await processAsNames(groups);
+        if (items.length === 0) {
+            alert(srcMode === 'token' ? 'Tidak ada token yang terbaca.' : 'Tidak ada nama yang terbaca.');
+            return;
+        }
+
+        if (srcMode === 'token') {
+            await processAsTokens(items);
+        } else {
+            await processAsNames(items);
+        }
+
         document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
         alert('Gagal memproses data: ' + e.message);
@@ -1182,75 +1077,15 @@ async function processFile() {
     }
 }
 
-/* Kumpulkan { items:[nama...], numberSuffix } dari blok utama (Upload/Paste) + semua
-   blok tambahan (Paste Teks saja). Blok tambahan yang dikosongkan otomatis dilewati.
-   Return null kalau ada validasi yang gagal (alert sudah ditampilkan ke user). */
-async function collectNameGroups() {
-    const groups = [];
-
-    // ── Blok utama (Upload File / Paste Teks) ──
-    if (inputSource === 'upload' && !currentFile) { alert('Pilih file terlebih dahulu, atau isi lewat Paste Teks.'); return null; }
-    if (inputSource === 'paste' && document.getElementById('pasteInput').value.trim() === '') {
-        alert('Tempel daftar terlebih dahulu.'); return null;
+/* ── MODE: NAMA -> generate token baru (nama + angka yang diketik langsung) ── */
+async function processAsNames(names) {
+    const numberSuffix = String(document.getElementById('numberSuffixInput').value || '').trim();
+    if (!numberSuffix) {
+        alert('Isi dulu "Angka Setelah Nama".');
+        throw new Error('numberSuffix kosong');
     }
 
-    const numberSuffixMain = String(document.getElementById('numberSuffixInput').value || '').trim();
-    if (!numberSuffixMain) {
-        alert('Isi dulu "Angka Setelah Nama" pada blok pertama.');
-        return null;
-    }
-
-    let itemsMain = [];
-    if (inputSource === 'paste') {
-        itemsMain = document.getElementById('pasteInput').value.split('\n').map(l => l.trim()).filter(l => l !== '');
-    } else if (currentFileType === 'txt') {
-        itemsMain = await readTxtFile(currentFile);
-    } else {
-        itemsMain = await readExcelFile(currentFile);
-    }
-    if (itemsMain.length === 0) {
-        alert('Tidak ada nama yang terbaca dari blok pertama.');
-        return null;
-    }
-    groups.push({ items: itemsMain, numberSuffix: numberSuffixMain });
-
-    // ── Blok tambahan (Paste Teks saja) ──
-    for (const blok of extraBlocks) {
-        const textarea    = document.getElementById(blok.textareaId);
-        const numberInput = document.getElementById(blok.numberId);
-        const text  = textarea ? textarea.value : '';
-        const items = text.split('\n').map(l => l.trim()).filter(l => l !== '');
-
-        if (items.length === 0) continue; // blok kosong -> lewati, tidak wajib diisi
-
-        const numberSuffix = String(numberInput ? numberInput.value : '').trim();
-        if (!numberSuffix) {
-            alert(`Isi dulu "Angka Setelah Nama" pada blok tambahan #${blok.displayIndex}.`);
-            return null;
-        }
-        groups.push({ items, numberSuffix });
-    }
-
-    return groups;
-}
-
-/* ── MODE: NAMA -> generate token baru dari beberapa grup (masing-masing punya angka suffix sendiri) ── */
-async function processAsNames(groups) {
-    rows = [];
-    let idx = 1;
-    groups.forEach((grp, gi) => {
-        for (const nama of grp.items) {
-            rows.push({
-                idx: idx++,
-                nama,
-                token: null,
-                status: 'pending',
-                numberSuffix: grp.numberSuffix,
-                blokIndex: gi,           // 0-based, urutan blok
-                blokDisplayIndex: gi + 1 // 1-based, untuk label/nama file
-            });
-        }
-    });
+    rows = names.map((nama, i) => ({ idx: i + 1, nama, token: null, status: 'pending' }));
 
     let generated = 0, skipped = 0;
     for (const row of rows) {
@@ -1261,7 +1096,7 @@ async function processAsNames(groups) {
             skipped++;
             continue;
         }
-        const token = generateTokenFor(slug, row.numberSuffix);
+        const token = generateTokenFor(slug, numberSuffix);
         row.token  = token;
         row.status = 'ok';
         generated++;
@@ -1455,61 +1290,14 @@ function downloadResult() {
     const ts = new Date();
     const stamp = `${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}`;
 
-    // Kelompokkan baris berdasarkan blok asalnya. Hanya rows hasil mode "Nama Peserta"
-    // yang punya blokIndex (mode Token Langsung tidak punya konsep blok).
-    const blokIndices = [...new Set(rows.map(r => r.blokIndex).filter(v => v !== undefined))];
-    const lebihDariSatuBlok = blokIndices.length > 1;
-
-    if (!lebihDariSatuBlok) {
-        // Perilaku lama, tidak berubah: Token Langsung, atau Nama Peserta yang cuma pakai 1 blok
-        const aoa = [['Nama', 'Token']];
-        for (const r of rows) aoa.push([r.nama, r.token || '']);
-        const ws = XLSX.utils.aoa_to_sheet(aoa);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Token');
-        XLSX.writeFile(wb, `hasil_token_${stamp}.xlsx`);
-        return;
+    const aoa = [['Nama', 'Token']];
+    for (const r of rows) {
+        aoa.push([r.nama, r.token || '']);
     }
-
-    // Lebih dari 1 blok -> bungkus 1 file .xlsx per blok ke dalam 1 file .zip
-    downloadResultPerBlokZip(stamp);
-}
-
-async function downloadResultPerBlokZip(stamp) {
-    if (typeof JSZip === 'undefined') {
-        alert('Library ZIP gagal dimuat. Cek koneksi internet lalu muat ulang halaman.');
-        return;
-    }
-
-    const btn = document.getElementById('btnDownload');
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Membungkus ZIP...'; }
-
-    try {
-        const zip = new JSZip();
-        const blokIndices = [...new Set(rows.map(r => r.blokIndex))].sort((a, b) => a - b);
-
-        for (const bi of blokIndices) {
-            const rowsBlok = rows.filter(r => r.blokIndex === bi);
-            const displayIdx = rowsBlok[0]?.blokDisplayIndex ?? (bi + 1);
-
-            const aoa = [['Nama', 'Token']];
-            for (const r of rowsBlok) aoa.push([r.nama, r.token || '']);
-            const ws = XLSX.utils.aoa_to_sheet(aoa);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Token');
-
-            const wbBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-            zip.file(`hasil_token_blok${displayIdx}_${stamp}.xlsx`, wbBuffer);
-        }
-
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        triggerDownload(zipBlob, `hasil_token_per_blok_${stamp}.zip`);
-        showToast(`✅ ZIP berisi ${blokIndices.length} file Excel (1 per blok) berhasil didownload.`);
-    } catch (e) {
-        alert('Gagal membuat ZIP: ' + e.message);
-    } finally {
-        if (btn) { btn.disabled = false; btn.textContent = '⬇️ Download Hasil'; }
-    }
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Token');
+    XLSX.writeFile(wb, `hasil_token_${stamp}.xlsx`);
 }
 
 function triggerDownload(blob, filename) {
@@ -1543,7 +1331,6 @@ function resetAll() {
     document.getElementById('resultCard').style.display = 'none';
     document.getElementById('logBox').innerHTML = '';
     document.getElementById('logBox').style.display = 'none';
-    hapusSemuaBlokTambahan();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>

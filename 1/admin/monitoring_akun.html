@@ -41,11 +41,27 @@ body {
     display: flex;
     align-items: center;
     gap: 0;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     white-space: nowrap;
     position: sticky;
     top: 0;
     z-index: 100;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.topnav::-webkit-scrollbar { display: none; height: 0; }
+
+/* ── Mobile: seluruh topnav jadi satu bar yang bisa digeser tangan ── */
+@media (max-width: 768px) {
+    .topnav { padding-left: 12px; }
+    #nav-tabs-container {
+        flex: 0 0 auto !important;
+        overflow: visible !important;
+    }
+    .srv-switcher-bar { flex: 0 0 auto; }
 }
 .topnav-brand {
     font-size: 15px;
