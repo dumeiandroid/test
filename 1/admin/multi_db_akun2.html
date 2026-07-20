@@ -329,25 +329,6 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
       <div id="bkpDestApiInfo" style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:6px;padding:5px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--border);display:none;word-break:break-all;"></div>
     </div>
 
-    <!-- MODE BACKUP: Semua Data / Rentang id_x -->
-    <div style="margin-bottom:10px;">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px;">Data yang di-backup</label>
-      <div style="display:flex;gap:16px;font-size:12px;">
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="bkpMode" value="all" checked onchange="onBkpModeChange()"> Semua Data</label>
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="bkpMode" value="range" onchange="onBkpModeChange()"> Rentang id_x</label>
-      </div>
-      <div id="bkpRangeWrap" style="display:none;gap:8px;margin-top:8px;">
-        <div style="flex:1;">
-          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-family:'DM Mono',monospace;">Dari id_x</label>
-          <input type="number" id="bkpRangeFrom" class="confirm-inp" placeholder="mis. 1" style="margin-bottom:0;" oninput="resetBkpCheck()">
-        </div>
-        <div style="flex:1;">
-          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-family:'DM Mono',monospace;">Sampai id_x</label>
-          <input type="number" id="bkpRangeTo" class="confirm-inp" placeholder="mis. 100" style="margin-bottom:0;" oninput="resetBkpCheck()">
-        </div>
-      </div>
-    </div>
-
     <!-- NAMA TABEL TUJUAN -->
     <div style="margin-bottom:8px;">
       <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px;">Nama tabel tujuan</label>
@@ -384,55 +365,6 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
       <button class="conf-cancel" id="bkpCancelBtn" onclick="closeModal('modalBackup')">Batal</button>
       <button class="conf-exec ready" id="bkpCheckBtn" onclick="checkBackupDest()" style="background:var(--a1);color:#000;"><i class="fa fa-magnifying-glass"></i> Cek Nama</button>
       <button class="conf-exec ready" id="bkpExecBtn" onclick="execBackup()" style="display:none;background:#60a5fa;color:#000;"><i class="fa fa-cloud-arrow-up"></i> <span id="bkpExecLbl">Backup</span></button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL DOWNLOAD SQL -->
-<div class="modal-ov" id="modalDownload">
-  <div class="confirm-box" style="width:420px;max-width:95vw;">
-    <div class="confirm-icon">⬇️</div>
-    <div class="confirm-title" id="dlTitle"></div>
-    <div class="confirm-sub" id="dlSub"></div>
-
-    <!-- MODE DOWNLOAD: Semua Data / Rentang id_x -->
-    <div style="margin-bottom:10px;">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px;">Data yang diunduh</label>
-      <div style="display:flex;gap:16px;font-size:12px;">
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="dlMode" value="all" checked onchange="onDlModeChange()"> Semua Data</label>
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="dlMode" value="range" onchange="onDlModeChange()"> Rentang id_x</label>
-      </div>
-      <div id="dlRangeWrap" style="display:none;gap:8px;margin-top:8px;">
-        <div style="flex:1;">
-          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-family:'DM Mono',monospace;">Dari id_x</label>
-          <input type="number" id="dlRangeFrom" class="confirm-inp" placeholder="mis. 1" style="margin-bottom:0;">
-        </div>
-        <div style="flex:1;">
-          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-family:'DM Mono',monospace;">Sampai id_x</label>
-          <input type="number" id="dlRangeTo" class="confirm-inp" placeholder="mis. 100" style="margin-bottom:0;">
-        </div>
-      </div>
-    </div>
-
-    <!-- NAMA FILE -->
-    <div style="margin-bottom:8px;">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px;">Nama file (tanpa .sql)</label>
-      <input type="text" class="confirm-inp" id="dlFileName" placeholder="nama_file" autocomplete="off" style="margin-bottom:0;">
-    </div>
-
-    <div id="dlProgress" style="display:none;margin-top:10px;margin-bottom:6px;">
-      <div id="dlProgMsg" style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px;min-height:18px;"></div>
-      <div style="background:var(--s2);border-radius:6px;height:10px;overflow:hidden;border:1px solid var(--border);">
-        <div id="dlProgBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--a1),#34d399);border-radius:6px;transition:width .3s ease;"></div>
-      </div>
-      <div style="display:flex;justify-content:flex-end;margin-top:4px;">
-        <span id="dlProgPct" style="font-size:11px;font-weight:700;color:var(--a1);font-family:'DM Mono',monospace;"></span>
-      </div>
-    </div>
-
-    <div class="confirm-ftr">
-      <button class="conf-cancel" id="dlCancelBtn" onclick="closeModal('modalDownload')">Batal</button>
-      <button class="conf-exec ready" id="dlExecBtn" onclick="execDownloadSQL()" style="background:var(--a1);color:#000;"><i class="fa fa-download"></i> Download</button>
     </div>
   </div>
 </div>
@@ -755,7 +687,7 @@ function renderTblList(idx, filter=''){
       btn.addEventListener('click', function(e){
         e.stopPropagation();
         if(this.dataset.act === 'sql'){
-          openDownloadModal(parseInt(this.dataset.db), this.dataset.tbl);
+          downloadTableSQL(parseInt(this.dataset.db), this.dataset.tbl, this);
           return;
         }
         askTableAction(this.dataset.act, parseInt(this.dataset.db), this.dataset.tbl);
@@ -820,76 +752,13 @@ function openNewTable(){
 // ════════════════════════════════════════════════
 //  DOWNLOAD TABEL → FILE SQL
 // ════════════════════════════════════════════════
-let pendingDownload = null; // { dbIdx, tblName }
-
-function openDownloadModal(dbIdx, tblName){
-  pendingDownload = { dbIdx, tblName };
-
-  document.getElementById('dlTitle').innerHTML = `Download <span style="color:var(--a1)">${tblName}</span>`;
-  document.getElementById('dlSub').innerHTML   = `Unduh data dari <code>${tblName}</code> (<strong>${DBS[dbIdx].name}</strong>) sebagai file SQL.`;
-
-  const allRadio = document.querySelector('input[name="dlMode"][value="all"]');
-  if(allRadio) allRadio.checked = true;
-  document.getElementById('dlRangeWrap').style.display = 'none';
-  document.getElementById('dlRangeFrom').value = '';
-  document.getElementById('dlRangeTo').value   = '';
-  document.getElementById('dlFileName').value  = `${tblName}_${new Date().toISOString().slice(0,10)}`;
-
-  document.getElementById('dlProgress').style.display = 'none';
-  document.getElementById('dlProgBar').style.width     = '0%';
-  document.getElementById('dlProgPct').textContent     = '';
-  document.getElementById('dlProgMsg').innerHTML       = '';
-  document.getElementById('dlExecBtn').disabled   = false;
-  document.getElementById('dlCancelBtn').disabled = false;
-
-  openModal('modalDownload');
-  setTimeout(()=>document.getElementById('dlFileName').focus(), 150);
-}
-
-function onDlModeChange(){
-  const mode = document.querySelector('input[name="dlMode"]:checked').value;
-  document.getElementById('dlRangeWrap').style.display = mode === 'range' ? 'flex' : 'none';
-}
-
-async function execDownloadSQL(){
-  if(!pendingDownload) return;
-  const { dbIdx, tblName } = pendingDownload;
-  const mode = document.querySelector('input[name="dlMode"]:checked').value;
-
-  let fileName = document.getElementById('dlFileName').value.trim();
-  if(!fileName) fileName = `${tblName}_${new Date().toISOString().slice(0,10)}`;
-  fileName = fileName.replace(/\.sql$/i,'');
-
-  let rangeFrom = null, rangeTo = null;
-  if(mode === 'range'){
-    const rfRaw = document.getElementById('dlRangeFrom').value.trim();
-    const rtRaw = document.getElementById('dlRangeTo').value.trim();
-    rangeFrom = Number(rfRaw); rangeTo = Number(rtRaw);
-    if(rfRaw === '' || rtRaw === '' || isNaN(rangeFrom) || isNaN(rangeTo) || rangeFrom > rangeTo){
-      alert('Isi rentang id_x dengan benar (kedua nilai wajib diisi, "Dari" ≤ "Sampai").');
-      return;
-    }
-  }
-
-  const execBtn   = document.getElementById('dlExecBtn');
-  const cancelBtn = document.getElementById('dlCancelBtn');
-  const progEl    = document.getElementById('dlProgress');
-  execBtn.disabled = cancelBtn.disabled = true;
-  progEl.style.display = 'block';
-  const setProgress = (pct, msg) => {
-    document.getElementById('dlProgBar').style.width = pct + '%';
-    document.getElementById('dlProgPct').textContent = pct + '%';
-    if(msg !== undefined) document.getElementById('dlProgMsg').innerHTML = msg;
-  };
-
+async function downloadTableSQL(dbIdx, tblName, btnEl){
+  const origHTML = btnEl ? btnEl.innerHTML : null;
+  if(btnEl){ btnEl.disabled = true; btnEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i>'; }
   try{
     const LIMIT = 200;
-    let allRows = [], offset = 0, totalFromApi = null;
+    let allRows = [], offset = 0;
     while(true){
-      setProgress(
-        totalFromApi ? Math.round(5 + (allRows.length / totalFromApi) * 80) : 5,
-        `⏳ Mengambil data... (${allRows.length}${totalFromApi ? '/'+totalFromApi : ''} baris)`
-      );
       const url = `${DBS[dbIdx].api}?table=${tblName}&limit=${LIMIT}&offset=${offset}`;
       const res = await fetch(url, { headers: hdrs(dbIdx) });
       if(!res.ok) throw new Error(`Gagal fetch data (${res.status})`);
@@ -897,30 +766,17 @@ async function execDownloadSQL(){
       const rows = json.data || [];
       if(rows.length === 0) break;
       allRows = allRows.concat(rows);
-      if(json.total !== undefined) totalFromApi = json.total;
-      if(totalFromApi !== null && allRows.length >= totalFromApi) break;
+      if(json.total !== undefined && allRows.length >= json.total) break;
       if(rows.length < LIMIT) break;
       offset += rows.length;
     }
-
+    if(allRows.length === 0){
+      alert(`Tabel "${tblName}" kosong — tidak ada data untuk di-export.`);
+      return;
+    }
     // Urutkan berdasarkan id_x ASC agar saat diupload/import ulang, urutan id tetap sama persis
     // (sumber data bisa mengembalikan urutan DESC sesuai tampilan tabel, jadi perlu di-sort ulang di sini)
     allRows.sort((a,b) => (Number(a.id_x)||0) - (Number(b.id_x)||0));
-
-    if(mode === 'range'){
-      allRows = allRows.filter(row => {
-        const id = Number(row.id_x) || 0;
-        return id >= rangeFrom && id <= rangeTo;
-      });
-    }
-
-    if(allRows.length === 0){
-      setProgress(100, mode === 'range'
-        ? `ℹ️ Tidak ada data pada rentang id_x ${rangeFrom}–${rangeTo}.`
-        : `ℹ️ Tabel "${tblName}" kosong — tidak ada data untuk di-export.`);
-      await new Promise(r=>setTimeout(r,1800));
-      return;
-    }
 
     console.log(`[DOWNLOAD SQL] "${tblName}" @ ${DBS[dbIdx].name}: ${allRows.length} baris berhasil ditarik dari sumber (diurutkan id_x ASC).`);
     window.__lastSqlDownloadRows = allRows;
@@ -929,20 +785,15 @@ async function execDownloadSQL(){
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = `${fileName}.sql`;
+    a.download = `${tblName}_${new Date().toISOString().slice(0,10)}.sql`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(blobUrl);
-
-    setProgress(100, `✅ ${allRows.length} baris berhasil diunduh sebagai <b>${fileName}.sql</b>.`);
-    await new Promise(r=>setTimeout(r,1200));
-    closeModal('modalDownload');
   }catch(e){
-    setProgress(0, `❌ Error: ${e.message}`);
     alert(`❌ Gagal export SQL: ${e.message}`);
   }finally{
-    execBtn.disabled = cancelBtn.disabled = false;
+    if(btnEl){ btnEl.disabled = false; btnEl.innerHTML = origHTML; }
   }
 }
 
@@ -1328,11 +1179,6 @@ function openBackupModal(type, dbIdx, tblName){
   document.getElementById('bkpExecLbl').textContent = 'Backup';
   document.getElementById('bkpExecBtn').style.background = '#60a5fa';
   document.getElementById('bkpDestInp').value        = tblName;
-  const bkpAllRadio = document.querySelector('input[name="bkpMode"][value="all"]');
-  if(bkpAllRadio) bkpAllRadio.checked = true;
-  document.getElementById('bkpRangeWrap').style.display = 'none';
-  document.getElementById('bkpRangeFrom').value = '';
-  document.getElementById('bkpRangeTo').value   = '';
   document.getElementById('bkpOverwriteBox').style.display = 'none';
   document.getElementById('bkpOverwriteInp').value = '';
   document.getElementById('bkpCheckMsg').textContent = '';
@@ -1393,13 +1239,6 @@ function populateBkpDbSelect(){
   sel.appendChild(custom);
 
   onBkpDbChange();
-}
-
-// Toggle tampilan input rentang id_x saat mode backup berubah
-function onBkpModeChange(){
-  const mode = document.querySelector('input[name="bkpMode"]:checked').value;
-  document.getElementById('bkpRangeWrap').style.display = mode === 'range' ? 'flex' : 'none';
-  resetBkpCheck();
 }
 
 // Dipanggil tiap kali selector berubah
@@ -1681,28 +1520,6 @@ async function execBackup(){
     // Urutkan berdasarkan id_x ASC agar urutan data di tujuan konsisten dengan sumber
     allRows.sort((a,b) => (Number(a.id_x)||0) - (Number(b.id_x)||0));
 
-    // ── Filter berdasarkan rentang id_x, jika mode "Rentang id_x" dipilih ──
-    const bkpMode = document.querySelector('input[name="bkpMode"]:checked')?.value || 'all';
-    let bkpRangeFrom = null, bkpRangeTo = null;
-    if(bkpMode === 'range'){
-      const rfRaw = document.getElementById('bkpRangeFrom').value.trim();
-      const rtRaw = document.getElementById('bkpRangeTo').value.trim();
-      bkpRangeFrom = Number(rfRaw); bkpRangeTo = Number(rtRaw);
-      if(rfRaw === '' || rtRaw === '' || isNaN(bkpRangeFrom) || isNaN(bkpRangeTo) || bkpRangeFrom > bkpRangeTo){
-        throw new Error('Rentang id_x tidak valid. Pastikan kedua nilai "Dari" dan "Sampai" diisi dengan benar (Dari ≤ Sampai).');
-      }
-      allRows = allRows.filter(row => {
-        const id = Number(row.id_x) || 0;
-        return id >= bkpRangeFrom && id <= bkpRangeTo;
-      });
-      console.log(`[BACKUP] Filter rentang id_x ${bkpRangeFrom}–${bkpRangeTo}: ${allRows.length} baris tersisa.`);
-    }
-
-    if(allRows.length === 0){
-      setProgress(100, `ℹ️ Tidak ada data pada rentang id_x ${bkpRangeFrom}–${bkpRangeTo} — tidak ada yang diproses.`, '0 baris');
-      await new Promise(r=>setTimeout(r,1800)); closeModal('modalBackup'); return;
-    }
-
     console.log(`[BACKUP] "${tblName}" @ ${DBS[dbIdx].name}: ${allRows.length} baris berhasil ditarik dari sumber (diurutkan id_x ASC).`);
 
     // ── Jika mode TIMPA aktif: kosongkan dulu tabel tujuan sebelum mengisi data baru ──
@@ -1774,10 +1591,9 @@ async function execBackup(){
     window.__lastBackupReport = { tblName, destName, sentRows: payload.length, insertedTotal: totalInserted, chunkReports, payload };
 
 
-    const rangeSuffix = bkpMode === 'range' ? ` (rentang id_x ${bkpRangeFrom}–${bkpRangeTo})` : '';
     const doneMsg = bkpOverwriteMode
-      ? `✅ Selesai! Tabel <b>${destName}</b> dikosongkan &amp; diisi ulang dengan ${totalInserted} baris${rangeSuffix}. Sumber tidak diubah.`
-      : `✅ Selesai! ${totalInserted} baris${rangeSuffix} dicopy → <b>${destName}</b>. Sumber tidak diubah.`;
+      ? `✅ Selesai! Tabel <b>${destName}</b> dikosongkan &amp; diisi ulang dengan ${totalInserted} baris. Sumber tidak diubah.`
+      : `✅ Selesai! ${totalInserted} baris dicopy → <b>${destName}</b>. Sumber tidak diubah.`;
     setProgress(100, doneMsg, `${totalInserted} baris`);
     log(doneMsg);
 
