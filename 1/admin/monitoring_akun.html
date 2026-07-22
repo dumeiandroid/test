@@ -1774,9 +1774,29 @@ const CHARS      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567
 const TOKEN_LEN  = 12;
 
 /* ══════════════════════════════════════════════════════════════════
-   AUTH — pakai localStorage 'isAdminLoggedIn' yg SAMA dengan index.html
-   sehingga kalau sudah login di index.html, halaman ini otomatis
-   dianggap login juga (asal masih 1 origin/domain, meski beda folder).
+   COOKIE HELPER — shared login lintas subdomain *.lidan.co.id
+   (localStorage TIDAK bisa dipakai krn beda origin per subdomain,
+   cookie dgn domain=.lidan.co.id bisa dibaca semua subdomain)
+══════════════════════════════════════════════════════════════════ */
+const AUTH_COOKIE = 'isAdminLoggedIn';
+const AUTH_COOKIE_DOMAIN = '.lidan.co.id';
+
+function setAuthCookie(value, days = 7) {
+    const maxAge = days * 24 * 60 * 60;
+    document.cookie = `${AUTH_COOKIE}=${value}; domain=${AUTH_COOKIE_DOMAIN}; path=/; max-age=${maxAge}; samesite=lax; secure`;
+}
+function getAuthCookie() {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + AUTH_COOKIE + '=([^;]*)'));
+    return m ? m[1] : null;
+}
+function clearAuthCookie() {
+    document.cookie = `${AUTH_COOKIE}=; domain=${AUTH_COOKIE_DOMAIN}; path=/; max-age=0`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   AUTH — pakai cookie 'isAdminLoggedIn' (domain=.lidan.co.id) yg SAMA
+   dengan index.html, sehingga kalau sudah login di admin.lidan.co.id,
+   halaman ini (test.lidan.co.id) otomatis dianggap login juga.
 ══════════════════════════════════════════════════════════════════ */
 async function handleLogin() {
     const user = document.getElementById('loginUsername').value.trim();
@@ -1806,7 +1826,8 @@ async function handleLogin() {
         const result = await response.json();
 
         if (result.success) {
-            localStorage.setItem('isAdminLoggedIn', 'true');
+            localStorage.setItem('isAdminLoggedIn', 'true'); // fallback lokal (opsional)
+            setAuthCookie('true');
             document.getElementById('login-overlay').classList.add('hidden');
         } else {
             errEl.textContent = result.message || 'Login gagal. Periksa kembali kredensial Anda.';
@@ -1823,12 +1844,13 @@ async function handleLogin() {
 function handleLogout() {
     if (!confirm('Keluar dari dashboard?')) return;
     localStorage.removeItem('isAdminLoggedIn');
+    clearAuthCookie();
     location.reload();
 }
 
 // Cek status login saat halaman dibuka
 (function checkLoginOnLoad() {
-    if (localStorage.getItem('isAdminLoggedIn') === 'true') {
+    if (getAuthCookie() === 'true' || localStorage.getItem('isAdminLoggedIn') === 'true') {
         document.getElementById('login-overlay').classList.add('hidden');
     }
 })();
