@@ -932,10 +932,10 @@
     <div class="login-logo">Psikotest Admin</div>
     <div class="login-title">Manajemen Paket Tes</div>
 
-    <!-- Server Switcher (disembunyikan dari tampilan login) -->
-    <span class="srv-label" style="display:none">Server</span>
-    <div class="srv-grid-login" id="loginSrvChips" style="display:none"><!-- filled by JS --></div>
-    <div class="srv-url-preview" id="loginSrvUrl" style="display:none"></div>
+    <!-- Server Switcher -->
+    <span class="srv-label">Server</span>
+    <div class="srv-grid-login" id="loginSrvChips"><!-- filled by JS --></div>
+    <div class="srv-url-preview" id="loginSrvUrl"></div>
 
     <div class="field">
       <label>Username</label>
@@ -1309,23 +1309,6 @@ async function apiFetch(url, opts={}) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   COOKIE HELPER — shared login lintas subdomain *.lidan.co.id
-   (sessionStorage tidak bisa dipakai krn beda origin per subdomain)
-══════════════════════════════════════════════════════════ */
-const AUTH_COOKIE_DOMAIN = '.lidan.co.id';
-function setSharedCookie(name, value, days = 7) {
-  const maxAge = days * 24 * 60 * 60;
-  document.cookie = `${name}=${encodeURIComponent(value)}; domain=${AUTH_COOKIE_DOMAIN}; path=/; max-age=${maxAge}; samesite=lax; secure`;
-}
-function getSharedCookie(name) {
-  const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-  return m ? decodeURIComponent(m[1]) : null;
-}
-function clearSharedCookie(name) {
-  document.cookie = `${name}=; domain=${AUTH_COOKIE_DOMAIN}; path=/; max-age=0`;
-}
-
-/* ══════════════════════════════════════════════════════════
    LOGIN / LOGOUT
 ══════════════════════════════════════════════════════════ */
 async function doLogin() {
@@ -1352,9 +1335,7 @@ async function doLogin() {
       err.textContent = 'Password salah.'; return;
     }
     currentUser = row;
-    sessionStorage.setItem('admin_user', user); // fallback lokal (opsional)
-    setSharedCookie('admin_user', user);
-    setSharedCookie('isAdminLoggedIn', 'true');
+    sessionStorage.setItem('admin_user', user);
     showApp();
   } catch(e) {
     err.textContent = 'Gagal terhubung ke server.';
@@ -1366,8 +1347,6 @@ async function doLogin() {
 
 function doLogout() {
   sessionStorage.removeItem('admin_user');
-  clearSharedCookie('admin_user');
-  clearSharedCookie('isAdminLoggedIn');
   currentUser = null;
   document.getElementById('screenApp').classList.remove('active');
   document.getElementById('screenLogin').classList.add('active');
@@ -1379,8 +1358,7 @@ function doLogout() {
    BOOT
 ══════════════════════════════════════════════════════════ */
 window.onload = async () => {
-  // Prioritas: cookie shared (bisa dari subdomain lain), fallback sessionStorage lokal
-  const saved = getSharedCookie('admin_user') || sessionStorage.getItem('admin_user');
+  const saved = sessionStorage.getItem('admin_user');
   if (saved) {
     showLoader('Memeriksa sesi...');
     try {
@@ -1396,8 +1374,6 @@ window.onload = async () => {
     } catch(e) {}
     finally { hideLoader(); }
     sessionStorage.removeItem('admin_user');
-    clearSharedCookie('admin_user');
-    clearSharedCookie('isAdminLoggedIn');
   }
   hideLoader();
 };

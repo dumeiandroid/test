@@ -1090,24 +1090,6 @@ async function doRefresh() {
 }
 
 // ============================================================
-// COOKIE HELPER — shared login lintas subdomain *.lidan.co.id
-// (localStorage/sessionStorage tidak bisa dipakai krn beda origin per subdomain)
-// ============================================================
-const AUTH_COOKIE_DOMAIN = '.lidan.co.id';
-function setSharedCookie(name, value, maxAgeSec) {
-    // maxAgeSec: undefined/null => session cookie (hilang saat browser ditutup)
-    const ageStr = (maxAgeSec != null) ? `; max-age=${maxAgeSec}` : '';
-    document.cookie = `${name}=${encodeURIComponent(value)}; domain=${AUTH_COOKIE_DOMAIN}; path=/${ageStr}; samesite=lax; secure`;
-}
-function getSharedCookie(name) {
-    const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-    return m ? decodeURIComponent(m[1]) : null;
-}
-function clearSharedCookie(name) {
-    document.cookie = `${name}=; domain=${AUTH_COOKIE_DOMAIN}; path=/; max-age=0`;
-}
-
-// ============================================================
 // LOGIN / LOGOUT
 // ============================================================
 const SESSION_KEY = 'ct_tester_session';
@@ -1149,16 +1131,13 @@ async function doLogin() {
             btn.textContent = 'Masuk'; btn.disabled = false; return;
         }
 
-        // Simpan sesi via cookie shared (domain=.lidan.co.id) —
-        // "Ingat saya" dicentang: cookie persist 30 hari; tidak dicentang: session cookie (hilang saat browser ditutup)
+        // Simpan sesi — localStorage jika "Ingat saya" dicentang (persist), sessionStorage jika tidak (hilang saat tab ditutup)
         const remember = document.getElementById('loginRemember').checked;
         const sessionData = JSON.stringify({ user, ts: Date.now() });
         if (remember) {
-            setSharedCookie(SESSION_KEY, sessionData, 30 * 24 * 60 * 60);
-            localStorage.setItem(SESSION_KEY, sessionData); // fallback lokal (opsional)
+            localStorage.setItem(SESSION_KEY, sessionData);
             sessionStorage.removeItem(SESSION_KEY);
         } else {
-            setSharedCookie(SESSION_KEY, sessionData); // session cookie, tetap shared antar subdomain selama tab masih terbuka
             sessionStorage.setItem(SESSION_KEY, sessionData);
             localStorage.removeItem(SESSION_KEY);
         }
@@ -1178,12 +1157,11 @@ function doLogout() {
     if (!confirm('Keluar dari sesi ini?')) return;
     sessionStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(SESSION_KEY);
-    clearSharedCookie(SESSION_KEY);
     location.reload();
 }
 
 function checkSession() {
-    const raw = getSharedCookie(SESSION_KEY) || localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
     if (!raw) return false;
     try { return !!JSON.parse(raw).user; } catch(e) { return false; }
 }
