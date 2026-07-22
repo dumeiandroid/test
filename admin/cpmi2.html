@@ -37,18 +37,27 @@ body {
     padding: 0 20px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 12px;
     position: sticky;
     top: 0;
     z-index: 100;
     height: 52px;
+    /* geser/scroll horizontal ketika konten melebihi lebar layar (mis. di HP) */
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
+.topnav::-webkit-scrollbar { display: none; height: 0; }
 .topnav-brand {
     font-size: 15px;
     font-weight: 700;
     color: white;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 .topnav-right {
     display: flex;
@@ -56,6 +65,7 @@ body {
     gap: 10px;
     flex-shrink: 0;
 }
+
 
 /* ── MAIN ── */
 .main { padding: 20px; max-width: 1400px; margin: 0 auto; }
@@ -293,6 +303,24 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
     color: white;
     border-color: white;
     box-shadow: 0 0 0 2px rgba(255,255,255,.15);
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+    .topnav { padding: 0 12px; height: 48px; gap: 8px; }
+    .topnav-brand { font-size: 13px; }
+    .topnav-right { gap: 6px; }
+    .topnav-right .info-pill { font-size: 11px; padding: 4px 8px; }
+    .topnav-right .btn { font-size: 11px; padding: 5px 10px; }
+    .main { padding: 12px; }
+    .card { padding: 14px; border-radius: 12px; }
+    .card-title { font-size: 14px; flex-wrap: wrap; gap: 6px; }
+    .controls-bar {
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; flex-wrap: nowrap;
+    }
+    .controls-bar::-webkit-scrollbar { display: none; height: 0; }
+    table.dataTable { font-size: 12px; }
 }
 </style>
 </head>
