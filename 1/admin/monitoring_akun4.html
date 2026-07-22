@@ -811,72 +811,9 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
     font-family: 'Courier New', monospace;
     color: rgba(255,255,255,.9);
     white-space: nowrap;
-}
-
-/* ── LOGIN OVERLAY (shared login: cek localStorage isAdminLoggedIn) ── */
-#login-overlay {
-    position: fixed; inset: 0; z-index: 99999;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
-    display: flex; align-items: center; justify-content: center; padding: 16px;
-}
-#login-overlay.hidden { display: none; }
-.login-card {
-    width: 100%; max-width: 380px; background: var(--card);
-    border-radius: 20px; padding: 32px 28px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.3);
-}
-.login-logo { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
-.login-logo span { color: var(--primary); }
-.login-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
-.login-field { margin-bottom: 14px; }
-.login-field label {
-    display: block; font-size: 12px; font-weight: 700; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px;
-}
-.login-field input {
-    width: 100%; padding: 11px 14px; border: 2px solid var(--border);
-    border-radius: 10px; font-size: 14px; outline: none; transition: border-color .2s;
-}
-.login-field input:focus { border-color: var(--primary); }
-.login-btn {
-    width: 100%; padding: 12px; margin-top: 6px; border: none; border-radius: 10px;
-    background: linear-gradient(135deg, var(--primary), var(--purple)); color: white;
-    font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .2s;
-}
-.login-btn:hover:not(:disabled) { opacity: .9; }
-.login-btn:disabled { opacity: .6; cursor: not-allowed; }
-.login-err {
-    display: none; margin-top: 12px; font-size: 12px; color: var(--danger);
-    background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 8px 10px;
-}
-.logout-btn {
-    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
-    color: white; font-size: 12px; font-weight: 700; padding: 5px 12px;
-    border-radius: 99px; cursor: pointer; white-space: nowrap;
-}
-.logout-btn:hover { background: rgba(255,255,255,.25); }
-</style>
+}</style>
 </head>
 <body>
-
-<!-- ─── LOGIN (shared dgn index.html via localStorage 'isAdminLoggedIn') ─── -->
-<div id="login-overlay">
-    <div class="login-card">
-        <div class="login-logo">lidan<span>.co</span></div>
-        <p class="login-subtitle">Admin Portal — Masuk untuk melanjutkan</p>
-        <div class="login-field">
-            <label>Username</label>
-            <input type="text" id="loginUsername" placeholder="Masukkan username" autocomplete="username">
-        </div>
-        <div class="login-field">
-            <label>Password</label>
-            <input type="password" id="loginPassword" placeholder="Masukkan password" autocomplete="current-password" onkeydown="if(event.key==='Enter') handleLogin()">
-        </div>
-        <button class="login-btn" id="loginBtn" onclick="handleLogin()">Masuk Dashboard</button>
-        <p id="loginErrMsg" class="login-err"></p>
-    </div>
-</div>
-
 
 <!-- TOP NAV -->
 <nav class="topnav">
@@ -891,9 +828,6 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
         <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;white-space:nowrap;">Soal Gr</span>
         <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;white-space:nowrap;">Tes Global:</span>
         <button id="btnKontrolGlobal" onclick="openJadwalModal()" style="padding:5px 14px;border:none;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;">⏳ Memuat...</button>
-    </div>
-    <div style="padding:8px 14px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.2);">
-        <button class="logout-btn" onclick="handleLogout()">🚪 Keluar</button>
     </div>
 </nav>
 
@@ -1772,66 +1706,6 @@ const AUTH_KEY   = 'admin';
 const PSIKOTEST_URL = 'https://psikotest.lidan.co.id/';
 const CHARS      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const TOKEN_LEN  = 12;
-
-/* ══════════════════════════════════════════════════════════════════
-   AUTH — pakai localStorage 'isAdminLoggedIn' yg SAMA dengan index.html
-   sehingga kalau sudah login di index.html, halaman ini otomatis
-   dianggap login juga (asal masih 1 origin/domain, meski beda folder).
-══════════════════════════════════════════════════════════════════ */
-async function handleLogin() {
-    const user = document.getElementById('loginUsername').value.trim();
-    const pass = document.getElementById('loginPassword').value;
-    const errEl = document.getElementById('loginErrMsg');
-    errEl.style.display = 'none';
-
-    if (!user || !pass) {
-        errEl.textContent = 'Username dan password wajib diisi';
-        errEl.style.display = 'block';
-        return;
-    }
-
-    const btn = document.getElementById('loginBtn');
-    btn.disabled = true; btn.textContent = 'Memproses...';
-
-    try {
-        const response = await fetch(`${API_INSERT}?action=login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Custom-Auth': 'admin',
-                'X-Role': 'admin'
-            },
-            body: JSON.stringify({ username: user, password: pass })
-        });
-        const result = await response.json();
-
-        if (result.success) {
-            localStorage.setItem('isAdminLoggedIn', 'true');
-            document.getElementById('login-overlay').classList.add('hidden');
-        } else {
-            errEl.textContent = result.message || 'Login gagal. Periksa kembali kredensial Anda.';
-            errEl.style.display = 'block';
-        }
-    } catch (e) {
-        errEl.textContent = 'Terjadi kesalahan koneksi. Coba lagi.';
-        errEl.style.display = 'block';
-    } finally {
-        btn.disabled = false; btn.textContent = 'Masuk Dashboard';
-    }
-}
-
-function handleLogout() {
-    if (!confirm('Keluar dari dashboard?')) return;
-    localStorage.removeItem('isAdminLoggedIn');
-    location.reload();
-}
-
-// Cek status login saat halaman dibuka
-(function checkLoginOnLoad() {
-    if (localStorage.getItem('isAdminLoggedIn') === 'true') {
-        document.getElementById('login-overlay').classList.add('hidden');
-    }
-})();
 
 /* ── Server Switcher ── */
 function renderSrvChips() {
@@ -2884,6 +2758,13 @@ function todayInitTable(rows) {
 }
 
 /* ── Copy URL halaman tes ── */
+function copyTestUrl(btn) {
+    navigator.clipboard.writeText('https://psikotest.lidan.co.id/').then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => btn.textContent = orig, 1500);
+    });
+}
 function copyRowUrl(btn, url) {
     navigator.clipboard.writeText(url).then(() => {
         btn.classList.add('copied');
@@ -4026,6 +3907,8 @@ async function downloadVouchers() {
     }
 }
 </script>
+<script src="https://login.lidan.co.id/login_admin.js"></script>
+
 <!-- ══ MODAL INSTRUKSI TES ══ -->
 <div class="modal-overlay" id="modalInstruksi" style="z-index:10300;">
   <div class="modal-box" style="max-width:640px;width:96%;max-height:90vh;overflow-y:auto;">
