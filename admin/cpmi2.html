@@ -368,9 +368,9 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
 <!-- TOP NAV -->
 <nav class="topnav">
     <div class="topnav-brand">👁 Monitor Peserta — Tester</div>
-    <!-- Server chips topnav -->
-    <div id="topnavSrvChips" style="display:flex;gap:5px;flex:1;padding:0 10px;overflow-x:auto;scrollbar-width:none;"><!-- filled by JS --></div>
     <div class="topnav-right">
+        <!-- Server chips — sekarang ikut discroll bareng seluruh topnav (bukan scroll sendiri) -->
+        <div id="topnavSrvChips" style="display:flex;gap:5px;flex-shrink:0;"><!-- filled by JS --></div>
         <div class="info-pill pill-blue" id="autoRefreshPill" style="font-size:12px;">
             <span class="pulse-dot"></span>
             Auto-refresh 5 detik
@@ -1159,7 +1159,7 @@ async function doLogin() {
 
     try {
         const res  = await fetch(
-            `${API_BASE}?table=users&x_01_eq=${encodeURIComponent(user)}`,
+            `${API_BASE}?table=admins&x_01_eq=${encodeURIComponent(user)}`,
             { headers: { 'X-Custom-Auth': AUTH_KEY } }
         );
         const json = await res.json();
