@@ -335,7 +335,6 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
       <div style="display:flex;gap:16px;font-size:12px;">
         <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="bkpMode" value="all" checked onchange="onBkpModeChange()"> Semua Data</label>
         <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="bkpMode" value="range" onchange="onBkpModeChange()"> Rentang id_x</label>
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="bkpMode" value="single" onchange="onBkpModeChange()"> Satu id_x saja</label>
       </div>
       <div id="bkpRangeWrap" style="display:none;gap:8px;margin-top:8px;">
         <div style="flex:1;">
@@ -346,10 +345,6 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
           <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-family:'DM Mono',monospace;">Sampai id_x</label>
           <input type="number" id="bkpRangeTo" class="confirm-inp" placeholder="mis. 100" style="margin-bottom:0;" oninput="resetBkpCheck()">
         </div>
-      </div>
-      <div id="bkpSingleWrap" style="display:none;margin-top:8px;">
-        <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-family:'DM Mono',monospace;">id_x</label>
-        <input type="number" id="bkpSingleId" class="confirm-inp" placeholder="mis. 42" style="margin-bottom:0;" oninput="resetBkpCheck()">
       </div>
     </div>
 
@@ -1338,8 +1333,6 @@ function openBackupModal(type, dbIdx, tblName){
   document.getElementById('bkpRangeWrap').style.display = 'none';
   document.getElementById('bkpRangeFrom').value = '';
   document.getElementById('bkpRangeTo').value   = '';
-  document.getElementById('bkpSingleWrap').style.display = 'none';
-  document.getElementById('bkpSingleId').value = '';
   document.getElementById('bkpOverwriteBox').style.display = 'none';
   document.getElementById('bkpOverwriteInp').value = '';
   document.getElementById('bkpCheckMsg').textContent = '';
@@ -1405,8 +1398,7 @@ function populateBkpDbSelect(){
 // Toggle tampilan input rentang id_x saat mode backup berubah
 function onBkpModeChange(){
   const mode = document.querySelector('input[name="bkpMode"]:checked').value;
-  document.getElementById('bkpRangeWrap').style.display  = mode === 'range'  ? 'flex' : 'none';
-  document.getElementById('bkpSingleWrap').style.display = mode === 'single' ? ''     : 'none';
+  document.getElementById('bkpRangeWrap').style.display = mode === 'range' ? 'flex' : 'none';
   resetBkpCheck();
 }
 
@@ -1691,7 +1683,7 @@ async function execBackup(){
 
     // ── Filter berdasarkan rentang id_x, jika mode "Rentang id_x" dipilih ──
     const bkpMode = document.querySelector('input[name="bkpMode"]:checked')?.value || 'all';
-    let bkpRangeFrom = null, bkpRangeTo = null, bkpSingleId = null;
+    let bkpRangeFrom = null, bkpRangeTo = null;
     if(bkpMode === 'range'){
       const rfRaw = document.getElementById('bkpRangeFrom').value.trim();
       const rtRaw = document.getElementById('bkpRangeTo').value.trim();
@@ -1704,21 +1696,10 @@ async function execBackup(){
         return id >= bkpRangeFrom && id <= bkpRangeTo;
       });
       console.log(`[BACKUP] Filter rentang id_x ${bkpRangeFrom}–${bkpRangeTo}: ${allRows.length} baris tersisa.`);
-    } else if(bkpMode === 'single'){
-      const siRaw = document.getElementById('bkpSingleId').value.trim();
-      bkpSingleId = Number(siRaw);
-      if(siRaw === '' || isNaN(bkpSingleId)){
-        throw new Error('id_x tidak valid. Isi id_x yang ingin di-backup.');
-      }
-      allRows = allRows.filter(row => (Number(row.id_x) || 0) === bkpSingleId);
-      console.log(`[BACKUP] Filter id_x tunggal ${bkpSingleId}: ${allRows.length} baris tersisa.`);
     }
 
     if(allRows.length === 0){
-      const emptyMsg = bkpMode === 'single'
-        ? `ℹ️ Tidak ada data dengan id_x ${bkpSingleId} — tidak ada yang diproses.`
-        : `ℹ️ Tidak ada data pada rentang id_x ${bkpRangeFrom}–${bkpRangeTo} — tidak ada yang diproses.`;
-      setProgress(100, emptyMsg, '0 baris');
+      setProgress(100, `ℹ️ Tidak ada data pada rentang id_x ${bkpRangeFrom}–${bkpRangeTo} — tidak ada yang diproses.`, '0 baris');
       await new Promise(r=>setTimeout(r,1800)); closeModal('modalBackup'); return;
     }
 
@@ -1793,9 +1774,7 @@ async function execBackup(){
     window.__lastBackupReport = { tblName, destName, sentRows: payload.length, insertedTotal: totalInserted, chunkReports, payload };
 
 
-    const rangeSuffix = bkpMode === 'range'  ? ` (rentang id_x ${bkpRangeFrom}–${bkpRangeTo})`
-                       : bkpMode === 'single' ? ` (id_x ${bkpSingleId})`
-                       : '';
+    const rangeSuffix = bkpMode === 'range' ? ` (rentang id_x ${bkpRangeFrom}–${bkpRangeTo})` : '';
     const doneMsg = bkpOverwriteMode
       ? `✅ Selesai! Tabel <b>${destName}</b> dikosongkan &amp; diisi ulang dengan ${totalInserted} baris${rangeSuffix}. Sumber tidak diubah.`
       : `✅ Selesai! ${totalInserted} baris${rangeSuffix} dicopy → <b>${destName}</b>. Sumber tidak diubah.`;
