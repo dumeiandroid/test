@@ -276,7 +276,6 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
         <div class="tbl-badge"><span class="db-lbl" id="badgeDb"></span><span id="badgeTbl">—</span></div>
         <button class="btn-p" onclick="openAddModal()"><i class="fa fa-plus"></i> Tambah</button>
         <button class="btn-o" onclick="loadData()"><i class="fa fa-rotate-right"></i> Refresh</button>
-        <button class="btn-o" id="btnBulkDel" onclick="bulkDeleteRows()" style="display:none;color:var(--danger);border-color:var(--danger);"><i class="fa fa-trash"></i> Hapus Terpilih (<span id="bulkDelCount">0</span>)</button>
         <div class="search-wrap">
           <i class="fa fa-search"></i>
           <input type="text" id="searchBox" class="search-inp" placeholder="Cari x_01...">
@@ -1156,8 +1155,6 @@ async function loadData(){
   lazyDB      = activeDB;
   lazyTbl     = activeTbl;
   lazySeenIds = new Set();
-  selectedIds.clear();
-  updateBulkDelBtn();
 
   const wrap = document.getElementById('tableWrap');
   wrap.innerHTML = '<div class="loading-txt">Memuat data</div>';
@@ -1198,7 +1195,7 @@ async function fetchPage(offset){
 }
 
 function buildTableShell(){
-  let h = '<table id="dataTable"><thead><tr><th style="width:28px"><input type="checkbox" id="chkAll" onchange="toggleSelectAll(this.checked)"></th><th style="width:34px"></th><th>ID</th>';
+  let h = '<table id="dataTable"><thead><tr><th style="width:34px"></th><th>ID</th>';
   for(let i=1;i<=20;i++) h += `<th>x_${String(i).padStart(2,'0')}</th>`;
   h += '</tr></thead><tbody id="dataTbody"></tbody></table>';
   // Sentinel div untuk IntersectionObserver
@@ -1217,8 +1214,7 @@ function appendRows(rows){
     lazySeenIds.add(row.id_x);
     added++;
     const tr = document.createElement('tr');
-    let cells = `<td><input type="checkbox" class="rowChk" data-id="${row.id_x}" onchange="toggleRowSelect(${row.id_x},this.checked)"></td>`;
-    cells += `<td><button class="btn-del" onclick="deleteRow(${row.id_x})"><i class="fa fa-trash"></i></button></td>`;
+    let cells = `<td><button class="btn-del" onclick="deleteRow(${row.id_x})"><i class="fa fa-trash"></i></button></td>`;
     cells += `<td class="td-id">${row.id_x}</td>`;
     for(let i=1;i<=20;i++){
       const col = `x_${String(i).padStart(2,'0')}`;
@@ -1308,59 +1304,6 @@ async function deleteRow(id){
   if(!confirm('Hapus baris ini selamanya?')) return;
   await fetch(`${DBS[activeDB].api}?table=${activeTbl}&id_x=${id}`,{method:'DELETE',headers:hdrs(activeDB)});
   loadData();
-}
-
-// ── MULTI-SELECT / BULK DELETE ──
-const selectedIds = new Set();
-
-function toggleRowSelect(id, checked){
-  if(checked) selectedIds.add(id); else selectedIds.delete(id);
-  const chkAll = document.getElementById('chkAll');
-  if(chkAll){
-    const allChk = document.querySelectorAll('.rowChk');
-    chkAll.checked = allChk.length>0 && [...allChk].every(c=>c.checked);
-  }
-  updateBulkDelBtn();
-}
-
-function toggleSelectAll(checked){
-  document.querySelectorAll('.rowChk').forEach(chk=>{
-    chk.checked = checked;
-    const id = Number(chk.dataset.id);
-    if(checked) selectedIds.add(id); else selectedIds.delete(id);
-  });
-  updateBulkDelBtn();
-}
-
-function updateBulkDelBtn(){
-  const btn = document.getElementById('btnBulkDel');
-  const cnt = document.getElementById('bulkDelCount');
-  if(!btn) return;
-  if(selectedIds.size>0){
-    btn.style.display = 'flex';
-    cnt.textContent = selectedIds.size;
-  } else {
-    btn.style.display = 'none';
-  }
-}
-
-async function bulkDeleteRows(){
-  const ids = [...selectedIds];
-  if(ids.length===0) return;
-  if(!confirm(`Hapus ${ids.length} baris terpilih selamanya?`)) return;
-  const btn = document.getElementById('btnBulkDel');
-  if(btn){ btn.disabled = true; btn.style.opacity='.6'; }
-  let ok=0, fail=0;
-  for(const id of ids){
-    try{
-      const res = await fetch(`${DBS[activeDB].api}?table=${activeTbl}&id_x=${id}`,{method:'DELETE',headers:hdrs(activeDB)});
-      if(res.ok) ok++; else fail++;
-    }catch(e){ fail++; }
-  }
-  if(btn){ btn.disabled = false; btn.style.opacity=''; }
-  selectedIds.clear();
-  loadData();
-  if(fail>0) alert(`Selesai. Berhasil: ${ok}, Gagal: ${fail}.`);
 }
 
 // ── TABLE ACTIONS (clear / drop / reset) ──
