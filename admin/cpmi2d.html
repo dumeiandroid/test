@@ -396,10 +396,8 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
       <div class="card-title">
         📅 Peserta Aktif
         <span style="background:#fef3c7;color:#d97706;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;" id="todayBadgeLabel">Hari Ini</span>
-        <span id="detailBadgesWrap" style="display:none;">
-          <span style="background:#dcfce7;color:#166534;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;" id="selesaiBadge">✅ 0 selesai</span>
-          <span onclick="bukaPopupBelumSelesai()" style="background:#fee2e2;color:#b91c1c;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;cursor:pointer;" id="belumSelesaiBadge" title="Klik untuk lihat daftar nama">⏳ 0 belum selesai</span>
-        </span>
+        <span style="background:#dcfce7;color:#166534;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;" id="selesaiBadge">✅ 0 selesai</span>
+        <span onclick="bukaPopupBelumSelesai()" style="background:#fee2e2;color:#b91c1c;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;cursor:pointer;" id="belumSelesaiBadge" title="Klik untuk lihat daftar nama">⏳ 0 belum selesai</span>
       </div>
       <div class="info-bar">
         <!-- kosong, info sudah di topnav -->
@@ -415,11 +413,12 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
         onchange="onDateChange(this.value)">
       <button class="btn btn-outline btn-sm" onclick="setToday()" id="btnHariIni">Hari Ini</button>
       <button class="btn btn-outline btn-sm" onclick="setAllDates()" id="btnAll">All</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleTabelInput()" id="btnGantiTabel">🗄 Ganti Tabel (<span id="tabelAktifLabel">nilai1_json</span>)</button>
       <!-- hidden tabel input masih ada untuk fungsi loadTable() -->
       <input type="text" id="tableInput" value="nilai1_json" style="display:none">
     </div>
 
-    <!-- Box ganti tabel (pola sama seperti finishing.html / index_rekap.html) — dipakai baik dari card custom maupun dari detail view -->
+    <!-- Box ganti tabel (pola sama seperti finishing.html / index_rekap.html) -->
     <div id="gantiTabelBox" style="display:none; margin-bottom:10px; padding:14px; border:2px solid var(--border); border-radius:10px; background:#fff;">
       <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">GANTI TABEL SUMBER — server aktif: <span id="gantiTabelSrvLabel"></span></div>
       <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
@@ -432,43 +431,12 @@ table.dataTable tbody tr:nth-child(even) { background: #fafbff; }
       <div id="tabelList" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;"></div>
     </div>
 
-    <!-- Filter checkbox tabel mana yang mau ditampilkan sebagai card — hanya berlaku untuk area card, tidak menyentuh server/tanggal -->
-    <div id="cardFilterBar" style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;padding:10px 14px;border:2px solid var(--border);border-radius:10px;background:#fafafa;">
-      <span style="font-size:12px;font-weight:700;color:var(--muted);">🗂 Tampilkan tabel:</span>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cardTableChk" id="chkTable1" value="nilai1_json" checked>1</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cardTableChk" id="chkTable2" value="nilai2_json">2</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cardTableChk" id="chkTable3" value="nilai3_json">3</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cardTableChk" id="chkTable4" value="nilai4_json">4</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cardTableChk" id="chkTable5" value="nilai5_json">5</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cardTableChk" id="chkTable6" value="nilai6_json">6</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cardTableChk" id="chkTable7" value="nilai7_json">7</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cardTableChk" id="chkTable8" value="nilai8_json">8</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" class="cardTableChk" id="chkTable9" value="nilai9_json">9</label>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;"><input type="checkbox" id="chkTableCustom" onchange="toggleCustomTableInput()">Custom</label>
-      <input type="text" id="customTableInput" placeholder="nama tabel, pisahkan koma" style="display:none;padding:6px 10px;border:2px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:inherit;min-width:180px;">
-      <button class="btn btn-primary btn-sm" onclick="applyCardFilter()">🔄 Refresh Card</button>
-    </div>
+    <p class="note-bar">
+      💡 Peserta terdeteksi dari tanggal yang otomatis disimpan saat mengisi biodata. Hanya menampilkan peserta yang sudah mengerjakan <strong>Kreplin</strong>.
+    </p>
 
-    <!-- ============================================================
-         RINGKASAN TABEL (landing view) — 1 card per nilai1_json..nilai9_json
-         + 1 card custom "Ganti Tabel"
-    ============================================================ -->
-    <div id="tableCardsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:12px;">
-      <div class="loading-block"><div class="spinner"></div><p>Memuat ringkasan tabel...</p></div>
-    </div>
-
-    <!-- ============================================================
-         DETAIL VIEW — tabel penuh untuk satu nama tabel (tampilan lama)
-    ============================================================ -->
-    <div id="detailViewWrap" style="display:none;">
-      <button class="btn btn-outline btn-sm" onclick="showCardsView()" style="margin-bottom:10px;">⬅ Kembali ke ringkasan tabel</button>
-      <button class="btn btn-outline btn-sm" onclick="toggleTabelInput()" id="btnGantiTabel" style="margin-bottom:10px;margin-left:6px;">🗄 Ganti Tabel (<span id="tabelAktifLabel">nilai1_json</span>)</button>
-      <p class="note-bar">
-        💡 Peserta terdeteksi dari tanggal yang otomatis disimpan saat mengisi biodata. Hanya menampilkan peserta yang sudah mengerjakan <strong>Kreplin</strong>.
-      </p>
-      <div id="todayContainer">
-        <div class="loading-block"><div class="spinner"></div><p>Memuat data...</p></div>
-      </div>
+    <div id="todayContainer">
+      <div class="loading-block"><div class="spinner"></div><p>Memuat data...</p></div>
     </div>
   </div>
 </div>
@@ -554,9 +522,6 @@ let testerInterval = null;
 let rawCache       = [];
 let lastHash       = null;
 let tableName      = 'nilai1_json';
-let viewMode       = 'cards'; // 'cards' = ringkasan semua tabel, 'detail' = tabel penuh 1 nama tabel
-const CARD_TABLES  = ['nilai1_json','nilai2_json','nilai3_json','nilai4_json','nilai5_json','nilai6_json','nilai7_json','nilai8_json','nilai9_json'];
-let activeCardTables = ['nilai1_json']; // default awal cuma nilai1_json — tabel lain baru muncul setelah dicentang + tekan "Refresh Card"
 
 // ── Batch/offset untuk data > 500 baris ──
 // Backend default LIMIT 500 (ORDER BY id_x DESC) → hanya 500 baris terbaru yang tampil.
@@ -597,16 +562,12 @@ function renderJsonBio(raw) {
         const pend = obj.pendidikan || obj.bioPend || '';
         const jk   = obj.jenis_kelamin || obj.bioGender || '';
         const disp = [nama, usia, pend, jk].filter(Boolean).join(' · ');
-        const tglTes = (obj.tgl_tes || '').trim();
-        const tglTesBadge = tglTes
-            ? `<span style="display:inline-block;margin-left:6px;font-size:11px;color:#1e40af;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:1px 6px;white-space:nowrap;vertical-align:middle;">📅 ${escHtml(tglTes)}</span>`
-            : '';
         // Simpan raw ke map, pakai index unik
         const idx = _biodataStore.push(raw) - 1;
         return `<button onclick="bukaPopupBiodata(${idx})" style="background:none;border:none;padding:0;cursor:pointer;text-align:left;">
             <span style="font-weight:700;color:var(--primary);text-decoration:underline dotted;font-size:13px;">${escHtml(nama)}</span>
             <span style="color:var(--muted);font-size:12px;"> ${escHtml([usia,pend,jk].filter(Boolean).join(' · '))}</span>
-        </button>${tglTesBadge}`;
+        </button>`;
     } catch(e) { return escHtml(raw); }
 }
 
@@ -916,314 +877,6 @@ async function fetchData() {
 }
 
 // ============================================================
-// CARD VIEW — ringkasan per tabel (nilai1_json..nilai9_json)
-// ============================================================
-const CARD_BATCH = 500;
-let _cardLoadedCount = {}; // table -> berapa baris yg SEDANG dimuat (500, 1000, 1500, ...) — bertahan lintas refresh manual, reset hanya kalau halaman dibuka ulang
-let _cardApiTotal    = {}; // table -> total baris di tabel (dari API), null = belum diketahui
-
-// Ambil data utk satu tabel, sebanyak _cardLoadedCount[table] baris (default 500 kalau belum pernah dimuat).
-// Refresh manual akan menarik ULANG sejumlah yg SUDAH dimuat (bukan reset ke 500) — jadi kalau sudah pernah klik "+500 lagi" jadi 1000, refresh berikutnya tetap menarik 1000 baris segar.
-async function fetchTableStats(table) {
-    const dateVal = document.getElementById('dateInput').value || todayString();
-    const wanted  = _cardLoadedCount[table] || CARD_BATCH;
-    let allRows   = [];
-    let apiTotal  = null;
-    try {
-        for (let offset = 0; offset < wanted; offset += CARD_BATCH) {
-            const url  = `${API_BASE}?table=${encodeURIComponent(table)}&limit=${CARD_BATCH}&offset=${offset}`;
-            const res  = await fetch(url, { headers: { 'X-Custom-Auth': AUTH_KEY } });
-            const json = await res.json();
-            const rows = (json.success && json.data) ? json.data : [];
-            allRows = allRows.concat(rows);
-            if (json.success && typeof json.total === 'number') apiTotal = json.total;
-            if (rows.length < CARD_BATCH) break; // data tabel sudah habis, tidak perlu fetch batch berikutnya
-        }
-        _cardLoadedCount[table] = allRows.length || CARD_BATCH;
-        if (apiTotal !== null) _cardApiTotal[table] = apiTotal;
-        const totalDiTabel = _cardApiTotal[table] ?? allRows.length;
-        const filtered = allRows.filter(row => showAllDates || getDateFromX02(row.x_02) === dateVal);
-        const selesai  = filtered.filter(row => isPesertaSelesai(row.x_06, row.x_07)).length;
-        return {
-            table, total: filtered.length, selesai, belum: filtered.length - selesai, error: false,
-            loaded: allRows.length, apiTotal: totalDiTabel, hasMore: allRows.length < totalDiTabel
-        };
-    } catch(e) {
-        return { table, total: 0, selesai: 0, belum: 0, error: true, loaded: 0, apiTotal: 0, hasMore: false };
-    }
-}
-
-// Tombol "+500 lagi" di card — cuma fetch & render ulang card itu saja, tidak menyentuh card lain
-async function muatLebihBanyak(table, ev) {
-    if (ev) ev.stopPropagation();
-    _cardLoadedCount[table] = (_cardLoadedCount[table] || CARD_BATCH) + CARD_BATCH;
-    const el = document.getElementById(`card_${table}`);
-    if (el) {
-        const btn = document.getElementById(`btnMore_${table}`);
-        if (btn) { btn.disabled = true; btn.textContent = '⏳ Memuat...'; }
-    }
-    const r = await fetchTableStats(table);
-    renderCardStats(r);
-}
-
-function hasLinksForTable(table) {
-    return !!(_linkDataCache && _linkDataCache[table] && _linkDataCache[table].length > 0);
-}
-
-function linkIconHtml(table) {
-    const active = hasLinksForTable(table);
-    const style = active
-        ? 'background:#3b82f6;border:1px solid #2563eb;color:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.25);'
-        : 'background:#f1f5f9;border:1px solid var(--border);color:#94a3b8;opacity:.6;';
-    return `<button id="linkIcon_${table}" onclick="event.stopPropagation(); bukaPopupLink('${table}')" title="${active ? 'Ada link tersimpan' : 'Belum ada link — klik untuk tambah'}"
-        style="position:absolute;top:8px;right:8px;${style}border-radius:6px;width:26px;height:26px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;">🔗</button>`;
-}
-
-function refreshCardLinkIconStyle(table) {
-    const el = document.getElementById(`linkIcon_${table}`);
-    if (!el) return;
-    const active = hasLinksForTable(table);
-    el.title = active ? 'Ada link tersimpan' : 'Belum ada link — klik untuk tambah';
-    el.style.cssText = `position:absolute;top:8px;right:8px;border-radius:6px;width:26px;height:26px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;${active
-        ? 'background:#3b82f6;border:1px solid #2563eb;color:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.25);'
-        : 'background:#f1f5f9;border:1px solid var(--border);color:#94a3b8;opacity:.6;'}`;
-}
-
-function cardSkeletonHtml(table) {
-    return `<div class="table-summary-card" id="card_${table}" onclick="showDetailView('${table}')"
-        style="position:relative;cursor:pointer;border:2px solid var(--border);border-radius:12px;padding:16px;background:#fff;transition:all .15s;">
-        ${linkIconHtml(table)}
-        <div style="font-weight:700;color:var(--primary);font-size:14px;margin-bottom:10px;padding-right:26px;">🗂 ${table}</div>
-        <div style="font-size:12px;color:var(--muted);">⏳ Memuat...</div>
-    </div>`;
-}
-
-function customCardHtml() {
-    return `<div class="table-summary-card" onclick="event.stopPropagation(); toggleTabelInput();"
-        style="cursor:pointer;border:2px dashed var(--border);border-radius:12px;padding:16px;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-        <div style="font-size:22px;">🗄</div>
-        <div style="font-weight:700;color:var(--muted);font-size:13px;">Ganti / Tabel Lain</div>
-        <div style="font-size:11px;color:var(--muted);text-align:center;">Ketik nama tabel custom di luar nilai1–9</div>
-    </div>`;
-}
-
-function renderCardStats(r) {
-    const el = document.getElementById(`card_${r.table}`);
-    if (!el) return;
-    if (r.error) {
-        el.innerHTML = `${linkIconHtml(r.table)}
-            <div style="font-weight:700;color:var(--primary);font-size:14px;margin-bottom:10px;padding-right:26px;">🗂 ${r.table}</div>
-            <div style="font-size:12px;color:#dc2626;">⚠ Gagal memuat</div>`;
-        return;
-    }
-    const loadInfo = r.apiTotal > CARD_BATCH
-        ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">📦 Dimuat ${r.loaded} dari ${r.apiTotal} baris di tabel</div>`
-        : '';
-    const moreBtn = r.hasMore
-        ? `<button id="btnMore_${r.table}" class="btn btn-outline btn-sm" style="margin-top:6px;padding:4px 10px;font-size:11px;align-self:flex-start;" onclick="muatLebihBanyak('${r.table}', event)">⬇ Muat 500 lagi</button>`
-        : (r.apiTotal > CARD_BATCH ? `<div style="font-size:11px;color:#16a34a;margin-top:4px;">✅ Semua data sudah dimuat</div>` : '');
-    el.innerHTML = `${linkIconHtml(r.table)}
-        <div style="font-weight:700;color:var(--primary);font-size:14px;margin-bottom:10px;padding-right:26px;">🗂 ${r.table}</div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-            <div style="font-size:12px;color:var(--muted);">👥 Total peserta: <strong style="color:#1e293b;">${r.total}</strong></div>
-            <div style="font-size:12px;"><span style="background:#dcfce7;color:#166534;border-radius:99px;padding:2px 10px;font-weight:700;">✅ ${r.selesai} selesai</span></div>
-            <div style="font-size:12px;"><span style="background:#fee2e2;color:#b91c1c;border-radius:99px;padding:2px 10px;font-weight:700;">⏳ ${r.belum} belum selesai</span></div>
-            ${loadInfo}
-            ${moreBtn}
-        </div>`;
-}
-
-
-async function renderTableCardsView() {
-    const wrap = document.getElementById('tableCardsContainer');
-    if (!activeCardTables.length) {
-        wrap.innerHTML = `<div class="empty-msg" style="grid-column:1/-1;"><div class="em-icon">📭</div><p>Tidak ada tabel yang dipilih. Centang minimal 1 tabel lalu tekan Refresh Card.</p></div>` + customCardHtml();
-        document.getElementById('todayCount').textContent = '0 peserta (semua tabel)';
-        return;
-    }
-    await fetchLinkData(); // supaya status nyala/pudar ikon link akurat sejak render pertama
-    wrap.innerHTML = activeCardTables.map(cardSkeletonHtml).join('') + customCardHtml();
-    document.getElementById('todayLastUpdate').textContent = '🕐 ' + nowTimeString();
-    const results = await Promise.all(activeCardTables.map(fetchTableStats));
-    results.forEach(renderCardStats);
-    const totalAll = results.reduce((sum, r) => sum + r.total, 0);
-    document.getElementById('todayCount').textContent = totalAll + ' peserta (tabel terpilih)';
-}
-
-// ── Filter checkbox tabel (1-9 + custom) — cuma diterapkan saat tombol "Refresh Card" ditekan ──
-function toggleCustomTableInput() {
-    const chk = document.getElementById('chkTableCustom');
-    const inp = document.getElementById('customTableInput');
-    inp.style.display = chk.checked ? 'inline-block' : 'none';
-}
-
-function getSelectedCardTablesFromCheckbox() {
-    const list = [];
-    document.querySelectorAll('.cardTableChk').forEach(cb => {
-        if (cb.checked) list.push(cb.value);
-    });
-    const customChk = document.getElementById('chkTableCustom');
-    if (customChk && customChk.checked) {
-        const raw = (document.getElementById('customTableInput').value || '').trim();
-        raw.split(',').map(s => s.trim()).filter(Boolean).forEach(t => {
-            if (!list.includes(t)) list.push(t);
-        });
-    }
-    return list;
-}
-
-function applyCardFilter() {
-    // Hanya mengubah daftar & isi card — tanggal, server, dan state lain tidak disentuh
-    activeCardTables = getSelectedCardTablesFromCheckbox();
-    renderTableCardsView();
-}
-
-// ============================================================
-// LINK PENGERJAAN TEST — disimpan di tabel kontrol_admin, id_x=4, kolom x_01 (JSON)
-// Struktur x_01: { "nilai1_json": [ {url, label, catatan}, ... ], "nilai2_json": [...], ... }
-// ============================================================
-const LINK_CONTROL_TABLE = 'kontrol_admin';
-const LINK_CONTROL_IDX   = '4';
-let _linkDataCache   = null; // null = belum pernah di-fetch, di-cache di client selama sesi
-let _linkActiveTable = null;
-
-async function fetchLinkData(forceReload) {
-    if (_linkDataCache && !forceReload) return _linkDataCache;
-    try {
-        const url = `${API_BASE}?table=${encodeURIComponent(LINK_CONTROL_TABLE)}&limit=500&offset=0`;
-        const res = await fetch(url, { headers: { 'X-Custom-Auth': AUTH_KEY } });
-        const json = await res.json();
-        const rows = (json.success && json.data) ? json.data : [];
-        const row  = rows.find(r => String(r.id_x) === LINK_CONTROL_IDX);
-        const raw  = row ? (row.x_01 || '') : '';
-        _linkDataCache = raw ? (JSON.parse(raw) || {}) : {};
-    } catch(e) {
-        console.error('[fetchLinkData] error:', e);
-        _linkDataCache = {};
-    }
-    return _linkDataCache;
-}
-
-async function saveLinkData() {
-    const url = `${API_BASE}?table=${encodeURIComponent(LINK_CONTROL_TABLE)}&id_x=${encodeURIComponent(LINK_CONTROL_IDX)}`;
-    const res = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': AUTH_KEY },
-        body: JSON.stringify({ x_01: JSON.stringify(_linkDataCache) })
-    });
-    const text = await res.text();
-    let json;
-    try { json = JSON.parse(text); } catch(e) { throw new Error('Response bukan JSON: ' + text); }
-    if (!json.success) throw new Error(json.message || json.error || 'Gagal menyimpan link (lihat console).');
-}
-
-async function bukaPopupLink(table) {
-    _linkActiveTable = table;
-    document.getElementById('popupLinkTitle').textContent = `🔗 Link Pengerjaan Test — ${table}`;
-    document.getElementById('popupLinkBody').innerHTML = '<p style="font-size:12px;color:var(--muted);">⏳ Memuat...</p>';
-    document.getElementById('linkInputUrl').value     = '';
-    document.getElementById('linkInputLabel').value   = '';
-    document.getElementById('linkInputCatatan').value = '';
-    openModal('modalLink');
-    await fetchLinkData();
-    renderLinkPopupBody();
-}
-
-function renderLinkPopupBody() {
-    const table = _linkActiveTable;
-    const list  = (_linkDataCache && _linkDataCache[table]) || [];
-    const body  = document.getElementById('popupLinkBody');
-    if (!list.length) {
-        body.innerHTML = '<p style="font-size:12px;color:var(--muted);">Belum ada link untuk tabel ini.</p>';
-        return;
-    }
-    body.innerHTML = list.map((item, idx) => {
-        const urlEsc = escHtml(item.url || '').replace(/'/g, "\\'");
-        return `<div style="border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
-            <div style="font-weight:700;font-size:13px;color:#1e293b;">${escHtml(item.label || '(tanpa label)')}</div>
-            <div style="font-size:12px;color:var(--primary);word-break:break-all;margin:4px 0;">${escHtml(item.url || '')}</div>
-            ${item.catatan ? `<div style="font-size:11px;color:var(--muted);margin-bottom:6px;">${escHtml(item.catatan)}</div>` : ''}
-            <div style="display:flex;gap:6px;">
-                <button class="btn btn-outline btn-sm" style="padding:4px 10px;font-size:11px;" onclick="copyLink('${urlEsc}')">📋 Copy</button>
-                <button class="btn btn-sm" style="padding:4px 10px;font-size:11px;background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;border-radius:8px;cursor:pointer;font-family:inherit;" onclick="hapusLink(${idx})">🗑 Hapus</button>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-async function tambahLink() {
-    const url     = document.getElementById('linkInputUrl').value.trim();
-    const label   = document.getElementById('linkInputLabel').value.trim();
-    const catatan = document.getElementById('linkInputCatatan').value.trim();
-    if (!url) { alert('URL wajib diisi.'); return; }
-    const table = _linkActiveTable;
-    if (!_linkDataCache) await fetchLinkData();
-    if (!_linkDataCache[table]) _linkDataCache[table] = [];
-    _linkDataCache[table].push({ url, label, catatan });
-    try {
-        await saveLinkData();
-        document.getElementById('linkInputUrl').value     = '';
-        document.getElementById('linkInputLabel').value   = '';
-        document.getElementById('linkInputCatatan').value = '';
-        renderLinkPopupBody();
-        refreshCardLinkIconStyle(table);
-    } catch(e) {
-        _linkDataCache[table].pop(); // rollback kalau gagal simpan
-        alert('Gagal menyimpan link: ' + e.message);
-    }
-}
-
-async function hapusLink(idx) {
-    if (!confirm('Hapus link ini?')) return;
-    const table   = _linkActiveTable;
-    const removed = _linkDataCache[table].splice(idx, 1);
-    try {
-        await saveLinkData();
-        renderLinkPopupBody();
-        refreshCardLinkIconStyle(table);
-    } catch(e) {
-        _linkDataCache[table].splice(idx, 0, removed[0]); // rollback kalau gagal simpan
-        alert('Gagal menghapus link: ' + e.message);
-        renderLinkPopupBody();
-    }
-}
-
-function copyLink(url) {
-    if (!url) return;
-    navigator.clipboard.writeText(url).then(() => {
-        alert('Link disalin ke clipboard.');
-    }).catch(() => {
-        prompt('Salin manual link berikut:', url);
-    });
-}
-
-function showCardsView() {
-    viewMode = 'cards';
-    document.getElementById('tableCardsContainer').style.display = 'grid';
-    document.getElementById('detailViewWrap').style.display = 'none';
-    document.getElementById('detailBadgesWrap').style.display = 'none';
-    renderTableCardsView();
-}
-
-function showDetailView(table) {
-    viewMode   = 'detail';
-    tableName  = table;
-    lastHash   = null;
-    rawCache   = [];
-    dataOffset = 0;
-    document.getElementById('tableInput').value = table;
-    const lbl = document.getElementById('tabelAktifLabel');
-    if (lbl) lbl.textContent = tableName;
-    document.getElementById('tableCardsContainer').style.display = 'none';
-    document.getElementById('detailViewWrap').style.display = 'block';
-    document.getElementById('detailBadgesWrap').style.display = 'inline';
-    if (testerTable) { testerTable.destroy(); testerTable = null; }
-    document.getElementById('todayContainer').innerHTML =
-        '<div class="loading-block"><div class="spinner"></div><p>Memuat data...</p></div>';
-    update();
-}
-
-// ============================================================
 // BATCH SELECTOR — pilih 500 baris mana yang mau ditampilkan
 // ============================================================
 function renderBatchSelector() {
@@ -1399,8 +1052,16 @@ async function update() {
 // KONTROL
 // ============================================================
 function loadTable() {
-    const val = document.getElementById('tableInput').value.trim() || 'nilai1_json';
-    showDetailView(val);
+    tableName  = document.getElementById('tableInput').value.trim() || 'nilai1_json';
+    lastHash   = null;
+    rawCache   = [];
+    dataOffset = 0;
+    if (testerTable) { testerTable.destroy(); testerTable = null; }
+    document.getElementById('todayContainer').innerHTML =
+        '<div class="loading-block"><div class="spinner"></div><p>Memuat...</p></div>';
+    update();
+    const lbl = document.getElementById('tabelAktifLabel');
+    if (lbl) lbl.textContent = tableName;
 }
 
 // ── Ganti tabel (pola sama seperti finishing.html / index_rekap.html) ──
@@ -1453,7 +1114,7 @@ async function loadTabelList() {
 
 async function doRefresh() {
     lastHash = null;
-    await refreshCurrentView();
+    await update();
 }
 
 // ============================================================
@@ -1571,12 +1232,10 @@ function onDateChange(val) {
     localStorage.setItem(LS_DATE_KEY, val);
     updateDateBadge(val);
     lastHash = null;
-    if (viewMode === 'detail') {
-        if (testerTable) { testerTable.destroy(); testerTable = null; }
-        document.getElementById('todayContainer').innerHTML =
-            '<div class="loading-block"><div class="spinner"></div><p>Memuat...</p></div>';
-    }
-    refreshCurrentView();
+    if (testerTable) { testerTable.destroy(); testerTable = null; }
+    document.getElementById('todayContainer').innerHTML =
+        '<div class="loading-block"><div class="spinner"></div><p>Memuat...</p></div>';
+    update();
 }
 
 function setToday() {
@@ -1592,12 +1251,10 @@ function setAllDates() {
     dataOffset   = 0;
     updateDateBadge(null);
     lastHash = null;
-    if (viewMode === 'detail') {
-        if (testerTable) { testerTable.destroy(); testerTable = null; }
-        document.getElementById('todayContainer').innerHTML =
-            '<div class="loading-block"><div class="spinner"></div><p>Memuat...</p></div>';
-    }
-    refreshCurrentView();
+    if (testerTable) { testerTable.destroy(); testerTable = null; }
+    document.getElementById('todayContainer').innerHTML =
+        '<div class="loading-block"><div class="spinner"></div><p>Memuat...</p></div>';
+    update();
 }
 
 function updateDateBadge(val) {
@@ -1626,16 +1283,11 @@ const _initDate = loadSavedDate();
 document.getElementById('dateInput').value = _initDate;
 updateDateBadge(_initDate);
 
-function refreshCurrentView() {
-    if (viewMode === 'cards') { renderTableCardsView(); }
-    else { update(); }
-}
-
 function startApp() {
-    showCardsView();
+    update();
     if (testerInterval) clearInterval(testerInterval);
     if (APP_CONFIG.autoRefresh) {
-        testerInterval = setInterval(refreshCurrentView, 5000);
+        testerInterval = setInterval(update, 5000);
     }
     updateRefreshPill();
 }
@@ -2322,31 +1974,6 @@ function renderInstruksiDetail(data, key) {
     <div id="popupBelumSelesaiBody"></div>
     <div style="margin-top:16px;display:flex;justify-content:flex-end;">
       <button class="btn btn-outline" onclick="closeModal('modalBelumSelesai')" style="width:auto;padding:8px 20px;">Tutup</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL LINK PENGERJAAN TEST ══ -->
-<div class="modal-overlay" id="modalLink" style="z-index:10400;">
-  <div class="modal-box" style="max-width:560px;width:96%;max-height:90vh;overflow-y:auto;">
-    <button class="modal-close" onclick="closeModal('modalLink')">×</button>
-    <h2 id="popupLinkTitle" style="font-size:16px;margin-bottom:4px;">🔗 Link Pengerjaan Test</h2>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Data disimpan di tabel <code>kontrol_admin</code> (id_x=4, kolom x_01).</p>
-    <div id="popupLinkBody"></div>
-    <div style="margin-top:16px;padding-top:14px;border-top:1.5px solid var(--border);">
-      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">➕ Tambah Link Baru</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <input type="text" id="linkInputUrl" placeholder="URL (https://...)"
-          style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-        <input type="text" id="linkInputLabel" placeholder="Label singkat (contoh: Server Utama)"
-          style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-        <input type="text" id="linkInputCatatan" placeholder="Catatan / keterangan (opsional)"
-          style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-        <button class="btn btn-primary btn-sm" onclick="tambahLink()" style="align-self:flex-start;">➕ Tambah</button>
-      </div>
-    </div>
-    <div style="margin-top:16px;display:flex;justify-content:flex-end;">
-      <button class="btn btn-outline" onclick="closeModal('modalLink')" style="width:auto;padding:8px 20px;">Tutup</button>
     </div>
   </div>
 </div>
