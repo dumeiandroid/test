@@ -1121,9 +1121,8 @@ async function bukaPopupLink(table) {
     _linkActiveTable = table;
     document.getElementById('popupLinkTitle').textContent = `🔗 Link Pengerjaan Test — ${table}`;
     document.getElementById('popupLinkBody').innerHTML = '<p style="font-size:12px;color:var(--muted);">⏳ Memuat...</p>';
-    document.getElementById('linkInputUrl').value     = '';
-    document.getElementById('linkInputLabel').value   = '';
-    document.getElementById('linkInputCatatan').value = '';
+    const searchEl = document.getElementById('linkSearchInput');
+    if (searchEl) searchEl.value = '';
     openModal('modalLink');
     await fetchLinkData();
     renderLinkPopupBody();
@@ -1131,13 +1130,28 @@ async function bukaPopupLink(table) {
 
 function renderLinkPopupBody() {
     const table = _linkActiveTable;
-    const list  = (_linkDataCache && _linkDataCache[table]) || [];
-    const body  = document.getElementById('popupLinkBody');
-    if (!list.length) {
+    const fullList = (_linkDataCache && _linkDataCache[table]) || [];
+    const searchEl = document.getElementById('linkSearchInput');
+    const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+    // Simpan index asli agar hapus/copy tetap merujuk ke item yang benar di data asli
+    let list = fullList.map((item, idx) => ({ item, idx }));
+    if (q) {
+        list = list.filter(({ item }) => {
+            return (item.label || '').toLowerCase().includes(q)
+                || (item.url || '').toLowerCase().includes(q)
+                || (item.catatan || '').toLowerCase().includes(q);
+        });
+    }
+    const body = document.getElementById('popupLinkBody');
+    if (!fullList.length) {
         body.innerHTML = '<p style="font-size:12px;color:var(--muted);">Belum ada link untuk tabel ini.</p>';
         return;
     }
-    body.innerHTML = list.map((item, idx) => {
+    if (!list.length) {
+        body.innerHTML = '<p style="font-size:12px;color:var(--muted);">Tidak ada link yang cocok dengan pencarian.</p>';
+        return;
+    }
+    body.innerHTML = list.map(({ item, idx }) => {
         const urlEsc = escHtml(item.url || '').replace(/'/g, "\\'");
         return `<div style="border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
             <div style="font-weight:700;font-size:13px;color:#1e293b;">${escHtml(item.label || '(tanpa label)')}</div>
@@ -1149,6 +1163,13 @@ function renderLinkPopupBody() {
             </div>
         </div>`;
     }).join('');
+}
+
+function bukaPopupTambahLink() {
+    document.getElementById('linkInputUrl').value     = '';
+    document.getElementById('linkInputLabel').value   = '';
+    document.getElementById('linkInputCatatan').value = '';
+    openModal('modalTambahLink');
 }
 
 async function tambahLink() {
@@ -1165,6 +1186,7 @@ async function tambahLink() {
         document.getElementById('linkInputUrl').value     = '';
         document.getElementById('linkInputLabel').value   = '';
         document.getElementById('linkInputCatatan').value = '';
+        closeModal('modalTambahLink');
         renderLinkPopupBody();
         refreshCardLinkIconStyle(table);
     } catch(e) {
@@ -2330,23 +2352,35 @@ function renderInstruksiDetail(data, key) {
 <div class="modal-overlay" id="modalLink" style="z-index:10400;">
   <div class="modal-box" style="max-width:560px;width:96%;max-height:90vh;overflow-y:auto;">
     <button class="modal-close" onclick="closeModal('modalLink')">×</button>
+    <button onclick="bukaPopupTambahLink()" title="Tambah Link Baru"
+      style="position:absolute;top:8px;right:44px;width:28px;height:28px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--primary);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">+</button>
     <h2 id="popupLinkTitle" style="font-size:16px;margin-bottom:4px;">🔗 Link Pengerjaan Test</h2>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Data disimpan di tabel <code>kontrol_admin</code> (id_x=4, kolom x_01).</p>
+    <input type="text" id="linkSearchInput" placeholder="🔍 Cari link (label / URL / catatan)..." oninput="renderLinkPopupBody()"
+      style="width:100%;box-sizing:border-box;padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;margin-bottom:12px;">
     <div id="popupLinkBody"></div>
-    <div style="margin-top:16px;padding-top:14px;border-top:1.5px solid var(--border);">
-      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;">➕ Tambah Link Baru</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <input type="text" id="linkInputUrl" placeholder="URL (https://...)"
-          style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-        <input type="text" id="linkInputLabel" placeholder="Label singkat (contoh: Server Utama)"
-          style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-        <input type="text" id="linkInputCatatan" placeholder="Catatan / keterangan (opsional)"
-          style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
-        <button class="btn btn-primary btn-sm" onclick="tambahLink()" style="align-self:flex-start;">➕ Tambah</button>
-      </div>
-    </div>
     <div style="margin-top:16px;display:flex;justify-content:flex-end;">
       <button class="btn btn-outline" onclick="closeModal('modalLink')" style="width:auto;padding:8px 20px;">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL TAMBAH LINK (form terpisah, muncul di atas modalLink) ══ -->
+<div class="modal-overlay" id="modalTambahLink" style="z-index:10500;">
+  <div class="modal-box" style="max-width:420px;width:92%;">
+    <button class="modal-close" onclick="closeModal('modalTambahLink')">×</button>
+    <h2 style="font-size:15px;margin-bottom:14px;">➕ Tambah Link Baru</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <input type="text" id="linkInputUrl" placeholder="URL (https://...)"
+        style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
+      <input type="text" id="linkInputLabel" placeholder="Label singkat (contoh: Server Utama)"
+        style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
+      <input type="text" id="linkInputCatatan" placeholder="Catatan / keterangan (opsional)"
+        style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit;">
+    </div>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn btn-outline" onclick="closeModal('modalTambahLink')" style="width:auto;padding:8px 20px;">Batal</button>
+      <button class="btn btn-primary" onclick="tambahLink()" style="width:auto;padding:8px 20px;">➕ Tambah</button>
     </div>
   </div>
 </div>
