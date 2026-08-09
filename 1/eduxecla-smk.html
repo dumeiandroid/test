@@ -1956,9 +1956,10 @@ function wRQ_dual(){
     const tag=isFirst?` <span style="font-size:.7em;background:var(--primary);color:#fff;border-radius:99px;padding:2px 8px;margin-left:4px">✓ Dipilih</span>`:'';
     btns+=`<button class="${cls}" ${onclk}><span class="opt-key">${k}</span>${esc(opts[k])}${tag}</button>`;
   }
+  const qTextHtml=isStep2?'':`<div class="q-text">${esc(q.question)}</div>`;
   $('questionContent').innerHTML=`
     <div class="q-label">Soal No. ${wQi+1}${wb}</div>
-    <div class="q-text">${esc(q.question)}</div>
+    ${qTextHtml}
     <div class="who-dual-hint ${hintCls}">${hintTxt}</div>
     <div class="options-grid">${btns}</div>`;
   $('actionBar').innerHTML='';
