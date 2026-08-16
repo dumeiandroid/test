@@ -1,0 +1,2591 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Data Psikogram JSON — FULL EPPS (14 Aspek)</title>
+    <script src="https://psikogram.lidan.co.id/engine1/psikogram-engine-json.js?v=1"></script>
+    <script>
+        // karakter_engine.js menggunakan const di top-level sehingga tidak otomatis masuk window.
+        // Solusi: load ulang via fetch lalu eksekusi dengan window assignment eksplisit.
+        function _loadEngine(url, varName) {
+            return fetch(url)
+                .then(r => r.text())
+                .then(text => {
+                    const fn = new Function(text + '; return ' + varName + ';');
+                    window[varName] = fn();
+                    console.log('[' + varName + '] Berhasil dimuat');
+                })
+                .catch(e => console.error('[' + varName + '] Gagal:', e));
+        }
+
+        window._enginesReady = Promise.all([
+            _loadEngine('https://psikogram.lidan.co.id/engine1/karakter_engine.js', 'KarakterEngine'),
+            _loadEngine('https://psikogram.lidan.co.id/engine1/potensi_engine.js',  'PotensiEngine'),
+            _loadEngine('https://psikogram.lidan.co.id/engine1/karir_engine.js',    'KarirEngine'),
+            _loadEngine('https://psikogram.lidan.co.id/engine1/asmara_engine.js',   'AsmaraEngine'),
+        ]);
+        window._karakterEngineReady = window._enginesReady;
+
+        // =========================================================
+        // TOGGLE VARIASI KALIMAT
+        // =========================================================
+        const VARIASI_MODE_KEY = 'lidan_variasi_mode';
+
+        function getVariasiMode() {
+            const m = localStorage.getItem(VARIASI_MODE_KEY);
+            return (m === 'acak') ? 'acak' : 'konsisten';
+        }
+
+        function setVariasiMode(mode) {
+            localStorage.setItem(VARIASI_MODE_KEY, mode === 'acak' ? 'acak' : 'konsisten');
+        }
+
+        function getRandFn(seed) {
+            if (getVariasiMode() === 'acak') {
+                return function () { return Math.random(); };
+            }
+            const PE = window.PsikogramEngine;
+            if (PE && PE.makeSeededRand && PE.seedFromId) {
+                return PE.makeSeededRand(PE.seedFromId(String(seed)));
+            }
+            return seededRandom(String(seed));
+        }
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #5F4EDA;
+            min-height: 100vh;
+            color: #222;
+        }
+
+        .page-header {
+            background: #4a3bb5;
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 3px solid #3a2da0;
+            flex-wrap: wrap;
+        }
+        .page-header h1 { font-size: 20px; }
+        .page-header span { font-size: 13px; opacity: .8; }
+
+        .variasi-toggle-box {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.25);
+            border-radius: 10px;
+            padding: 8px 14px;
+            flex-shrink: 0;
+        }
+        .variasi-toggle-box .vt-label {
+            font-size: 12px;
+            line-height: 1.3;
+            text-align: right;
+        }
+        .variasi-toggle-box .vt-label strong { font-size: 13px; }
+        .variasi-toggle-box .vt-mode-text {
+            display: block;
+            font-weight: bold;
+        }
+        .variasi-toggle-box .vt-mode-text.konsisten { color: #6bffb0; }
+        .variasi-toggle-box .vt-mode-text.acak      { color: #ffd93d; }
+        .vt-switch {
+            position: relative;
+            width: 46px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .vt-switch input { opacity: 0; width: 0; height: 0; }
+        .vt-slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #888;
+            transition: .2s;
+            border-radius: 24px;
+        }
+        .vt-slider::before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+        }
+        .vt-switch input:checked + .vt-slider { background-color: #2ecc71; }
+        .vt-switch input:checked + .vt-slider::before { transform: translateX(22px); }
+
+        .main-wrap {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 16px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 18px rgba(0,0,0,.18);
+            overflow: hidden;
+        }
+        .card-head {
+            background: #5F4EDA;
+            color: white;
+            padding: 12px 20px;
+            font-weight: bold;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-body { padding: 20px; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 9px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color .2s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #5F4EDA;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .mode-tab {
+            padding: 8px 18px;
+            border: 2px solid #5F4EDA;
+            border-radius: 20px;
+            background: white;
+            color: #5F4EDA;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .mode-tab.active {
+            background: #5F4EDA;
+            color: white;
+        }
+        .mode-tab:hover:not(.active) { background: #eee8ff; }
+
+        .mode-panel { display: none; }
+        .mode-panel.active { display: block; }
+
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-primary   { background: #5F4EDA; color: white; }
+        .btn-primary:hover:not(:disabled)   { background: #4a3bb5; }
+        .btn-success   { background: #28a745; color: white; }
+        .btn-success:hover:not(:disabled)   { background: #218838; }
+        .btn-danger    { background: #dc3545; color: white; }
+        .btn-danger:hover:not(:disabled)    { background: #c82333; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover:not(:disabled) { background: #545b62; }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .preview-wrap { overflow-x: auto; }
+        table.preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            min-width: 1000px;
+        }
+        .preview-table th {
+            background: #5F4EDA;
+            color: white;
+            padding: 9px 12px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .preview-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+        .preview-table tr:hover td { background: #f5f0ff; }
+        .preview-table tr.selected td { background: #e8e0ff; }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .badge-new     { background: #d4edda; color: #155724; }
+        .badge-update  { background: #fff3cd; color: #856404; }
+        .badge-success { background: #cce5ff; color: #004085; }
+        .badge-error   { background: #f8d7da; color: #721c24; }
+        .badge-pending { background: #e2e3e5; color: #383d41; }
+
+        .progress-bar-wrap {
+            background: #e9ecef;
+            border-radius: 8px;
+            height: 18px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #5F4EDA, #28a745);
+            height: 100%;
+            width: 0%;
+            transition: width .3s;
+            border-radius: 8px;
+        }
+
+        .log-box {
+            background: #1a1a2e;
+            color: #a8ff78;
+            border-radius: 8px;
+            padding: 14px;
+            font-family: monospace;
+            font-size: 12px;
+            height: 200px;
+            overflow-y: auto;
+            line-height: 1.7;
+        }
+        .log-box .log-err  { color: #ff6b6b; }
+        .log-box .log-ok   { color: #a8ff78; }
+        .log-box .log-info { color: #74b9ff; }
+        .log-box .log-warn { color: #ffd93d; }
+
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .stat-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px 18px;
+            text-align: center;
+            min-width: 100px;
+            border: 2px solid #e9ecef;
+        }
+        .stat-box .stat-num { font-size: 26px; font-weight: bold; color: #5F4EDA; }
+        .stat-box .stat-lbl { font-size: 11px; color: #777; text-transform: uppercase; }
+
+        .json-cell {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            color: #5F4EDA;
+            text-decoration: underline dotted;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,.55);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 10px;
+            max-width: 700px;
+            width: 95%;
+            max-height: 85vh;
+            overflow: auto;
+            padding: 24px;
+            box-shadow: 0 8px 40px rgba(0,0,0,.3);
+        }
+        .modal-box h3 { margin-bottom: 14px; color: #5F4EDA; }
+        .modal-box pre {
+            background: #f4f0ff;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .modal-close {
+            float: right;
+            cursor: pointer;
+            font-size: 20px;
+            color: #999;
+        }
+        .modal-close:hover { color: #333; }
+
+        .select-all-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #555;
+        }
+        .select-all-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .preview-search-wrap {
+            position: relative;
+            min-width: 220px;
+        }
+        .preview-search-wrap input {
+            width: 100%;
+            padding: 7px 30px 7px 12px;
+            border: 1px solid #d5d5e0;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color .15s;
+        }
+        .preview-search-wrap input:focus {
+            border-color: #6c63ff;
+        }
+        .preview-search-wrap .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: #999;
+            pointer-events: none;
+        }
+        .preview-search-count {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+        .srv-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .srv-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .srv-btn {
+            background: #f4f0ff;
+            border: 2px solid #c9baff;
+            color: #5F4EDA;
+            border-radius: 8px;
+            padding: 7px 16px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: monospace;
+            line-height: 1.4;
+            text-align: left;
+        }
+        .srv-btn:hover:not(.active) {
+            background: #e8e0ff;
+            border-color: #5F4EDA;
+        }
+        .srv-btn.active {
+            background: #5F4EDA;
+            border-color: #4a3bb5;
+            color: white;
+        }
+        .srv-btn .srv-name   { display: block; font-size: 13px; }
+        .srv-btn .srv-domain { display: block; font-size: 10px; opacity: .75; font-weight: normal; }
+        .hdr-srv-badge {
+            display: inline-block;
+            background: rgba(255,255,255,.2);
+            border: 1px solid rgba(255,255,255,.35);
+            border-radius: 12px;
+            padding: 2px 10px;
+            font-size: 12px;
+            font-family: monospace;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        .badge-new-feature {
+            background: #ff6b6b;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+
+        .srv-info-strip {
+            margin-top:12px; padding:10px 14px;
+            background:#f0edff; border-radius:8px; border-left:4px solid #5F4EDA;
+            font-size:13px; display:flex; align-items:center; gap:10px;
+        }
+        .table-info-strip {
+            margin-top:14px; padding:10px 14px;
+            background:#f0edff; border-radius:8px; border-left:4px solid #5F4EDA;
+            font-size:13px; display:flex; align-items:center; gap:10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- HEADER -->
+<!-- ============================================================ -->
+<div class="page-header">
+    <div>
+        <h1>📊 Transfer Data Psikogram JSON — FULL EPPS <span class="badge-new-feature">+9 Aspek Baru</span></h1>
+        <span>Sumber: tabel <strong id="hdr-src2">nilai1_json</strong> &nbsp;|&nbsp; Tujuan: tabel <strong id="hdr-dst2">rekap_nilai1</strong> &nbsp;|&nbsp; Src: <span id="hdr-srv-src" class="hdr-srv-badge">lidan-co-id.pages.dev</span> → Dst: psikogram_db &nbsp;|&nbsp; <strong style="color:#ffd93d;">Format: JSON</strong></span>
+    </div>
+
+    <div class="variasi-toggle-box" title="Konsisten: id_x sama selalu dapat kalimat sama. Acak: kalimat bisa berubah tiap kali di-generate ulang, walau id_x sama.">
+        <div class="vt-label">
+            <strong>Variasi Kalimat</strong>
+            <span class="vt-mode-text" id="vt-mode-text">Konsisten</span>
+        </div>
+        <label class="vt-switch">
+            <input type="checkbox" id="vt-switch-input" onchange="onVariasiModeToggle(this.checked)">
+            <span class="vt-slider"></span>
+        </label>
+    </div>
+</div>
+
+<script>
+    function refreshVariasiToggleUI() {
+        const mode = getVariasiMode();
+        const input = document.getElementById('vt-switch-input');
+        const text  = document.getElementById('vt-mode-text');
+        if (!input || !text) return;
+        input.checked = (mode === 'acak');
+        text.textContent = (mode === 'acak') ? 'Acak' : 'Konsisten';
+        text.className = 'vt-mode-text ' + (mode === 'acak' ? 'acak' : 'konsisten');
+    }
+    function onVariasiModeToggle(isAcak) {
+        setVariasiMode(isAcak ? 'acak' : 'konsisten');
+        refreshVariasiToggleUI();
+    }
+    refreshVariasiToggleUI();
+</script>
+
+<!-- ============================================================ -->
+<!-- MAIN WRAP -->
+<!-- ============================================================ -->
+<div class="main-wrap">
+
+    <!-- ══ SERVER SUMBER ══ -->
+    <div class="card">
+        <div class="card-head">🌐 Server Sumber Data</div>
+        <div class="card-body">
+            <span class="srv-label">Pilih server untuk membaca data sumber:</span>
+            <div class="srv-grid" id="serverGrid"></div>
+            <div class="srv-info-strip">
+                <span style="font-size:16px;">🔗</span>
+                <span>API Sumber aktif: <code id="srv-api-display" style="font-size:12px; background:#e8e0ff; padding:2px 7px; border-radius:4px;"></code></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ KONFIGURASI TABEL ══ -->
+    <div class="card">
+        <div class="card-head">🗄️ Konfigurasi Tabel</div>
+        <div class="card-body">
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); align-items: end;">
+                <div class="form-group">
+                    <label>📥 Tabel Sumber (Baca Data)</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="cfg-src-table" value="nilai1_json" placeholder="nama_tabel_sumber"
+                            oninput="onTableInput()" style="flex:1;">
+                        <button class="btn btn-secondary" style="padding:9px 12px; white-space:nowrap;"
+                            onclick="resetSrcTable()">↩ Reset</button>
+                    </div>
+                    <div style="font-size:11px; color:#888; margin-top:4px;">Default: <code>nilai1_json</code></div>
+                </div>
+                <div class="form-group">
+                    <label>📤 Tabel Tujuan (Simpan Rekap)</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="cfg-dst-table" value="rekap_nilai1" placeholder="nama_tabel_tujuan"
+                            oninput="onTableInput()" style="flex:1;">
+                        <button class="btn btn-secondary" style="padding:9px 12px; white-space:nowrap;"
+                            onclick="resetDstTable()">↩ Reset</button>
+                    </div>
+                    <div style="font-size:11px; color:#888; margin-top:4px;">Default: <code>rekap_nilai1</code></div>
+                </div>
+                <div class="form-group" style="display:flex; flex-direction:column; justify-content:flex-end;">
+                    <button class="btn btn-primary" onclick="applyTableConfig()" style="width:100%;">
+                        ✅ Terapkan Konfigurasi
+                    </button>
+                    <div style="font-size:11px; color:#888; margin-top:4px; text-align:center;">
+                        Terapkan sebelum ambil data
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-info-strip" id="table-info-strip">
+                <span style="font-size:18px;">ℹ️</span>
+                <span>Aktif: Membaca dari tabel <strong id="info-src">nilai1_json</strong>,
+                menyimpan ke tabel <strong id="info-dst">rekap_nilai1</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PANEL TRANSFER ══ -->
+    <div class="card">
+        <div class="card-head">⚙️ Pengaturan Transfer <span class="badge-new-feature">14 Aspek Kepribadian</span></div>
+        <div class="card-body">
+            <div class="mode-tabs">
+                <button class="mode-tab active" onclick="switchMode('single')">🎯 Satu Peserta</button>
+                <button class="mode-tab"        onclick="switchMode('range')">📋 Range id_x</button>
+                <button class="mode-tab"        onclick="switchMode('all')">🌐 Semua Data</button>
+                <button class="mode-tab"        onclick="switchMode('date_single')">📅 Satu Tanggal</button>
+                <button class="mode-tab"        onclick="switchMode('date_range')">🗓️ Range Tanggal</button>
+            </div>
+
+            <div class="mode-panel active" id="panel-single">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>id_x Peserta</label>
+                        <input type="number" id="input-single-id" placeholder="Contoh: 5" min="1">
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="fetchPreview('single')">🔍 Ambil &amp; Preview</button>
+                </div>
+            </div>
+
+            <div class="mode-panel" id="panel-range">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>id_x Dari</label>
+                        <input type="number" id="input-range-from" placeholder="Contoh: 1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>id_x Sampai</label>
+                        <input type="number" id="input-range-to" placeholder="Contoh: 10" min="1">
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="fetchPreview('range')">🔍 Ambil &amp; Preview</button>
+                </div>
+            </div>
+
+            <div class="mode-panel" id="panel-all">
+                <p style="color:#777; font-size:14px; margin-bottom:12px;">
+                    ⚠️ Mode ini akan mengambil <strong>seluruh data</strong> dari tabel <code>nilai1_json</code>. Pastikan koneksi stabil.
+                </p>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="fetchPreview('all')">🔍 Ambil &amp; Preview Semua</button>
+                </div>
+            </div>
+
+            <div class="mode-panel" id="panel-date_single">
+                <p style="color:#777; font-size:14px; margin-bottom:12px;">
+                    Filter berdasarkan <strong>tgl_tes</strong> di dalam data biodata (x_02).
+                </p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tanggal Tes</label>
+                        <input type="date" id="input-date-single">
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="fetchPreview('date_single')">🔍 Ambil &amp; Preview</button>
+                </div>
+            </div>
+
+            <div class="mode-panel" id="panel-date_range">
+                <p style="color:#777; font-size:14px; margin-bottom:12px;">
+                    Filter berdasarkan <strong>tgl_tes</strong> di dalam data biodata (x_02).
+                </p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tanggal Dari</label>
+                        <input type="date" id="input-date-from">
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Sampai</label>
+                        <input type="date" id="input-date-to">
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="fetchPreview('date_range')">🔍 Ambil &amp; Preview</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PREVIEW ══ -->
+    <div class="card" id="card-preview" style="display:none;">
+        <div class="card-head">👁️ Preview Data — Siap Transfer <span class="badge-new-feature">14 Aspek Kepribadian</span></div>
+        <div class="card-body">
+            <div class="stats-row" id="stats-row">
+                <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-lbl">Total Data</div></div>
+                <div class="stat-box"><div class="stat-num" id="stat-new" style="color:#28a745;">0</div><div class="stat-lbl">Baru (POST)</div></div>
+                <div class="stat-box"><div class="stat-num" id="stat-update" style="color:#e6a817;">0</div><div class="stat-lbl">Update (PUT)</div></div>
+                <div class="stat-box"><div class="stat-num" id="stat-selected">0</div><div class="stat-lbl">Dipilih</div></div>
+            </div>
+
+            <div class="select-all-wrap">
+                <div class="select-all-left">
+                    <input type="checkbox" id="chk-all" onchange="toggleSelectAll(this.checked)">
+                    <label for="chk-all" style="cursor:pointer;">Pilih semua data dalam tabel</label>
+                </div>
+                <div>
+                    <div class="preview-search-wrap">
+                        <input type="text" id="preview-search" placeholder="Cari id_x, kode, atau nama..." oninput="filterPreviewTable(this.value)">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div class="preview-search-count" id="preview-search-count"></div>
+                </div>
+            </div>
+
+            <div class="preview-wrap">
+                <table class="preview-table" id="preview-table">
+                    <thead>
+                        <tr>
+                            <th>✓</th>
+                            <th>id_x</th>
+                            <th>Kode</th>
+                            <th>Nama</th>
+                            <th>IQ</th>
+                            <th>Kemampuan</th>
+                            <th>Kepribadian (14 Aspek)</th>
+                            <th>Sikap Kerja</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preview-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="empty-state" id="empty-state" style="display:none;">
+                <div class="icon">📭</div>
+                <div>Tidak ada data ditemukan</div>
+            </div>
+
+            <div class="btn-row" style="margin-top:20px;">
+                <button class="btn btn-success" id="btn-transfer" onclick="startTransfer()" disabled>
+                    🚀 Transfer Data Terpilih
+                </button>
+                <button class="btn btn-secondary" onclick="resetAll()">🔄 Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ PROGRESS ══ -->
+    <div class="card" id="card-progress" style="display:none;">
+        <div class="card-head">📡 Progress Transfer</div>
+        <div class="card-body">
+            <div class="stats-row">
+                <div class="stat-box"><div class="stat-num" id="prog-done">0</div><div class="stat-lbl">Selesai</div></div>
+                <div class="stat-box"><div class="stat-num" id="prog-ok" style="color:#28a745;">0</div><div class="stat-lbl">Berhasil</div></div>
+                <div class="stat-box"><div class="stat-num" id="prog-fail" style="color:#dc3545;">0</div><div class="stat-lbl">Gagal</div></div>
+                <div class="stat-box"><div class="stat-num" id="prog-total">0</div><div class="stat-lbl">Total</div></div>
+            </div>
+
+            <div class="progress-bar-wrap">
+                <div class="progress-bar" id="prog-bar"></div>
+            </div>
+            <div style="font-size:12px; color:#777; margin-bottom:12px;" id="prog-label">Menunggu...</div>
+
+            <div class="log-box" id="log-box"></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-box">
+        <span class="modal-close" onclick="document.getElementById('modal-overlay').classList.remove('open')">✕</span>
+        <h3 id="modal-title">Detail Data</h3>
+        <div id="modal-content"></div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT LENGKAP -->
+<!-- ============================================================ -->
+<script>
+// =========================================================
+// SERVER LIST
+// =========================================================
+const SERVERS = [
+    { label: 'Lidan',     domain: 'lidan-co-id.pages.dev', path: '/api/contacts_filter_dinamis6' },
+    { label: 'Tabi',      domain: 'tabi.my.id',             path: '/api/contacts_filter_dinamis6' },
+    { label: 'Mobeli',    domain: 'mobeli.my.id',           path: '/api/contacts_filter_dinamis6' },
+    { label: 'TalentMap', domain: 'talentmap.my.id',        path: '/api/contacts_filter_dinamis6' },
+];
+
+let activeSrvIdx = 0;
+
+const CFG = {
+    get API()  { return `https://${SERVERS[activeSrvIdx].domain}${SERVERS[activeSrvIdx].path}`; },
+    API_DST  : 'https://lidan-co-id.pages.dev/api/db_psikogram1',
+    SRC_TABLE  : 'nilai1_json',
+    DST_TABLE  : 'rekap_nilai1',
+    SECRET     : 'admin',
+    DELAY_MS   : 300
+};
+
+const DEFAULT_TABLES = { SRC: 'nilai1_json', DST: 'rekap_nilai1' };
+
+// =========================================================
+// SEEDED RANDOM
+// =========================================================
+function seededRandom(seed) {
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) {
+        h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+    }
+    return function() {
+        h ^= h << 13; h ^= h >> 17; h ^= h << 5;
+        return (h >>> 0) / 4294967296;
+    };
+}
+
+// =========================================================
+// KONVERSI WS (1-20) KE SKALA 1-10
+// =========================================================
+function convertWStoScale(wsValue) {
+    if (wsValue === null || wsValue === undefined) return null;
+    // Tabel konversi dari engine (sama dengan yang dipakai untuk ACH, DEF, dll)
+    const criteria = [
+        [2, 1], [4, 2], [6, 3], [8, 4], [10, 5],
+        [12, 6], [14, 7], [16, 8], [18, 9], [Infinity, 10]
+    ];
+    for (const [limit, score] of criteria) {
+        if (wsValue <= limit) return score;
+    }
+    return 10;
+}
+
+// =========================================================
+// SKOR EPPS — LOKAL (copy dari engine karena tidak diekspor)
+// =========================================================
+function skorEPPS_Lokal(soalEpps) {
+    // soalEpps: array 0-indexed, isi 'A' atau 'B'
+    const s = soalEpps;
+    const cntA = arr => arr.filter(v => v === 'A').length;
+    const cntB = arr => arr.filter(v => v === 'B').length;
+
+    // _r arrays (hitung A)
+    const ach_r = [s[5],s[10],s[15],s[20],s[25],s[30],s[35],s[40],s[45],s[50],s[55],s[60],s[65],s[70]];
+    const def_r = [s[1],s[11],s[16],s[21],s[26],s[31],s[36],s[41],s[46],s[51],s[56],s[61],s[66],s[71]];
+    const ord_r = [s[2],s[7],s[17],s[22],s[27],s[32],s[37],s[42],s[47],s[52],s[57],s[62],s[67],s[72]];
+    const exh_r = [s[3],s[8],s[13],s[23],s[28],s[33],s[38],s[43],s[48],s[53],s[58],s[63],s[68],s[73]];
+    const aut_r = [s[4],s[9],s[14],s[19],s[29],s[34],s[39],s[44],s[49],s[54],s[59],s[64],s[69],s[74]];
+    const aff_r = [s[75],s[80],s[85],s[90],s[95],s[105],s[110],s[115],s[120],s[125],s[130],s[135],s[140],s[145]];
+    const int_r = [s[76],s[81],s[86],s[91],s[96],s[101],s[111],s[116],s[121],s[126],s[131],s[136],s[141],s[146]];
+    const suc_r = [s[77],s[82],s[87],s[92],s[97],s[102],s[107],s[117],s[122],s[127],s[132],s[137],s[142],s[147]];
+    const dom_r = [s[78],s[83],s[88],s[93],s[98],s[103],s[108],s[113],s[123],s[128],s[133],s[138],s[143],s[148]];
+    const aba_r = [s[79],s[84],s[89],s[94],s[99],s[104],s[109],s[114],s[119],s[129],s[134],s[139],s[144],s[149]];
+    const nur_r = [s[150],s[155],s[160],s[165],s[170],s[175],s[180],s[185],s[190],s[195],s[205],s[210],s[215],s[220]];
+    const chg_r = [s[151],s[156],s[161],s[166],s[171],s[176],s[181],s[186],s[191],s[196],s[201],s[211],s[216],s[221]];
+    const end_r = [s[152],s[157],s[162],s[167],s[172],s[177],s[182],s[187],s[192],s[197],s[202],s[207],s[217],s[222]];
+    const het_r = [s[153],s[158],s[163],s[168],s[173],s[178],s[183],s[188],s[193],s[198],s[203],s[208],s[213],s[223]];
+    const agg_r = [s[154],s[159],s[164],s[169],s[174],s[179],s[184],s[189],s[194],s[199],s[204],s[209],s[214],s[219]];
+
+    // _c arrays (hitung B)
+    const ach_c = [s[1],s[2],s[3],s[4],s[75],s[76],s[77],s[78],s[79],s[150],s[151],s[152],s[153],s[154]];
+    const def_c = [s[5],s[7],s[8],s[9],s[80],s[81],s[82],s[83],s[84],s[155],s[156],s[157],s[158],s[159]];
+    const ord_c = [s[10],s[11],s[13],s[14],s[85],s[86],s[87],s[88],s[89],s[160],s[161],s[162],s[163],s[164]];
+    const exh_c = [s[15],s[16],s[17],s[19],s[90],s[91],s[92],s[93],s[94],s[165],s[166],s[167],s[168],s[169]];
+    const aut_c = [s[20],s[21],s[22],s[23],s[95],s[96],s[97],s[98],s[99],s[170],s[171],s[172],s[173],s[174]];
+    const aff_c = [s[25],s[26],s[27],s[28],s[29],s[101],s[102],s[103],s[104],s[175],s[176],s[177],s[178],s[179]];
+    const int_c = [s[30],s[31],s[32],s[33],s[34],s[105],s[107],s[108],s[109],s[180],s[181],s[182],s[183],s[184]];
+    const suc_c = [s[35],s[36],s[37],s[38],s[39],s[110],s[111],s[113],s[114],s[185],s[186],s[187],s[188],s[189]];
+    const dom_c = [s[40],s[41],s[42],s[43],s[44],s[115],s[116],s[117],s[119],s[190],s[191],s[192],s[193],s[194]];
+    const aba_c = [s[45],s[46],s[47],s[48],s[49],s[120],s[121],s[122],s[123],s[195],s[196],s[197],s[198],s[199]];
+    const nur_c = [s[50],s[51],s[52],s[53],s[54],s[125],s[126],s[127],s[128],s[129],s[201],s[202],s[203],s[204]];
+    const chg_c = [s[55],s[56],s[57],s[58],s[59],s[130],s[131],s[132],s[133],s[134],s[205],s[207],s[208],s[209]];
+    const end_c = [s[60],s[61],s[62],s[63],s[64],s[135],s[136],s[137],s[138],s[139],s[210],s[211],s[213],s[214]];
+    const het_c = [s[65],s[66],s[67],s[68],s[69],s[140],s[141],s[142],s[143],s[144],s[215],s[216],s[217],s[219]];
+    const agg_c = [s[70],s[71],s[72],s[73],s[74],s[145],s[146],s[147],s[148],s[149],s[220],s[221],s[222],s[223]];
+
+    const ach_s = cntA(ach_r) + cntB(ach_c);
+    const def_s = cntA(def_r) + cntB(def_c);
+    const ord_s = cntA(ord_r) + cntB(ord_c);
+    const exh_s = cntA(exh_r) + cntB(exh_c);
+    const out_s = cntA(aut_r) + cntB(aut_c);
+    const aff_s = cntA(aff_r) + cntB(aff_c);
+    const int_s = cntA(int_r) + cntB(int_c);
+    const suc_s = cntA(suc_r) + cntB(suc_c);
+    const dom_s = cntA(dom_r) + cntB(dom_c);
+    const aba_s = cntA(aba_r) + cntB(aba_c);
+    const nur_s = cntA(nur_r) + cntB(nur_c);
+    const chg_s = cntA(chg_r) + cntB(chg_c);
+    const end_s = cntA(end_r) + cntB(end_c);
+    const het_s = cntA(het_r) + cntB(het_c);
+    const agg_s = cntA(agg_r) + cntB(agg_c);
+
+    // Tabel WS mapping
+    const wsMap = {
+        ACH_s:{28:20,27:20,26:19,25:18,24:17,23:16,22:16,21:15,20:14,19:13,18:12,17:11,16:10,15:9,14:8,13:7,12:6,11:5,10:5,9:4,8:3,7:2,6:1,5:0,4:0,3:0,2:0,1:0,0:0},
+        DEF_s:{22:20,21:19,20:18,19:18,18:18,17:17,16:16,15:15,14:14,13:13,12:11,11:11,10:10,9:9,8:8,7:7,6:6,5:5,4:3,3:3,2:2,1:1,0:0},
+        ORD_s:{28:20,27:19,26:19,25:18,24:17,23:17,22:16,21:15,20:15,19:14,18:13,17:13,16:12,15:11,14:10,13:9,12:9,11:8,10:7,9:7,8:6,7:5,6:5,5:4,4:3,3:3,2:2,1:1,0:1},
+        EXH_s:{24:20,23:19,22:18,21:18,20:17,19:16,18:15,17:15,16:14,15:13,14:12,13:11,12:10,11:9,10:8,9:7,8:7,7:6,6:5,5:4,4:3,3:3,2:2,1:1,0:0},
+        OUT_s:{21:20,20:19,19:18,18:17,17:16,16:15,15:14,14:13,13:12,12:11,11:10,10:9,9:8,8:7,7:6,6:5,5:4,4:3,3:2,2:2,1:1,0:0},
+        AFF_s:{26:20,25:19,24:19,23:18,22:17,21:16,20:15,19:14,18:14,17:13,16:12,15:11,14:10,13:9,12:8,11:8,10:7,9:6,8:5,7:4,6:3,5:3,4:2,3:1,2:1,1:0},
+        INT_s:{28:20,27:20,26:19,25:18,24:17,23:17,22:16,21:15,20:14,19:14,18:13,17:12,16:11,15:10,14:9,13:8,12:7,11:7,10:6,9:5,8:4,7:4,6:3,5:2,4:1,3:1,2:0,1:0},
+        SUC_s:{27:20,26:19,25:19,24:18,23:17,22:17,21:16,20:15,19:15,18:14,17:13,16:13,15:12,14:11,13:10,12:9,11:9,10:8,9:7,8:7,7:6,6:5,5:4,4:4,3:3,2:2,1:1,0:1},
+        DOM_s:{25:20,24:20,23:19,22:18,21:17,20:17,19:16,18:15,17:14,16:14,15:13,14:12,13:11,12:10,11:9,10:8,9:8,8:7,7:6,6:5,5:5,4:4,3:3,2:2,1:1,0:0},
+        ABA_s:{29:20,28:19,27:18,26:18,25:17,24:16,23:15,22:15,21:14,20:13,19:13,18:12,17:11,16:10,15:9,14:8,13:8,12:7,11:6,10:5,9:5,8:4,7:3,6:2,5:2,4:1,3:0,2:0,1:0},
+        NUR_s:{30:20,29:19,28:18,27:18,26:17,25:16,24:16,23:15,22:14,21:14,20:13,19:12,18:12,17:11,16:10,15:9,14:9,13:8,12:7,11:7,10:6,9:5,8:5,7:4,6:3,5:3,4:2,3:1,2:1,1:0},
+        CHG_s:{27:20,26:19,25:18,24:18,23:17,22:16,21:16,20:15,19:14,18:13,17:13,16:12,15:11,14:10,13:9,12:9,11:8,10:7,9:6,8:6,7:5,6:4,5:3,4:3,3:2,2:1,1:1,0:0},
+        END_s:{30:20,29:19,28:18,27:17,26:17,25:16,24:16,23:15,22:14,21:14,20:13,19:13,18:12,17:12,16:11,15:10,14:9,13:9,12:8,11:7,10:7,9:6,8:6,7:5,6:4,5:4,4:3,3:3,2:2,1:1,0:1},
+        HET_s:{26:20,25:19,24:19,23:18,22:18,21:17,20:17,19:16,18:16,17:15,16:15,15:14,14:14,13:13,12:12,11:12,10:11,9:11,8:10,7:9,6:9,5:8,4:8,3:7,2:7,1:6,0:5},
+        AGG_s:{27:20,26:19,25:18,24:18,23:17,22:16,21:16,20:15,19:14,18:14,17:13,16:12,15:12,14:11,13:10,12:9,11:9,10:8,9:7,8:7,7:6,6:5,5:5,4:4,3:3,2:3,1:2,0:1}
+    };
+
+    function getWS(ss, type) {
+        const m = wsMap[type];
+        if (!m) return 0;
+        const keys = Object.keys(m).map(Number).sort((a,b) => b - a);
+        for (const k of keys) {
+            if (ss >= k) return m[k];
+        }
+        return 0;
+    }
+
+    return {
+        ws_ach: getWS(ach_s, 'ACH_s'),
+        ws_def: getWS(def_s, 'DEF_s'),
+        ws_ord: getWS(ord_s, 'ORD_s'),
+        ws_exh: getWS(exh_s, 'EXH_s'),
+        ws_out: getWS(out_s, 'OUT_s'),
+        ws_aff: getWS(aff_s, 'AFF_s'),
+        ws_int: getWS(int_s, 'INT_s'),
+        ws_suc: getWS(suc_s, 'SUC_s'),
+        ws_dom: getWS(dom_s, 'DOM_s'),
+        ws_aba: getWS(aba_s, 'ABA_s'),
+        ws_nur: getWS(nur_s, 'NUR_s'),
+        ws_chg: getWS(chg_s, 'CHG_s'),
+        ws_end: getWS(end_s, 'END_s'),
+        ws_het: getWS(het_s, 'HET_s'),
+        ws_agg: getWS(agg_s, 'AGG_s'),
+        konsistensi: 0
+    };
+}
+
+// =========================================================
+// DATA EPPS — 9 Aspek Baru dengan 5 Versi Kalimat
+// =========================================================
+const EPPS_DESCRIPTIONS = {
+    dominasi: {
+        teks2: [
+            "{Memiliki|Mempunyai} jiwa kepemimpinan yang kuat {dan|serta} mampu mengarahkan orang lain dengan efektif.",
+            "{Dikenal|Dikenali} sebagai pribadi yang tegas {dan|serta} berani mengambil keputusan {penting|krusial}.",
+            "{Mampu|Sanggup|Bisa} mempengaruhi orang lain {secara alami|secara efektif|dengan baik} dalam berbagai situasi.",
+            "{Menunjukkan|Memperlihatkan|Menampilkan} kemampuan untuk memimpin {dan|serta} mengelola tim dengan baik.",
+            "{Berani|Berani sekali|Sangat berani} mengambil tanggung jawab {dan|serta} memimpin di situasi kritis."
+        ],
+        teks3: [
+            "{Cenderung|Umumnya|Kerap} terlalu dominan dalam kelompok {sehingga|hingga|sampai} orang lain merasa tertekan.",
+            "{Terkadang|Kadang|Kadang-kadang} {kurang|belum cukup} mendengarkan pendapat orang lain sebelum memutuskan.",
+            "{Kesulitan|Mengalami kesulitan|Kerap kesulitan} menerima masukan yang bertentangan dengan pendapatnya.",
+            "{Perlu peningkatan|Butuh peningkatan|Memerlukan peningkatan} dalam memberikan ruang bagi orang lain untuk berkontribusi.",
+            "{Kadang|Terkadang|Sesekali} dianggap terlalu mengatur oleh rekan satu tim."
+        ],
+        teks5: [
+            "{Disarankan|Dianjurkan|Direkomendasikan} untuk belajar memberikan ruang bagi orang lain untuk berpendapat, {sehingga|hingga|sampai} kepemimpinan menjadi lebih kolaboratif.",
+            "{Sangat penting|Amat penting|Sangat krusial} untuk mengembangkan keterampilan mendengarkan aktif, {agar|supaya} pengaruh yang diberikan lebih berdampak positif.",
+            "{Sebaiknya|Ada baiknya|Alangkah baiknya} melatih empati {dan|serta} kesabaran dalam memimpin, {agar|supaya} tim merasa dihargai dan termotivasi.",
+            "{Direkomendasikan|Disarankan|Dianjurkan} untuk secara berkala meminta umpan balik dari tim mengenai gaya kepemimpinan, {sehingga|hingga|sampai} bisa terus berkembang.",
+            "{Penting untuk|Krusial untuk|Esensial untuk} menyeimbangkan ketegasan dengan kepekaan terhadap kebutuhan anggota tim, {agar|supaya} kepemimpinan menjadi lebih efektif."
+        ]
+    },
+    introspeksi: {
+        teks2: [
+            "{Memiliki|Mempunyai} kemampuan refleksi diri {yang baik|yang mumpuni|yang solid} untuk terus berkembang.",
+            "{Dikenal|Dikenali} sebagai pribadi yang introspektif {dan|serta} bijaksana dalam mengambil hikmah.",
+            "{Mampu|Sanggup|Bisa} menganalisis perilaku diri sendiri {dan|serta} belajar dari pengalaman.",
+            "{Menunjukkan|Memperlihatkan|Menampilkan} kesadaran diri yang tinggi {sehingga|hingga|sampai} mudah mengevaluasi {dan|serta} memperbaiki diri.",
+            "{Cenderung|Umumnya|Kerap} merenungkan makna di balik setiap kejadian {dan|serta} mengambil pelajaran berharga."
+        ],
+        teks3: [
+            "{Terkadang|Kadang|Kadang-kadang} terlalu banyak merenung {sehingga|hingga|sampai} menghambat tindakan nyata.",
+            "{Cenderung|Umumnya|Kerap} terlalu keras pada diri sendiri dalam mengevaluasi kekurangan.",
+            "{Kesulitan|Mengalami kesulitan|Kerap kesulitan} melepaskan diri dari pikiran yang berlebihan tentang masa lalu.",
+            "{Perlu peningkatan|Butuh peningkatan|Memerlukan peningkatan} dalam keseimbangan antara refleksi {dan|serta} aksi.",
+            "{Kadang|Terkadang|Sesekali} analisis yang berlebihan justru menghambat pengambilan keputusan."
+        ],
+        teks5: [
+            "{Disarankan|Dianjurkan|Direkomendasikan} untuk menyeimbangkan refleksi dengan tindakan nyata, {agar|supaya} pemikiran tidak berhenti pada tataran rencana.",
+            "{Sangat penting|Amat penting|Sangat krusial} untuk menetapkan batas waktu dalam merenung, {sehingga|hingga|sampai} energi tetap tersalurkan pada tindakan produktif.",
+            "{Sebaiknya|Ada baiknya|Alangkah baiknya} belajar menerima bahwa tidak semua hal perlu dianalisis secara mendalam, {agar|supaya} tidak terjebak dalam overthinking.",
+            "{Direkomendasikan|Disarankan|Dianjurkan} untuk mencatat hasil refleksi dalam jurnal {dan|serta} mengubahnya menjadi rencana tindakan konkret.",
+            "{Penting untuk|Krusial untuk|Esensial untuk} mengembangkan kemampuan untuk 'melangkah' setelah cukup merenung, {agar|supaya} pertumbuhan diri tetap terjadi."
+        ]
+    },
+    meminta_bantuan: {
+        teks2: [
+            "{Mampu|Sanggup|Bisa} meminta bantuan dengan tepat saat menghadapi kesulitan.",
+            "{Memiliki|Mempunyai} keberanian untuk mengakui keterbatasan {dan|serta} meminta dukungan.",
+            "{Dikenal|Dikenali} tidak sungkan untuk bertanya {dan|serta} mencari bimbingan saat diperlukan.",
+            "{Menunjukkan|Memperlihatkan|Menampilkan} kesadaran bahwa kerja sama tim {sangat|amat} penting untuk mencapai hasil terbaik.",
+            "{Pandai|Terampil|Cakap} dalam mengidentifikasi kapan perlu meminta bantuan {dan|serta} melakukannya dengan tepat."
+        ],
+        teks3: [
+            "{Cenderung|Umumnya|Kerap} terlalu bergantung pada orang lain dalam menyelesaikan tugas.",
+            "{Terkadang|Kadang|Kadang-kadang} kurang berusaha {secara mandiri|tanpa bergantung pihak lain|secara independen} sebelum meminta bantuan.",
+            "{Kesulitan|Mengalami kesulitan|Kerap kesulitan} membedakan antara kebutuhan bantuan yang wajar {dan|serta} ketergantungan berlebihan.",
+            "{Perlu peningkatan|Butuh peningkatan|Memerlukan peningkatan} dalam kemampuan memecahkan masalah {secara mandiri|tanpa bergantung pihak lain|secara independen}.",
+            "{Kadang|Terkadang|Sesekali} terlalu cepat menyerah sebelum mencoba berbagai alternatif solusi."
+        ],
+        teks5: [
+            "{Disarankan|Dianjurkan|Direkomendasikan} untuk mencoba berbagai solusi {secara mandiri|tanpa bergantung pihak lain|secara independen} terlebih dahulu sebelum meminta bantuan orang lain.",
+            "{Sangat penting|Amat penting|Sangat krusial} untuk mengembangkan kemampuan pemecahan masalah dasar, {sehingga|hingga|sampai} tidak terlalu cepat bergantung pada bantuan orang lain.",
+            "{Sebaiknya|Ada baiknya|Alangkah baiknya} belajar membedakan situasi yang membutuhkan bantuan {dan|serta} situasi yang bisa diselesaikan sendiri.",
+            "{Direkomendasikan|Disarankan|Dianjurkan} untuk meningkatkan rasa percaya diri dalam menghadapi tantangan, {agar|supaya} tidak selalu mencari bantuan untuk hal-hal yang bisa dikerjakan sendiri.",
+            "{Penting untuk|Krusial untuk|Esensial untuk} mengembangkan kemandirian secara bertahap, {sehingga|hingga|sampai} keseimbangan antara meminta bantuan {dan|serta} bekerja mandiri terjaga."
+        ]
+    },
+    mengalah: {
+        teks2: [
+            "{Mampu|Sanggup|Bisa} mengalah {demi|untuk|guna} menjaga keharmonisan hubungan.",
+            "{Memiliki|Mempunyai} kemampuan mengendalikan ego {sehingga|hingga|sampai} tidak mudah terpancing konflik.",
+            "{Dikenal|Dikenali} sebagai pribadi yang mudah berkompromi {dan|serta} menjaga kedamaian.",
+            "{Menunjukkan|Memperlihatkan|Menampilkan} sikap rendah hati dalam berinteraksi dengan orang lain.",
+            "{Pandai|Terampil|Cakap} dalam meredakan ketegangan {dan|serta} mencari solusi damai."
+        ],
+        teks3: [
+            "{Cenderung|Umumnya|Kerap} terlalu mudah mengalah {sehingga|hingga|sampai} kepentingan diri terabaikan.",
+            "{Terkadang|Kadang|Kadang-kadang} kurang memperjuangkan hak {dan|serta} kepentingan pribadi.",
+            "{Kesulitan|Mengalami kesulitan|Kerap kesulitan} mempertahankan pendirian saat berhadapan dengan orang yang lebih dominan.",
+            "{Perlu peningkatan|Butuh peningkatan|Memerlukan peningkatan} dalam ketegasan {dan|serta} keberanian menyampaikan pendapat.",
+            "{Kadang|Terkadang|Sesekali} terlalu mengutamakan kepentingan orang lain hingga mengorbankan diri sendiri."
+        ],
+        teks5: [
+            "{Disarankan|Dianjurkan|Direkomendasikan} untuk belajar menyeimbangkan antara mengalah {dan|serta} mempertahankan prinsip, {agar|supaya} tidak kehilangan jati diri.",
+            "{Sangat penting|Amat penting|Sangat krusial} untuk mengembangkan ketegasan dalam menyampaikan pendapat, {sehingga|hingga|sampai} tidak selalu mengorbankan diri sendiri.",
+            "{Sebaiknya|Ada baiknya|Alangkah baiknya} belajar membedakan kapan harus mengalah {dan|serta} kapan harus bertahan, {agar|supaya} keputusan yang diambil lebih bijaksana.",
+            "{Direkomendasikan|Disarankan|Dianjurkan} untuk meningkatkan kepercayaan diri dalam menyampaikan kebutuhan pribadi, {sehingga|hingga|sampai} tidak selalu mengalah tanpa alasan jelas.",
+            "{Penting untuk|Krusial untuk|Esensial untuk} mengembangkan sikap asertif, yaitu mampu menyatakan pendapat dengan jelas tanpa harus agresif atau pasif."
+        ]
+    },
+    merawat: {
+        teks2: [
+            "{Memiliki|Mempunyai} empati yang tinggi terhadap orang lain {dan|serta} kepedulian yang tulus.",
+            "{Dikenal|Dikenali} sebagai pribadi yang hangat {dan|serta} selalu siap membantu orang lain.",
+            "{Mampu|Sanggup|Bisa} memberikan dukungan emosional {dan|serta} perhatian kepada mereka yang membutuhkan.",
+            "{Menunjukkan|Memperlihatkan|Menampilkan} kepedulian yang mendalam terhadap kesejahteraan orang lain.",
+            "{Pandai|Terampil|Cakap} dalam merawat {dan|serta} menjaga hubungan interpersonal dengan baik."
+        ],
+        teks3: [
+            "{Cenderung|Umumnya|Kerap} mengabaikan kebutuhan diri sendiri demi kepentingan orang lain.",
+            "{Terkadang|Kadang|Kadang-kadang} terlalu ikut campur dalam urusan orang lain.",
+            "{Kesulitan|Mengalami kesulitan|Kerap kesulitan} menetapkan batas dalam memberikan bantuan kepada orang lain.",
+            "{Perlu peningkatan|Butuh peningkatan|Memerlukan peningkatan} dalam keseimbangan antara merawat orang lain {dan|serta} merawat diri sendiri.",
+            "{Kadang|Terkadang|Sesekali} terlalu mengorbankan waktu {dan|serta} tenaga untuk membantu orang lain."
+        ],
+        teks5: [
+            "{Disarankan|Dianjurkan|Direkomendasikan} untuk belajar menetapkan batas yang sehat dalam membantu orang lain, {agar|supaya} tidak mengorbankan kesehatan diri sendiri.",
+            "{Sangat penting|Amat penting|Sangat krusial} untuk menyadari bahwa merawat diri sendiri adalah bagian {penting|krusial} dari kemampuan merawat orang lain.",
+            "{Sebaiknya|Ada baiknya|Alangkah baiknya} menyeimbangkan waktu untuk membantu orang lain {dan|serta} waktu untuk pemulihan diri, {agar|supaya} tidak kelelahan.",
+            "{Direkomendasikan|Disarankan|Dianjurkan} untuk belajar mengatakan 'tidak' secara bijaksana, {sehingga|hingga|sampai} tidak terbebani oleh tuntutan membantu orang lain.",
+            "{Penting untuk|Krusial untuk|Esensial untuk} mengembangkan kesadaran bahwa membantu diri sendiri adalah fondasi untuk membantu orang lain dengan lebih baik."
+        ]
+    },
+    perubahan: {
+        teks2: [
+            "{Mampu|Sanggup|Bisa} beradaptasi dengan perubahan {dan|serta} situasi baru dengan baik.",
+            "{Memiliki|Mempunyai} fleksibilitas yang tinggi dalam menghadapi berbagai situasi.",
+            "{Dikenal|Dikenali} sebagai pribadi yang tidak kaku {dan|serta} terbuka terhadap ide-ide baru.",
+            "{Menunjukkan|Memperlihatkan|Menampilkan} kemampuan untuk menyesuaikan diri dengan cepat di lingkungan baru.",
+            "{Pandai|Terampil|Cakap} dalam melihat peluang di balik setiap perubahan yang terjadi."
+        ],
+        teks3: [
+            "{Cenderung|Umumnya|Kerap} merasa tidak nyaman dengan rutinitas yang monoton.",
+            "{Terkadang|Kadang|Kadang-kadang} terlalu cepat bosan dengan hal-hal yang itu-itu saja.",
+            "{Kesulitan|Mengalami kesulitan|Kerap kesulitan} berkomitmen pada satu hal dalam jangka waktu panjang.",
+            "{Perlu peningkatan|Butuh peningkatan|Memerlukan peningkatan} dalam konsistensi {dan|serta} ketekunan.",
+            "{Kadang|Terkadang|Sesekali} terlalu mudah tergoda untuk mencoba hal baru tanpa menyelesaikan yang lama."
+        ],
+        teks5: [
+            "{Disarankan|Dianjurkan|Direkomendasikan} untuk belajar menyeimbangkan antara kebutuhan akan perubahan {dan|serta} kebutuhan akan stabilitas.",
+            "{Sangat penting|Amat penting|Sangat krusial} untuk mengembangkan kemampuan menyelesaikan tugas hingga tuntas, sebelum beralih ke hal baru.",
+            "{Sebaiknya|Ada baiknya|Alangkah baiknya} mencoba membuat tantangan baru dalam rutinitas, {agar|supaya} kebutuhan akan variasi terpenuhi tanpa mengabaikan tanggung jawab.",
+            "{Direkomendasikan|Disarankan|Dianjurkan} untuk menetapkan tonggak pencapaian dalam setiap proyek, {sehingga|hingga|sampai} motivasi tetap terjaga meskipun pekerjaan sudah familiar.",
+            "{Penting untuk|Krusial untuk|Esensial untuk} mengembangkan kedisiplinan dalam menyelesaikan apa yang sudah dimulai, {agar|supaya} potensi perubahan bisa dimanfaatkan secara optimal."
+        ]
+    },
+    ketahanan: {
+        teks2: [
+            "{Mampu|Sanggup|Bisa} menyelesaikan tugas hingga tuntas {dengan|secara} konsisten.",
+            "{Memiliki|Mempunyai} kegigihan yang tinggi dalam menghadapi tantangan.",
+            "{Dikenal|Dikenali} sebagai pribadi yang tekun {dan|serta} tidak mudah menyerah.",
+            "{Menunjukkan|Memperlihatkan|Menampilkan} daya juang yang kuat dalam mencapai tujuan.",
+            "{Pandai|Terampil|Cakap} dalam mempertahankan fokus {dan|serta} energi sampai pekerjaan selesai."
+        ],
+        teks3: [
+            "{Cenderung|Umumnya|Kerap} kesulitan mempertahankan fokus dalam jangka waktu lama.",
+            "{Terkadang|Kadang|Kadang-kadang} kehilangan motivasi di tengah jalan sebelum tugas selesai.",
+            "{Kesulitan|Mengalami kesulitan|Kerap kesulitan} menghadapi tugas yang membutuhkan waktu panjang tanpa hasil instan.",
+            "{Perlu peningkatan|Butuh peningkatan|Memerlukan peningkatan} dalam konsistensi {dan|serta} ketekunan.",
+            "{Kadang|Terkadang|Sesekali} mudah terdistraksi oleh hal-hal yang tidak terlalu penting."
+        ],
+        teks5: [
+            "{Disarankan|Dianjurkan|Direkomendasikan} untuk membagi pekerjaan besar menjadi bagian-bagian kecil yang lebih mudah dikelola.",
+            "{Sangat penting|Amat penting|Sangat krusial} untuk merayakan setiap pencapaian kecil, {agar|supaya} motivasi tetap terjaga sepanjang proses.",
+            "{Sebaiknya|Ada baiknya|Alangkah baiknya} menciptakan lingkungan kerja yang mendukung konsentrasi, {agar|supaya} fokus tidak mudah terganggu.",
+            "{Direkomendasikan|Disarankan|Dianjurkan} untuk membangun rutinitas yang konsisten dalam bekerja, {sehingga|hingga|sampai} ketahanan dalam menyelesaikan tugas meningkat.",
+            "{Penting untuk|Krusial untuk|Esensial untuk} mengembangkan pola pikir bahwa ketekunan adalah kunci, {dan|serta} bahwa hasil besar membutuhkan proses yang tidak instan."
+        ]
+    },
+    heteroseksual: {
+        teks2: [
+            "{Memiliki|Mempunyai} ketertarikan romantis yang sehat terhadap lawan jenis.",
+            "{Mampu|Sanggup|Bisa} membina hubungan asmara yang harmonis {dan|serta} bermakna.",
+            "{Dikenal|Dikenali} sebagai pribadi yang perhatian {dan|serta} romantis dalam hubungan.",
+            "{Menunjukkan|Memperlihatkan|Menampilkan} komitmen yang serius dalam menjalin hubungan dengan lawan jenis.",
+            "{Pandai|Terampil|Cakap} dalam mengekspresikan perasaan {dan|serta} membangun kedekatan emosional."
+        ],
+        teks3: [
+            "{Cenderung|Umumnya|Kerap} terlalu fokus pada hubungan romantis hingga mengabaikan aspek lain.",
+            "{Terkadang|Kadang|Kadang-kadang} kurang mampu mengelola konflik dalam hubungan asmara.",
+            "{Kesulitan|Mengalami kesulitan|Kerap kesulitan} mempertahankan hubungan jangka panjang yang stabil.",
+            "{Perlu peningkatan|Butuh peningkatan|Memerlukan peningkatan} dalam komunikasi dalam hubungan romantis.",
+            "{Kadang|Terkadang|Sesekali} kurang dewasa dalam menghadapi dinamika hubungan asmara."
+        ],
+        teks5: [
+            "{Disarankan|Dianjurkan|Direkomendasikan} untuk belajar membangun komunikasi yang terbuka {dan|serta} jujur dalam hubungan asmara.",
+            "{Sangat penting|Amat penting|Sangat krusial} untuk mengembangkan kematangan emosional dalam menghadapi dinamika hubungan.",
+            "{Sebaiknya|Ada baiknya|Alangkah baiknya} menyeimbangkan kehidupan romantis dengan aspek kehidupan lainnya, {agar|supaya} tidak menjadi terlalu dependen.",
+            "{Direkomendasikan|Disarankan|Dianjurkan} untuk belajar mengelola ekspektasi dalam hubungan, {sehingga|hingga|sampai} hubungan menjadi lebih sehat.",
+            "{Penting untuk|Krusial untuk|Esensial untuk} mengembangkan keterampilan resolusi konflik, {agar|supaya} hubungan romantis dapat bertahan dalam jangka panjang."
+        ]
+    },
+    agresi: {
+        teks2: [
+            "{Mampu|Sanggup|Bisa} mengekspresikan ketidaksetujuan {secara asertif|dengan jelas|secara konstruktif}.",
+            "{Memiliki|Mempunyai} keberanian untuk menyampaikan kritik yang membangun.",
+            "{Dikenal|Dikenali} sebagai pribadi yang tegas dalam menyampaikan pendapat.",
+            "{Menunjukkan|Memperlihatkan|Menampilkan} kemampuan untuk membela diri {dan|serta} prinsip dengan bijaksana.",
+            "{Pandai|Terampil|Cakap} dalam mengelola energi agresif menjadi produktivitas."
+        ],
+        teks3: [
+            "{Cenderung|Umumnya|Kerap} terlalu agresif dalam menyampaikan ketidaksetujuan.",
+            "{Terkadang|Kadang|Kadang-kadang} sulit mengendalikan emosi saat marah.",
+            "{Kesulitan|Mengalami kesulitan|Kerap kesulitan} mengekspresikan kemarahan {secara konstruktif|dengan tepat|secara terkendali}.",
+            "{Perlu peningkatan|Butuh peningkatan|Memerlukan peningkatan} dalam pengendalian diri saat merasa terprovokasi.",
+            "{Kadang|Terkadang|Sesekali} terlalu cepat marah atau tersinggung atas hal-hal kecil."
+        ],
+        teks5: [
+            "{Disarankan|Dianjurkan|Direkomendasikan} untuk belajar teknik pengendalian emosi, seperti tarik napas dalam sebelum merespons situasi yang memicu amarah.",
+            "{Sangat penting|Amat penting|Sangat krusial} untuk mengembangkan kemampuan mengekspresikan ketidaksetujuan {secara asertif|dengan jelas|secara konstruktif}, bukan agresif.",
+            "{Sebaiknya|Ada baiknya|Alangkah baiknya} meluangkan waktu untuk refleksi diri, {agar|supaya} memahami pemicu amarah {dan|serta} mengelolanya dengan lebih baik.",
+            "{Direkomendasikan|Disarankan|Dianjurkan} untuk mencari saluran yang sehat untuk mengekspresikan energi agresif, seperti olahraga atau aktivitas fisik.",
+            "{Penting untuk|Krusial untuk|Esensial untuk} mengembangkan kemampuan komunikasi yang efektif, {agar|supaya} pesan dapat disampaikan tanpa menimbulkan konflik."
+        ]
+    }
+};
+
+// =========================================================
+// VAK & TEMPERAMEN (disederhanakan)
+// =========================================================
+const LEARNING_STYLES = {
+    A: { name: 'VISUAL', color: '#4a90e2', icon: '👁️', description: 'Belajar paling efektif dengan melihat {dan|serta} mengamati',
+        characteristicsPool: [['Lebih {mudah|gampang} mengingat apa yang dilihat','Suka diagram, grafik, {dan|serta} gambar','Mengingat wajah lebih baik dari nama','Lebih suka membaca instruksi sendiri','Sering {membuat|menciptakan} catatan visual {atau|ataupun} mind map']],
+        tipsPool: [['{Gunakan|Pakai|Manfaatkan} stabilo warna-warni saat membaca','{Buat|Ciptakan} diagram, flowchart, {atau|ataupun} mind map','Tonton video pembelajaran {atau|ataupun} tutorial visual','{Gunakan|Pakai|Manfaatkan} flashcard dengan gambar','Visualisasikan konsep dalam bentuk gambar mental']] },
+    B: { name: 'AUDITORY', color: '#f39c12', icon: '👂', description: 'Belajar paling efektif dengan mendengar {dan|serta} berbicara',
+        characteristicsPool: [['Lebih {mudah|gampang} mengingat apa yang didengar','Suka berdiskusi {dan|serta} menjelaskan kepada orang lain','Mengingat nama lebih baik dari wajah','Lebih suka mendengarkan penjelasan daripada membaca','Sering berbicara sendiri saat belajar']],
+        tipsPool: [['Rekam catatan {dan|serta} dengarkan kembali','Diskusikan materi dengan teman {atau|ataupun} guru','Belajar sambil mendengarkan musik instrumental','Bacakan materi dengan keras saat belajar','Ikuti diskusi kelompok secara aktif']] },
+    C: { name: 'KINESTETIK', color: '#2ecc71', icon: '🤸', description: 'Belajar paling efektif dengan bergerak {dan|serta} melakukan langsung',
+        characteristicsPool: [['Belajar lebih efektif dengan praktik langsung','Suka eksperimen {dan|serta} mencoba sendiri','Susah diam dalam waktu lama','Mengingat apa yang dilakukan bukan yang dibaca','Ekspresif dengan gerakan tubuh']],
+        tipsPool: [['{Buat|Ciptakan} proyek {atau|ataupun} model nyata dari materi','Ambil jeda singkat {dan|serta} bergerak setelah belajar','{Gunakan|Pakai|Manfaatkan} role play {atau|ataupun} simulasi','Tulis {atau|ataupun} gambar sambil mendengar penjelasan','Kunjungi langsung lokasi yang berkaitan dengan topik']] }
+};
+
+const TEMPERAMENTS = {
+    A: { name: 'SANGUINIS', color: '#f1c40f', icon: '😄', tagline: 'Si Periang yang Populer', description: 'Ekstrovert, antusias, {dan|serta} sosial.',
+        characteristics: ['Ceria, optimis, {dan|serta} penuh semangat','{Mudah|Gampang} bergaul {dan|serta} populer'],
+        strengths: ['Komunikator yang baik','Memotivasi orang lain'], weaknesses: ['Kurang disiplin','{Mudah|Gampang} terdistraksi'],
+        strengthsPool: [['Komunikator yang baik','Memotivasi orang lain','{Mudah|Gampang} beradaptasi']],
+        weaknessesPool: [['Kurang disiplin','{Mudah|Gampang} terdistraksi','Tidak detail-oriented']],
+        careers: ['Sales & Marketing','Public Relations'], tipsPool: [['Buatlah daftar prioritas harian {agar|supaya} energimu terarah dengan baik']] },
+    B: { name: 'KOLERIS', color: '#e67e22', icon: '💪', tagline: 'Si Pemimpin yang Kuat', description: 'Ekstrovert, tegas, {dan|serta} berorientasi pada tujuan.',
+        characteristics: ['Tegas {dan|serta} percaya diri','Berorientasi pada hasil'], strengths: ['Kepemimpinan alami','Berani mengambil risiko'],
+        weaknesses: ['Terlalu bossy','Kurang sensitif'], strengthsPool: [['Kepemimpinan alami','Berani mengambil risiko','Orientasi tujuan yang kuat']],
+        weaknessesPool: [['Terlalu bossy','Kurang sensitif','Tidak sabaran']], careers: ['CEO/Manager','Entrepreneur'],
+        tipsPool: [['{Latih|Asah} {kemampuan|kecakapan} empati dengan menempatkan diri pada posisi orang lain']] },
+    C: { name: 'MELANKOLIS', color: '#9b59b6', icon: '🤔', tagline: 'Si Pemikir yang Perfeksionis', description: 'Introvert, analitis, {dan|serta} detail-oriented.',
+        characteristics: ['Perfeksionis {dan|serta} teliti','Berpikir mendalam {dan|serta} analitis'], strengths: ['Perhatian pada detail','Analisis mendalam'],
+        weaknesses: ['Terlalu kritis','Overthinking'], strengthsPool: [['Perhatian pada detail','Analisis mendalam','Standar tinggi']],
+        weaknessesPool: [['Terlalu kritis','Overthinking','Perfeksionisme berlebihan']], careers: ['Scientist','Analyst'],
+        tipsPool: [['Terimalah bahwa hasil yang cukup baik jauh lebih berharga dari yang tidak selesai']] },
+    D: { name: 'PHLEGMATIS', color: '#3498db', icon: '😌', tagline: 'Si Pendamai yang Tenang', description: 'Introvert, tenang, {dan|serta} damai.',
+        characteristics: ['Tenang {dan|serta} sabar','Pendamai {dan|serta} diplomatik'], strengths: ['{Kemampuan|Kecakapan} diplomasi','Sabar {dan|serta} tenang'],
+        weaknesses: ['Kurang inisiatif','Terlalu pasif'], strengthsPool: [['{Kemampuan|Kecakapan} diplomasi yang baik','Sabar {dan|serta} tenang','Pendengar yang baik']],
+        weaknessesPool: [['Kurang inisiatif','Terlalu pasif','Sulit {membuat|menciptakan} keputusan']], careers: ['Counselor','Mediator'],
+        tipsPool: [['{Latih|Asah} diri {untuk|guna} mengambil inisiatif tanpa {harus|wajib} menunggu diminta']] }
+};
+
+// =========================================================
+// FUNGSI UTILITAS
+// =========================================================
+function resolveSpintaxArr(arr, rng) {
+    const PE = window.PsikogramEngine;
+    if (!PE || !PE.parseSpintax) return arr;
+    return arr.map(s => (typeof s === 'string' ? PE.parseSpintax(s, rng) : s));
+}
+
+function resolveSpintaxStr(str, rng) {
+    const PE = window.PsikogramEngine;
+    if (!PE || !PE.parseSpintax || typeof str !== 'string') return str;
+    return PE.parseSpintax(str, rng);
+}
+
+function getVariasiTips(temperamenKey, token) {
+    const pool = TEMPERAMENTS[temperamenKey].tipsPool;
+    const rng  = getRandFn(token + temperamenKey);
+    const varIdx = Math.floor(rng() * pool.length);
+    const tips   = [...pool[varIdx]];
+    for (let i = tips.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [tips[i], tips[j]] = [tips[j], tips[i]];
+    }
+    return resolveSpintaxArr(tips, rng);
+}
+
+function getVariasiVak(vakKey, type, token) {
+    const pool = LEARNING_STYLES[vakKey][type + 'Pool'];
+    if (!pool) return LEARNING_STYLES[vakKey][type === 'characteristics' ? 'characteristics' : 'tips'] || [];
+    const seed = token + vakKey + type;
+    const rng  = getRandFn(seed);
+    const varIdx = Math.floor(rng() * pool.length);
+    const items   = [...pool[varIdx]];
+    for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+    }
+    return resolveSpintaxArr(items, rng);
+}
+
+function getVariasiTempAttr(tempKey, type, token) {
+    const pool = TEMPERAMENTS[tempKey][type + 'Pool'];
+    if (!pool) return TEMPERAMENTS[tempKey][type] || [];
+    const seed = token + tempKey + type;
+    const rng  = getRandFn(seed);
+    const varIdx = Math.floor(rng() * pool.length);
+    const items   = [...pool[varIdx]];
+    for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+    }
+    return resolveSpintaxArr(items, rng);
+}
+
+// =========================================================
+// HITUNG VAK & TEMPERAMEN
+// =========================================================
+function hitungVakTemperamen(rawRow, token) {
+    let x07 = {};
+    try { x07 = JSON.parse(rawRow.x_07 || '{}'); } catch(e) {}
+
+    const out = { vak: null, temperamen: null };
+
+    const vakKey = x07['tes-gaya-belajar-vak'] !== undefined ? 'tes-gaya-belajar-vak'
+                 : (x07['who_1'] !== undefined ? 'who_1' : null);
+    const vakStr = vakKey ? x07[vakKey] : null;
+
+    if (vakStr) {
+        const vakArr  = vakStr.split(';').filter(v => v.trim() !== '');
+        const vakSkor = { A: 0, B: 0, C: 0 };
+        vakArr.forEach(v => { if (vakSkor[v] !== undefined) vakSkor[v]++; });
+        const total   = vakArr.length || 15;
+        const vakPct  = {
+            A: Math.round((vakSkor.A / total) * 100),
+            B: Math.round((vakSkor.B / total) * 100),
+            C: Math.round((vakSkor.C / total) * 100)
+        };
+        const vakDom = Object.keys(vakSkor).reduce((a, b) => vakSkor[a] > vakSkor[b] ? a : b);
+        const vakS   = LEARNING_STYLES[vakDom];
+
+        out.vak = {
+            dominan       : vakDom,
+            nama          : vakS.name,
+            deskripsi     : resolveSpintaxStr(vakS.description, getRandFn(token + vakDom + 'deskripsi')),
+            skor          : vakSkor,
+            persentase    : vakPct,
+            total         : total,
+            karakteristik : getVariasiVak(vakDom, 'characteristics', token),
+            tips          : getVariasiVak(vakDom, 'tips', token)
+        };
+    }
+
+    const tempKey = x07['input-tes-temperamen'] !== undefined ? 'input-tes-temperamen'
+                  : (x07['who_4'] !== undefined ? 'who_4' : null);
+    const tempStr = tempKey ? x07[tempKey] : null;
+
+    if (tempStr) {
+        const tempArr   = tempStr.split(';').filter(v => v !== '');
+        const tempSkor  = { A: 0, B: 0, C: 0, D: 0 };
+        tempArr.forEach(v => { if (tempSkor[v] !== undefined) tempSkor[v]++; });
+        const tempTotal = 26;
+        const tempDom   = Object.keys(tempSkor).reduce((a, b) => tempSkor[a] > tempSkor[b] ? a : b);
+        const tempS     = TEMPERAMENTS[tempDom];
+        const tempPct   = {};
+        Object.keys(tempSkor).forEach(k => { tempPct[k] = Math.round((tempSkor[k] / tempTotal) * 100); });
+
+        out.temperamen = {
+            dominan    : tempDom,
+            nama       : tempS.name,
+            tagline    : resolveSpintaxStr(tempS.tagline, getRandFn(token + tempDom + 'tagline')),
+            deskripsi  : resolveSpintaxStr(tempS.description, getRandFn(token + tempDom + 'deskripsi')),
+            skor       : tempSkor,
+            persentase : tempPct,
+            total      : tempTotal,
+            kekuatan   : getVariasiTempAttr(tempDom, 'strengths', token),
+            kelemahan  : getVariasiTempAttr(tempDom, 'weaknesses', token),
+            tips       : getVariasiTips(tempDom, token)
+        };
+    }
+
+    if (!out.vak && !out.temperamen) return null;
+    return out;
+}
+
+// =========================================================
+// HITUNG EPPS LENGKAP — PRIORITAS: LOKAL DULU!
+// =========================================================
+function hitungEPPSLengkap(rawRow) {
+    let x06 = {};
+    try { x06 = JSON.parse(rawRow.x_06 || '{}'); } catch(e) {}
+
+    const soalEppsStr = x06.epps || '';
+    if (!soalEppsStr.trim()) return null;
+
+    // Hapus ; di akhir jika ada (data kadang punya trailing semicolon)
+    const cleaned = soalEppsStr.replace(/;+$/, '');
+    const soalEpps = cleaned.split(';').map(v => v.trim());
+
+    // 🔥 PRIORITAS: Gunakan fungsi LOKAL (sudah pasti tersedia)
+    if (typeof skorEPPS_Lokal === 'function') {
+        return skorEPPS_Lokal(soalEpps);
+    }
+
+    // FALLBACK: coba dari engine
+    if (window.PsikogramEngine && typeof window.PsikogramEngine.skorEPPS === 'function') {
+        return window.PsikogramEngine.skorEPPS(soalEpps);
+    }
+
+    console.warn('⚠️ skorEPPS tidak tersedia!');
+    return null;
+}
+
+// =========================================================
+// HITUNG KARAKTER, POTENSI, KARIR, ASMARA (disederhanakan)
+// =========================================================
+function hitungKarakter(rawRow) {
+    let x07 = {};
+    try { x07 = JSON.parse(rawRow.x_07 || '{}'); } catch(e) {}
+
+    const TES_LIST = ['04','05','06','07','08'];
+    const TES_KEYS = {
+        '04': ['input-tes-temperamen', 'who_4'],
+        '05': ['input-tes-extrovert-vs-introvert', 'who_5'],
+        '06': ['input-tes-sensori-vs-intuitif', 'who_6'],
+        '07': ['input-tes-thinking-vs-feeling', 'who_7'],
+        '08': ['input-tes-pengamat-vs-penilai', 'who_8'],
+    };
+
+    const KDATA = window.KarakterEngine ? window.KarakterEngine.data : null;
+    const x12 = {};
+    const x13 = {};
+
+    TES_LIST.forEach(tesId => {
+        let rawJawaban = '';
+        for (const key of TES_KEYS[tesId]) {
+            if (x07[key] !== undefined && x07[key] !== '') { rawJawaban = x07[key]; break; }
+        }
+        if (!rawJawaban) return;
+
+        const jawabanArr = rawJawaban.split(';').filter(v => v !== '');
+        const skor = {};
+        let dominan = null;
+        let persen  = {};
+        let total   = jawabanArr.length;
+        let markerPosition = null;
+        let sortedSkor = null;
+        let config  = null;
+
+        if (tesId === '04') {
+            ['A','B','C','D'].forEach(k => skor[k] = 0);
+            jawabanArr.forEach(v => { if (skor[v] !== undefined) skor[v]++; });
+            total = 26;
+            Object.keys(skor).forEach(k => { persen[k] = Math.round((skor[k]/total)*100); });
+            dominan    = Object.keys(skor).reduce((a,b) => skor[a] > skor[b] ? a : b);
+            sortedSkor = Object.entries(skor).sort((a,b) => b[1]-a[1]).map(([k,v]) => ({key:k, skor:v}));
+            config     = KDATA ? KDATA.TEMPERAMENTS[dominan] : null;
+        } else if (tesId === '05') {
+            skor.A = 0; skor.B = 0;
+            jawabanArr.forEach(v => { if (skor[v] !== undefined) skor[v]++; });
+            total = 17;
+            persen = { A: Math.round((skor.A/total)*100), B: Math.round((skor.B/total)*100) };
+            const selisih = Math.abs(skor.A - skor.B);
+            dominan = selisih <= 3 ? 'AMBIVERT' : (skor.A > skor.B ? 'EXTROVERT' : 'INTROVERT');
+            markerPosition = Math.round((skor.A/total)*100);
+            config  = KDATA ? KDATA.PERSONALITY_TYPES[dominan] : null;
+        } else if (tesId === '06') {
+            skor.A = 0; skor.B = 0;
+            jawabanArr.forEach(v => { if (skor[v] !== undefined) skor[v]++; });
+            total = skor.A + skor.B;
+            persen = { A: Math.round((skor.A/total)*100), B: Math.round((skor.B/total)*100) };
+            dominan = skor.A >= skor.B ? 'A' : 'B';
+            config  = KDATA ? KDATA.SENSING_TYPES[dominan] : null;
+        } else if (tesId === '07') {
+            skor.A = 0; skor.B = 0;
+            jawabanArr.forEach(v => { if (skor[v] !== undefined) skor[v]++; });
+            total = 20;
+            persen = { A: Math.round((skor.A/total)*100), B: Math.round((skor.B/total)*100) };
+            dominan = skor.A >= skor.B ? 'THINKING' : 'FEELING';
+            markerPosition = Math.round((skor.A/total)*100);
+            config  = KDATA ? KDATA.DECISION_TYPES[dominan] : null;
+        } else if (tesId === '08') {
+            skor.A = 0; skor.B = 0;
+            jawabanArr.forEach(v => { if (skor[v] !== undefined) skor[v]++; });
+            total = 10;
+            persen = { A: Math.round((skor.A/total)*100), B: Math.round((skor.B/total)*100) };
+            dominan = skor.A > skor.B ? 'JUDGING' : 'PERCEIVING';
+            markerPosition = Math.round((skor.A/total)*100);
+            config  = KDATA ? KDATA.LIFESTYLE_TYPES[dominan] : null;
+        }
+
+        const angka = { dominan, skor, persen, total };
+        if (markerPosition !== null) angka.markerPosition = markerPosition;
+        if (sortedSkor)              angka.sortedSkor     = sortedSkor;
+        x12[`tes${tesId}`] = angka;
+
+        if (config) {
+            x13[`tes${tesId}`] = {
+                nama            : config.name || '',
+                tagline         : config.tagline || '',
+                description     : config.description || config.desc || '',
+                characteristics : config.characteristics || config.traits || [],
+                strengths       : config.strengths || [],
+                weaknesses      : config.weaknesses || [],
+                careers         : config.careers || [],
+                tips            : config.tips || []
+            };
+        }
+    });
+
+    return {
+        x12: Object.keys(x12).length > 0 ? JSON.stringify(x12) : null,
+        x13: Object.keys(x13).length > 0 ? JSON.stringify(x13) : null,
+    };
+}
+
+function hitungPotensi(rawRow) {
+    let x07 = {};
+    try { x07 = JSON.parse(rawRow.x_07 || '{}'); } catch(e) {}
+
+    const PE = window.PotensiEngine;
+    const x12 = {};
+    const x13 = {};
+
+    const raw1 = x07['who_1'] || x07['tes-gaya-belajar-vak'] || '';
+    if (raw1) {
+        const arr = raw1.split(';').filter(v => v);
+        const skor = { A:0, B:0, C:0 };
+        arr.forEach(v => { if (skor[v] !== undefined) skor[v]++; });
+        const total = arr.length || 1;
+        const persen = {};
+        Object.keys(skor).forEach(k => persen[k] = Math.round(skor[k]/total*100));
+        const dominan = Object.keys(skor).reduce((a,b) => skor[a] > skor[b] ? a : b);
+        x12['tes01'] = { dominan, skor, persen, total };
+        const cfg = PE ? PE.LEARNING_STYLES[dominan] : null;
+        if (cfg) x13['tes01'] = { nama: cfg.name, description: cfg.description||'', characteristics: cfg.characteristics||[], tips: cfg.tips||[] };
+    }
+
+    const raw2 = x07['who_2'] || x07['input-tes-otak-kiri-&-kanan'] || '';
+    if (raw2) {
+        const arr = raw2.split(';').filter(v => v);
+        let kiri = 0, kanan = 0;
+        arr.forEach(v => { if (v === 'A') kiri++; else if (v === 'B') kanan++; });
+        const total = arr.length || 1;
+        const persen = { A: Math.round(kiri/total*100), B: Math.round(kanan/total*100) };
+        const dominan = kiri === kanan ? 'BALANCED' : kiri > kanan ? 'LEFT' : 'RIGHT';
+        x12['tes02'] = { dominan, skor: { A: kiri, B: kanan }, persen, total };
+        const cfg = PE ? PE.BRAIN_TYPES[dominan] : null;
+        if (cfg) x13['tes02'] = { nama: cfg.name, tagline: cfg.tagline||'', description: cfg.description||'', characteristics: cfg.characteristics||[], tips: cfg.tips||[] };
+    }
+
+    const raw3 = x07['who_3'] || x07['input-tes-kecerdasan-majemuk'] || '';
+    if (raw3 && PE && PE.INTELLIGENCES) {
+        const arr = raw3.split(';').filter(v => v);
+        const types = Object.keys(PE.INTELLIGENCES);
+        const scores = {};
+        types.forEach((name, i) => {
+            scores[name] = arr.slice(i*10, i*10+10).filter(v => v === 'A').length;
+        });
+        const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+        const dominan = sorted[0][0];
+        x12['tes03'] = { dominan, skor: scores, sorted: sorted.map(([k,v]) => ({nama:k, skor:v})) };
+        const cfg = PE.INTELLIGENCES[dominan];
+        if (cfg) x13['tes03'] = { nama: cfg.name||dominan, description: cfg.description||'', characteristics: cfg.characteristics||[], tips: cfg.tips||[] };
+    }
+
+    return {
+        x12: Object.keys(x12).length > 0 ? x12 : null,
+        x13: Object.keys(x13).length > 0 ? x13 : null,
+    };
+}
+
+function hitungKarir(rawRow) {
+    let x07 = {};
+    try { x07 = JSON.parse(rawRow.x_07 || '{}'); } catch(e) {}
+
+    const KE = window.KarirEngine;
+    const x12 = {};
+    const x13 = {};
+
+    const raw20 = x07['who_20'] || '';
+    if (raw20 && KE) {
+        const arr = raw20.split(';').filter(v => v !== '');
+        const ORDER20 = ['R', 'I', 'A', 'S', 'E', 'C'];
+        const scoresObj = {};
+        ORDER20.forEach((id, i) => {
+            const blok = arr.slice(i * 18, (i + 1) * 18);
+            scoresObj[id] = blok.filter(v => v === 'B').length;
+        });
+        const combined20 = KE.DATA.RIASEC_CATEGORIES.map(c => ({...c, score: scoresObj[c.id]||0}));
+        combined20.sort((a,b) => b.score - a.score);
+        const top3_20 = combined20.slice(0,3);
+        const suggestions20 = KE.DATA.RIASEC_SUGGESTIONS || [];
+        x12['tes20'] = { dominan: combined20[0].id, careerCode: top3_20.map(c=>c.id).join(''), categories: combined20.map(c=>({id:c.id,nama:c.name,score:c.score,color:c.color})), top3: top3_20.map(c=>({id:c.id,nama:c.name,score:c.score})) };
+        x13['tes20'] = { dominan: combined20[0].name, careerCode: top3_20.map(c=>c.id).join(''), categories: combined20.map(c=>({id:c.id,name:c.name,nama:c.name,score:c.score,color:c.color})), top3: top3_20.map(c=>({id:c.id,name:c.name,nama:c.name,desc:c.desc,careers:c.careers,color:c.color})), suggestions: suggestions20 };
+    }
+
+    const raw21 = x07['who_21'] || '';
+    if (raw21 && KE) {
+        const arr = raw21.split(';').filter(v => v);
+        const nilaiMap21 = { A:0, B:1, C:2, D:3 };
+        const totalSkor = arr.reduce((s,v) => s + (nilaiMap21[v.trim()] !== undefined ? nilaiMap21[v.trim()] : (parseInt(v)||0)), 0);
+        const result = KE.DATA.KEPEMIMPINAN_LEVELS.find(l => totalSkor <= l.maxSkor) || KE.DATA.KEPEMIMPINAN_LEVELS[KE.DATA.KEPEMIMPINAN_LEVELS.length-1];
+        x12['tes21'] = { skor: totalSkor, maxSkor: 42 };
+        x13['tes21'] = { title: result.title, description: result.description, characteristics: result.characteristics||[], suggestions: result.suggestions||[] };
+    }
+
+    const raw22 = x07['who_22'] || '';
+    if (raw22 && KE) {
+        const arr = raw22.split(';').filter(v => v !== '');
+        const styleOrder22 = ['pat', 'oto', 'lais', 'demo'];
+        const combined22 = KE.DATA.GAYA_KEPEMIMPINAN_STYLES.map(s => {
+            const i = styleOrder22.indexOf(s.id);
+            const blok = arr.slice(i * 7, (i + 1) * 7);
+            const score = blok.filter(v => v === 'A').length;
+            return { ...s, score };
+        });
+        combined22.sort((a,b) => b.score - a.score);
+        const dominan22 = combined22[0];
+        x12['tes22'] = { dominan: dominan22.id||dominan22.name, scores: combined22.map(s=>({id:s.id,name:s.name,nama:s.name,score:s.score,color:s.color,icon:s.icon})) };
+        x13['tes22'] = { styles: combined22.map(s=>({id:s.id,name:s.name,nama:s.name,score:s.score,color:s.color,icon:s.icon})), dominan: { id:dominan22.id, name:dominan22.name, title:dominan22.name, icon:dominan22.icon||'', color:dominan22.color||'', description:dominan22.description||dominan22.desc||'', characteristics:dominan22.characteristics||[], strengths:dominan22.strengths||[], weaknesses:dominan22.weaknesses||[] } };
+    }
+
+    const raw23 = x07['who_23'] || '';
+    if (raw23 && KE) {
+        const arr = raw23.split(';').filter(v => v);
+        const nilaiMap23 = { A:1, B:2, C:3, D:4, E:5 };
+        const total = arr.reduce((s,v) => s + (nilaiMap23[v.trim()] !== undefined ? nilaiMap23[v.trim()] : (parseInt(v)||0)), 0);
+        const result = KE.DATA.MOTIVASI_LEVELS.find(l => total >= l.minSkor) || KE.DATA.MOTIVASI_LEVELS[0];
+        x12['tes23'] = { skor: total, maxSkor: 70, persen: Math.round(total/70*100) };
+        x13['tes23'] = { title: result.title||result.level, description: result.description||'', suggestions: result.suggestions||[] };
+    }
+
+    const raw24 = x07['who_24'] || '';
+    if (raw24 && KE) {
+        const arr = raw24.split(';').filter(v => v);
+        const nilaiMap24 = { A:3, B:2, C:1, D:0 };
+        const total = arr.reduce((s,v) => s + (nilaiMap24[v.trim()] !== undefined ? nilaiMap24[v.trim()] : (parseInt(v)||0)), 0);
+        const result = KE.DATA.MANWAK_LEVELS ? (KE.DATA.MANWAK_LEVELS.find(l => total >= l.minSkor) || KE.DATA.MANWAK_LEVELS[0]) : null;
+        x12['tes24'] = { skor: total, maxSkor: 30 };
+        if (result) x13['tes24'] = { title: result.title||result.level, description: result.description||'', suggestions: result.suggestions||[] };
+    }
+
+    const raw25 = x07['who_25'] || '';
+    if (raw25 && KE) {
+        const arr = raw25.split(';').filter(v => v);
+        const total = arr.reduce((s,v,i) => {
+          if (i < 9) return s + (v.trim()==='A' ? 1 : 0);
+          else       return s + (v.trim()==='B' ? 1 : 0);
+        }, 0);
+        const result = KE.DATA.STRES_LEVELS ? (KE.DATA.STRES_LEVELS.find(l => total >= l.minSkor) || KE.DATA.STRES_LEVELS[0]) : null;
+        x12['tes25'] = { skor: total, maxSkor: 12 };
+        if (result) x13['tes25'] = { title: result.title||result.level, description: result.description||'', suggestions: result.suggestions||[] };
+    }
+
+    const raw27 = x07['who_27'] || '';
+    if (raw27 && KE) {
+        const arr = raw27.split(';').filter(v => v);
+        const nilaiMap27 = { A:4, B:3, C:2, D:1, E:0 };
+        const total = arr.reduce((s,v) => s + (nilaiMap27[v.trim()] !== undefined ? nilaiMap27[v.trim()] : (parseInt(v)||0)), 0);
+        const cfg = KE.DATA.KEBERANIAN_CONFIG;
+        const maxSkor = cfg ? (cfg.maxSkor || 50) : 50;
+        const result = cfg && cfg.levels ? (cfg.levels.find(l => total >= l.minSkor) || cfg.levels[0]) : null;
+        x12['tes27'] = { skor: total, maxSkor, persen: Math.round(total/maxSkor*100) };
+        if (result) x13['tes27'] = { title: result.title||result.level, description: result.description||'', traits: result.traits||[], suggestions: result.suggestions||[] };
+    }
+
+    return {
+        x12: Object.keys(x12).length > 0 ? x12 : null,
+        x13: Object.keys(x13).length > 0 ? x13 : null,
+    };
+}
+
+function hitungAsmara(rawRow) {
+    let x07 = {};
+    try { x07 = JSON.parse(rawRow.x_07 || '{}'); } catch(e) {}
+
+    const AE = window.AsmaraEngine;
+    if (!AE || typeof AE.processRaw !== 'function') {
+        return { x12: null, x13: null };
+    }
+
+    const TES_ASMARA = [
+        { id: '09', keys: ['input-tes-pola-asuh', 'who_9'] },
+        { id: '12', keys: ['input-tes-tipe-cinta', 'who_12'] },
+        { id: '13', keys: ['input-tes-jenis-cinta', 'who_13'] },
+        { id: '14', keys: ['input-tes-kecanduan-hubungan', 'who_14'] },
+        { id: '15', keys: ['input-tes-mengenal-pasangan', 'who_15'] },
+        { id: '16', keys: ['input-tes-kesetiaan', 'who_16'] },
+        { id: '17', keys: ['input-tes-sahabat', 'who_17'] },
+        { id: '18', keys: ['input-tes-siap-pendamping', 'who_18'] },
+    ];
+
+    const x12 = {};
+    const x13 = {};
+
+    TES_ASMARA.forEach(({ id, keys }) => {
+        const hasData = keys.some(k => x07[k] !== undefined && x07[k] !== '');
+        if (!hasData) return;
+
+        try {
+            const result = AE.processRaw(id, x07);
+            const cfg    = result.config;
+            const tipe   = cfg.tipe;
+
+            if (tipe === 'pilihan-tertinggi') {
+                x12[`tes${id}`] = { dominant : result.dominant, scores : result.scores, persen : result.persen };
+            } else if (tipe === 'skala-per-tipe') {
+                x12[`tes${id}`] = { dominant : result.dominant, scores : result.scores };
+            } else if (tipe === 'total-level') {
+                x12[`tes${id}`] = { level : result.level, skor : result.total, maxSkor: cfg.maxSkor || null, minSkor: cfg.minSkor || null };
+            } else if (tipe === 'pointmap-level') {
+                x12[`tes${id}`] = { level : result.level, skor : result.total, maxSkor : cfg.maxSkor || null, minSkor : cfg.minSkor || null, skorList: result.skorList || [] };
+            }
+
+            const ti = result.typeInfo;
+            if (ti) {
+                const entry = { description : ti.description || '', characteristics: ti.characteristics || [], advice : ti.advice || ti.tips || ti.suggestions || [] };
+                if (tipe === 'pilihan-tertinggi') {
+                    entry.nama = ti.name || '';
+                    if (ti.strengths)     entry.strengths     = ti.strengths;
+                    if (ti.ideal_partner) entry.ideal_partner = ti.ideal_partner;
+                    if (ti.impact)        entry.impact        = ti.impact;
+                } else if (tipe === 'skala-per-tipe') {
+                    entry.nama = ti.name || '';
+                } else {
+                    entry.title = ti.title || '';
+                    if (ti.warning)    entry.warning    = ti.warning || null;
+                    if (ti.indicators) entry.indicators = ti.indicators || [];
+                    if (ti.risks)      entry.risks      = ti.risks || [];
+                    if (ti.strengths)  entry.strengths  = ti.strengths || [];
+                    if (ti.weaknesses) entry.weaknesses = ti.weaknesses || [];
+                    if (ti.colorClass) entry.colorClass = ti.colorClass;
+                    if (ti.color)      entry.color      = ti.color;
+                    if (ti.icon)       entry.icon       = ti.icon;
+                }
+                x13[`tes${id}`] = entry;
+            }
+        } catch(e) {}
+    });
+
+    return {
+        x12: Object.keys(x12).length > 0 ? x12 : null,
+        x13: Object.keys(x13).length > 0 ? x13 : null,
+    };
+}
+
+// =========================================================
+// MAP DATA — 14 Aspek Kepribadian (dengan konversi ke skala 1-10)
+// =========================================================
+function mapData(rawRow) {
+    if (!window.PsikogramEngine) throw new Error('PsikogramEngine belum dimuat.');
+
+    const randPsikogram = getRandFn(String(rawRow.id_x) + '_psikogram');
+    const hasil = window.PsikogramEngine.hitungPsikogram(rawRow, rawRow.id_x, randPsikogram);
+    const { kekuatanKelemahan, minatData, aspekPsikologis } = window.PsikogramEngine;
+    const {
+        identitas, IQ, resultScores, konsistensi,
+        sorted_desc, sorted_asc,
+        kelebihan, kelemahan, rekomendasi, minat3
+    } = hasil;
+
+    // Ambil EPPS lengkap (pakai lokal)
+    const eppsLengkap = hitungEPPSLengkap(rawRow);
+
+    const kel1 = rawRow.x_01 || '';
+
+    const rawBio = Array.isArray(rawRow) ? rawRow[0] : rawRow;
+    let bioParsed = {};
+    try { bioParsed = JSON.parse(rawBio.x_02 || '{}'); } catch(e) {}
+
+    const kel15 = rawBio.x_05 !== undefined ? rawBio.x_05 : null;
+    const kel16 = rawBio.x_06 !== undefined ? rawBio.x_06 : null;
+    const kel17 = rawBio.x_07 !== undefined ? rawBio.x_07 : null;
+
+    const vakTempResult = hitungVakTemperamen(rawBio, kel1);
+    const kel18 = vakTempResult ? JSON.stringify(vakTempResult) : null;
+
+    const kel2 = JSON.stringify({
+        nama        : identitas.nama || bioParsed.nama || '',
+        jk          : identitas.jk || bioParsed.jenis_kelamin || bioParsed.gender || '',
+        usia        : identitas.usia || bioParsed.usia || '',
+        tanggal     : identitas.tanggal || bioParsed.tgl_tes || '',
+        tanggal_ttd : identitas.tanggalTTD || bioParsed.tgl_tes || '',
+        pendidikan  : bioParsed.pendidikan || '',
+        status      : bioParsed.status || '',
+        id_sumber   : rawRow.id_x
+    });
+
+    // KEL 3: Kemampuan
+    const kel3_obj = { skor_iq: IQ };
+    ['Kemampuan Umum','Daya Tangkap Visual','Kemampuan Berpikir Logis',
+     'Kemampuan Berpikir Abstrak','Penalaran Verbal','Penalaran Numerik'].forEach((nama, i) => {
+        const key = nama.toLowerCase().replace(/ /g,'_');
+        kel3_obj[key] = resultScores[i];
+    });
+    const kel3 = JSON.stringify(kel3_obj);
+
+    // KEL 4: Kepribadian — 14 Aspek (dengan konversi ke skala 1-10)
+    const kel4_obj = {
+        // 5 aspek LAMA (sudah dalam skala 1-10 dari resultScores)
+        hasrat_berprestasi: resultScores[6],
+        daya_tahan_stress:  resultScores[7],
+        kepercayaan_diri:   resultScores[8],
+        relasi_sosial:      resultScores[9],
+        kerjasama:          resultScores[10],
+        // 1 aspek tersembunyi
+        inisiatif:          resultScores[12],
+        // 9 aspek BARU dari EPPS — KONVERSI KE SKALA 1-10!
+        dominasi:           eppsLengkap ? convertWStoScale(eppsLengkap.ws_dom) : null,
+        introspeksi:        eppsLengkap ? convertWStoScale(eppsLengkap.ws_int) : null,
+        meminta_bantuan:    eppsLengkap ? convertWStoScale(eppsLengkap.ws_suc) : null,
+        mengalah:           eppsLengkap ? convertWStoScale(eppsLengkap.ws_aba) : null,
+        merawat:            eppsLengkap ? convertWStoScale(eppsLengkap.ws_nur) : null,
+        perubahan:          eppsLengkap ? convertWStoScale(eppsLengkap.ws_chg) : null,
+        ketahanan:          eppsLengkap ? convertWStoScale(eppsLengkap.ws_end) : null,
+        heteroseksual:      eppsLengkap ? convertWStoScale(eppsLengkap.ws_het) : null,
+        agresi:             eppsLengkap ? convertWStoScale(eppsLengkap.ws_agg) : null,
+    };
+    const kel4 = JSON.stringify(kel4_obj);
+
+    // KEL 5: Sikap Kerja
+    const kel5_obj = {};
+    ['Sistematika Kerja','Inisiatif','Kemandirian'].forEach((nama, i) => {
+        const key = nama.toLowerCase().replace(/ /g,'_');
+        kel5_obj[key] = resultScores[11 + i];
+    });
+    const kel5 = JSON.stringify(kel5_obj);
+
+    const kel6 = String(IQ);
+
+    const kekuatanArr = [0,1,2].map(i => {
+        const teks = kelebihan[i] !== null ? kelebihan[i] : kekuatanKelemahan[sorted_desc[i].index].teks2;
+        return teks;
+    });
+    const kel7 = JSON.stringify(kekuatanArr);
+
+    const kelemahanArr = [0,1,2].map(i => {
+        const teks = kelemahan[i] !== null ? kelemahan[i] : kekuatanKelemahan[sorted_asc[i].index].teks3;
+        return teks;
+    });
+    const kel8 = JSON.stringify(kelemahanArr);
+
+    const rekomendasiArr = [0,1,2].map(i => {
+        const teks = rekomendasi[i] !== null ? rekomendasi[i] : kekuatanKelemahan[sorted_asc[i].index].teks5;
+        return teks;
+    });
+    const kel9 = JSON.stringify(rekomendasiArr);
+
+    const minatArr = minat3.map(({ singkatan, namaOverride, ketOverride }) => {
+        const item = minatData.find(m => m.singkatan === singkatan);
+        if (!item) return { singkatan, nama: singkatan, keterangan: '' };
+        return {
+            singkatan,
+            nama       : namaOverride ? namaOverride.toUpperCase() : item.arah_minat,
+            keterangan : ketOverride  ? ketOverride : item.keterangan_minat
+        };
+    });
+    const kel10 = JSON.stringify(minatArr);
+
+    const now = new Date();
+    const kel11 = now.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+    const karakter = hitungKarakter(rawRow);
+    const potensi  = hitungPotensi(rawRow);
+    const karir    = hitungKarir(rawRow);
+    const asmara   = hitungAsmara(rawRow);
+
+    const x12_obj = {};
+    if (karakter.x12) x12_obj.karakter = JSON.parse(karakter.x12);
+    if (potensi.x12)  x12_obj.potensi  = potensi.x12;
+    if (karir.x12)    x12_obj.karir    = karir.x12;
+    if (asmara.x12)   x12_obj.asmara   = asmara.x12;
+
+    const x13_obj = {};
+    if (karakter.x13) x13_obj.karakter = JSON.parse(karakter.x13);
+    if (potensi.x13)  x13_obj.potensi  = potensi.x13;
+    if (karir.x13)    x13_obj.karir    = karir.x13;
+    if (asmara.x13)   x13_obj.asmara   = asmara.x13;
+
+    const PE = window.PsikogramEngine;
+    if (PE && PE.parseSpintax) {
+        const randX13 = getRandFn(String(rawRow.id_x) + '_x13');
+        function resolveVariasi(node, rand) {
+            if (typeof node === 'string') return PE.parseSpintax(node, rand);
+            if (Array.isArray(node)) {
+                for (let i = 0; i < node.length; i++) node[i] = resolveVariasi(node[i], rand);
+                return node;
+            }
+            if (node && typeof node === 'object') {
+                for (const k of Object.keys(node)) node[k] = resolveVariasi(node[k], rand);
+                return node;
+            }
+            return node;
+        }
+        resolveVariasi(x13_obj, randX13);
+    }
+
+    return {
+        x_01 : kel1,
+        x_02 : kel2,
+        x_03 : kel3,
+        x_04 : kel4,
+        x_05 : kel5,
+        x_06 : kel6,
+        x_07 : kel7,
+        x_08 : kel8,
+        x_09 : kel9,
+        x_10 : kel10,
+        x_11 : kel11,
+        x_12 : Object.keys(x12_obj).length > 0 ? JSON.stringify(x12_obj) : null,
+        x_13 : Object.keys(x13_obj).length > 0 ? JSON.stringify(x13_obj) : null,
+        x_15 : kel15,
+        x_16 : kel16,
+        x_17 : kel17,
+        x_18 : kel18,
+    };
+}
+
+// =========================================================
+// SERVER SWITCHER
+// =========================================================
+function renderServerGrid() {
+    const grid = document.getElementById('serverGrid');
+    if (!grid) return;
+    grid.innerHTML = SERVERS.map((s, i) => `
+        <button class="srv-btn${i === activeSrvIdx ? ' active' : ''}" onclick="switchSrcServer(${i})">
+            <span class="srv-name">${i === activeSrvIdx ? '✓ ' : ''}${s.label}</span>
+            <span class="srv-domain">${s.domain}</span>
+        </button>
+    `).join('');
+    updateSrvDisplay();
+}
+
+function switchSrcServer(idx) {
+    if (idx === activeSrvIdx) return;
+    activeSrvIdx = idx;
+    renderServerGrid();
+    if (previewRows.length > 0) {
+        resetAll();
+        showToast('⚠️ Preview direset karena server sumber berubah. Silakan ambil data ulang.');
+    }
+    updateHeaderDisplay();
+}
+
+function updateSrvDisplay() {
+    const srv = SERVERS[activeSrvIdx];
+    const apiUrl = `https://${srv.domain}${srv.path}`;
+    const el = document.getElementById('srv-api-display');
+    if (el) el.textContent = apiUrl;
+    const badge = document.getElementById('hdr-srv-src');
+    if (badge) badge.textContent = srv.domain;
+}
+
+// =========================================================
+// KONFIGURASI TABEL
+// =========================================================
+function applyTableConfig() {
+    const src = document.getElementById('cfg-src-table').value.trim();
+    const dst = document.getElementById('cfg-dst-table').value.trim();
+
+    const valid = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    if (!valid.test(src)) {
+        alert('⚠️ Nama tabel sumber tidak valid!\nHanya boleh huruf, angka, dan underscore (_).');
+        document.getElementById('cfg-src-table').focus();
+        return;
+    }
+    if (!valid.test(dst)) {
+        alert('⚠️ Nama tabel tujuan tidak valid!\nHanya boleh huruf, angka, dan underscore (_).');
+        document.getElementById('cfg-dst-table').focus();
+        return;
+    }
+
+    CFG.SRC_TABLE = src;
+    CFG.DST_TABLE = dst;
+
+    updateHeaderDisplay();
+
+    const strip = document.getElementById('table-info-strip');
+    strip.style.background = '#d4edda';
+    strip.style.borderColor = '#28a745';
+    strip.innerHTML = `<span style="font-size:18px;">✅</span>
+        <span>Konfigurasi diterapkan! Membaca dari <strong>${src}</strong>, menyimpan ke <strong>${dst}</strong></span>`;
+    setTimeout(() => {
+        strip.style.background = '#f0edff';
+        strip.style.borderColor = '#5F4EDA';
+        strip.innerHTML = `<span style="font-size:18px;">ℹ️</span>
+            <span>Aktif: Membaca dari tabel <strong id="info-src">${src}</strong>, menyimpan ke tabel <strong id="info-dst">${dst}</strong></span>`;
+    }, 2500);
+
+    if (previewRows.length > 0) {
+        resetAll();
+        showToast('⚠️ Preview direset karena konfigurasi tabel berubah.');
+    }
+}
+
+function resetSrcTable() {
+    document.getElementById('cfg-src-table').value = DEFAULT_TABLES.SRC;
+    onTableInput();
+}
+
+function resetDstTable() {
+    document.getElementById('cfg-dst-table').value = DEFAULT_TABLES.DST;
+    onTableInput();
+}
+
+function onTableInput() {
+    const src = document.getElementById('cfg-src-table').value.trim();
+    const dst = document.getElementById('cfg-dst-table').value.trim();
+    const isDiff = src !== CFG.SRC_TABLE || dst !== CFG.DST_TABLE;
+    const strip = document.getElementById('table-info-strip');
+    if (isDiff) {
+        strip.style.background = '#fff3cd';
+        strip.style.borderColor = '#e6a817';
+        strip.innerHTML = `<span style="font-size:18px;">⚠️</span>
+            <span>Perubahan belum diterapkan. Klik <strong>Terapkan Konfigurasi</strong>.</span>`;
+    } else {
+        strip.style.background = '#f0edff';
+        strip.style.borderColor = '#5F4EDA';
+        strip.innerHTML = `<span style="font-size:18px;">ℹ️</span>
+            <span>Aktif: Membaca dari tabel <strong>${CFG.SRC_TABLE}</strong>, menyimpan ke <strong>${CFG.DST_TABLE}</strong></span>`;
+    }
+}
+
+function updateHeaderDisplay() {
+    const src = CFG.SRC_TABLE;
+    const dst = CFG.DST_TABLE;
+    ['hdr-src','hdr-src2'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = src; });
+    ['hdr-dst','hdr-dst2'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = dst; });
+    updateSrvDisplay();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderServerGrid();
+});
+
+function showToast(msg) {
+    let t = document.getElementById('toast-notif');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast-notif';
+        t.style.cssText = `position:fixed; bottom:24px; right:24px; background:#333; color:white;
+            padding:12px 20px; border-radius:8px; font-size:13px; z-index:9999;
+            box-shadow:0 4px 16px rgba(0,0,0,.3); max-width:340px; line-height:1.5;`;
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 4000);
+}
+
+// =========================================================
+// STATE
+// =========================================================
+let currentMode = 'single';
+let previewRows = [];
+
+// =========================================================
+// MODE SWITCH
+// =========================================================
+function switchMode(mode) {
+    currentMode = mode;
+    const modeList = ['single','range','all','date_single','date_range'];
+    document.querySelectorAll('.mode-tab').forEach((t,i) => {
+        t.classList.toggle('active', modeList[i] === mode);
+    });
+    document.querySelectorAll('.mode-panel').forEach(p => {
+        p.classList.toggle('active', p.id === 'panel-' + mode);
+    });
+}
+
+// =========================================================
+// LOG
+// =========================================================
+function log(msg, type='info') {
+    const box = document.getElementById('log-box');
+    const cls = { ok:'log-ok', err:'log-err', info:'log-info', warn:'log-warn' }[type] || 'log-info';
+    const time = new Date().toLocaleTimeString('id-ID');
+    box.innerHTML += `<div class="${cls}">[${time}] ${msg}</div>`;
+    box.scrollTop = box.scrollHeight;
+}
+
+// =========================================================
+// API HELPERS
+// =========================================================
+async function apiGet(table, params = {}, useAuth = false, useDst = false) {
+    const url = new URL(useDst ? CFG.API_DST : CFG.API);
+    url.searchParams.set('table', table);
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (useAuth) headers['X-Custom-Auth'] = CFG.SECRET;
+
+    const res = await fetch(url.toString(), { headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+async function fetchAllSource() {
+    let allData = [];
+    let lastId = null;
+
+    while (true) {
+        const params = lastId ? { id_x_lt: lastId } : {};
+        const json = await apiGet(CFG.SRC_TABLE, params);
+        if (!json.success || !json.data || json.data.length === 0) break;
+
+        allData = allData.concat(json.data);
+        const ids = json.data.map(r => r.id_x);
+        lastId = Math.min(...ids);
+
+        if (json.data.length < 100) break;
+    }
+    return allData;
+}
+
+async function apiPost(table, body) {
+    const url = new URL(CFG.API_DST);
+    url.searchParams.set('table', table);
+    const res = await fetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': CFG.SECRET },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+async function apiPut(table, id_x, body) {
+    const url = new URL(CFG.API_DST);
+    url.searchParams.set('table', table);
+    url.searchParams.set('id_x', id_x);
+    const res = await fetch(url.toString(), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': CFG.SECRET },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+// =========================================================
+// FETCH SOURCE DATA
+// =========================================================
+async function fetchSourceData() {
+    if (currentMode === 'single') {
+        const id = parseInt(document.getElementById('input-single-id').value);
+        if (!id) throw new Error('id_x tidak boleh kosong');
+        const json = await apiGet(CFG.SRC_TABLE, { id_x: id });
+        if (!json.success) throw new Error(json.message || 'Data tidak ditemukan');
+        const d = json.data;
+        return Array.isArray(d) ? d : [d];
+    }
+    if (currentMode === 'range') {
+        const from = parseInt(document.getElementById('input-range-from').value);
+        const to = parseInt(document.getElementById('input-range-to').value);
+        if (!from || !to || from > to) throw new Error('Range id_x tidak valid');
+        let allData = [];
+        let curTo = to + 1;
+        while (true) {
+            const json = await apiGet(CFG.SRC_TABLE, { id_x_gt: from - 1, id_x_lt: curTo });
+            if (!json.success || !json.data || json.data.length === 0) break;
+            allData = allData.concat(json.data);
+            const ids = json.data.map(r => r.id_x);
+            curTo = Math.min(...ids);
+            if (json.data.length < 100 || curTo <= from) break;
+        }
+        if (!allData.length) throw new Error('Data tidak ditemukan dalam range tersebut');
+        return allData;
+    }
+    if (currentMode === 'date_single') {
+        const tgl = document.getElementById('input-date-single').value;
+        if (!tgl) throw new Error('Tanggal tes tidak boleh kosong');
+        const json = await apiGet(CFG.SRC_TABLE, { x_02_like: tgl });
+        if (!json.success) throw new Error(json.message || 'Gagal ambil data');
+        return (json.data || []).filter(row => {
+            try {
+                const bio = JSON.parse(row.x_02 || '{}');
+                return (bio.tgl_tes || '').slice(0, 10) === tgl;
+            } catch { return false; }
+        });
+    }
+    if (currentMode === 'date_range') {
+        const dari = document.getElementById('input-date-from').value;
+        const sampai = document.getElementById('input-date-to').value;
+        if (!dari || !sampai) throw new Error('Tanggal dari dan sampai tidak boleh kosong');
+        if (dari > sampai) throw new Error('Tanggal dari tidak boleh lebih besar dari tanggal sampai');
+        const dates = [];
+        let cur = new Date(dari);
+        const end = new Date(sampai);
+        while (cur <= end) {
+            dates.push(cur.toISOString().slice(0, 10));
+            cur.setDate(cur.getDate() + 1);
+        }
+        const results = await Promise.all(
+            dates.map(tgl => apiGet(CFG.SRC_TABLE, { x_02_like: tgl }))
+        );
+        let allData = [];
+        results.forEach((json, i) => {
+            if (!json.success || !json.data) return;
+            const tgl = dates[i];
+            const filtered = json.data.filter(row => {
+                try {
+                    const bio = JSON.parse(row.x_02 || '{}');
+                    return (bio.tgl_tes || '').slice(0, 10) === tgl;
+                } catch { return false; }
+            });
+            allData = allData.concat(filtered);
+        });
+        const seen = new Set();
+        return allData.filter(row => {
+            if (seen.has(row.id_x)) return false;
+            seen.add(row.id_x);
+            return true;
+        });
+    }
+    return await fetchAllSource();
+}
+
+// =========================================================
+// FETCH PREVIEW
+// =========================================================
+async function fetchPreview(mode) {
+    currentMode = mode;
+    previewRows = [];
+
+    if (window._enginesReady) {
+        try { await window._enginesReady; } catch(e) {}
+    }
+
+    const cardPreview = document.getElementById('card-preview');
+    const tbody = document.getElementById('preview-tbody');
+    const emptyState = document.getElementById('empty-state');
+    const btnTransfer = document.getElementById('btn-transfer');
+    const chkAll = document.getElementById('chk-all');
+
+    cardPreview.style.display = 'none';
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:24px; color:#777;">
+        <div id="preview-progress-wrap" style="max-width:320px; margin:0 auto;">
+            <div style="font-size:13px; margin-bottom:8px;" id="preview-progress-label">Mengambil data sumber...</div>
+            <div style="background:#eee; border-radius:8px; height:10px; overflow:hidden;">
+                <div id="preview-progress-bar" style="background:#5F4EDA; height:100%; width:0%; transition:width .15s;"></div>
+            </div>
+            <div style="font-size:12px; color:#999; margin-top:6px;" id="preview-progress-count">0 / 0</div>
+        </div>
+    </td></tr>`;
+    cardPreview.style.display = 'block';
+    emptyState.style.display = 'none';
+    btnTransfer.disabled = true;
+    chkAll.checked = false;
+
+    function updatePreviewProgress(done, total, label) {
+        const labelEl = document.getElementById('preview-progress-label');
+        const barEl = document.getElementById('preview-progress-bar');
+        const countEl = document.getElementById('preview-progress-count');
+        if (!labelEl || !barEl || !countEl) return;
+        if (label) labelEl.textContent = label;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        barEl.style.width = pct + '%';
+        countEl.textContent = `${done} / ${total}`;
+    }
+
+    try {
+        const srcData = await fetchSourceData();
+        if (!srcData || srcData.length === 0) {
+            tbody.innerHTML = '';
+            emptyState.style.display = 'block';
+            updateStats();
+            return;
+        }
+
+        const rows = [];
+        updatePreviewProgress(0, srcData.length, 'Memproses data peserta...');
+        for (let i = 0; i < srcData.length; i++) {
+            const raw = srcData[i];
+            try {
+                const mapped = mapData(raw);
+                rows.push({ srcRow: raw, mapped, existingId: null, status: 'pending', checked: false });
+            } catch(e) {
+                rows.push({ srcRow: raw, mapped: null, existingId: null, status: 'error', errMsg: e.message, checked: false });
+            }
+            updatePreviewProgress(i + 1, srcData.length, 'Memproses data peserta...');
+        }
+
+        const kodePeserta = [...new Set(rows.filter(r => r.mapped).map(r => r.mapped.x_01))];
+        updatePreviewProgress(0, kodePeserta.length, 'Mengecek status data di rekap_nilai1...');
+        for (let i = 0; i < kodePeserta.length; i++) {
+            const kode = kodePeserta[i];
+            try {
+                const cek = await apiGet(CFG.DST_TABLE, { x_01_eq: kode }, true, true);
+                if (cek.success && cek.data && cek.data.length > 0) {
+                    const existId = cek.data[0].id_x;
+                    rows.filter(r => r.mapped && r.mapped.x_01 === kode).forEach(r => {
+                        r.existingId = existId;
+                        r.status = 'update';
+                    });
+                } else {
+                    rows.filter(r => r.mapped && r.mapped.x_01 === kode).forEach(r => {
+                        r.status = 'new';
+                    });
+                }
+            } catch(e) {
+                rows.filter(r => r.mapped && r.mapped.x_01 === kode).forEach(r => {
+                    r.status = 'new';
+                });
+            }
+            updatePreviewProgress(i + 1, kodePeserta.length, 'Mengecek status data di rekap_nilai1...');
+        }
+
+        previewRows = rows;
+        renderPreviewTable();
+        updateStats();
+        updateTransferBtn();
+
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="10" style="color:#dc3545; padding:14px;">❌ Error: ${err.message}</td></tr>`;
+    }
+}
+
+// =========================================================
+// RENDER PREVIEW TABLE
+// =========================================================
+function renderPreviewTable() {
+    const tbody = document.getElementById('preview-tbody');
+    tbody.innerHTML = '';
+
+    if (previewRows.length === 0) {
+        document.getElementById('empty-state').style.display = 'block';
+        return;
+    }
+
+    previewRows.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.id = `row-${idx}`;
+        if (row.checked) tr.classList.add('selected');
+        tr.dataset.search = [
+            row.srcRow.id_x,
+            row.mapped ? row.mapped.x_01 : '',
+            row.mapped ? (() => { try { return JSON.parse(row.mapped.x_02).nama; } catch { return ''; } })() : ''
+        ].join(' ').toLowerCase();
+
+        const statusBadge = row.status === 'new' ? '<span class="badge badge-new">🆕 Baru</span>' :
+                            row.status === 'update' ? '<span class="badge badge-update">✏️ Update</span>' :
+                            row.status === 'error' ? '<span class="badge badge-error">❌ Error</span>' :
+                            '<span class="badge badge-pending">⏳ Pending</span>';
+
+        const nama = row.mapped ? (() => { try { return JSON.parse(row.mapped.x_02).nama; } catch { return '-'; } })() : '-';
+        const iq = row.mapped ? row.mapped.x_06 : '-';
+
+        const kemampJSON = row.mapped ? row.mapped.x_03 : '{}';
+        let kemampPreview = '-';
+        try {
+            const k = JSON.parse(kemampJSON || '{}');
+            const entries = Object.entries(k).filter(([key]) => key !== 'skor_iq').slice(0, 2);
+            kemampPreview = entries.map(([k,v]) => `${k.replace(/_/g,' ')}:${v}`).join(', ');
+        } catch {}
+
+        const kepribJSON = row.mapped ? row.mapped.x_04 : '{}';
+        let kepribPreview = '-';
+        try {
+            const k = JSON.parse(kepribJSON || '{}');
+            const entries = Object.entries(k).slice(0, 3);
+            kepribPreview = entries.map(([k,v]) => `${k.replace(/_/g,' ')}:${v}`).join(', ') + '...';
+        } catch {}
+
+        const sikapJSON = row.mapped ? row.mapped.x_05 : '{}';
+        let sikapPreview = '-';
+        try {
+            const k = JSON.parse(sikapJSON || '{}');
+            const entries = Object.entries(k);
+            sikapPreview = entries.map(([k,v]) => `${k.replace(/_/g,' ')}:${v}`).join(', ');
+        } catch {}
+
+        tr.innerHTML = `
+            <td style="text-align:center;">
+                <input type="checkbox" id="chk-${idx}"
+                    ${row.status === 'error' ? 'disabled' : ''}
+                    ${row.checked ? 'checked' : ''}
+                    onchange="toggleRow(${idx}, this.checked)">
+            </td>
+            <td><strong>${row.srcRow.id_x}</strong></td>
+            <td>${row.mapped ? row.mapped.x_01 : '<em style="color:#aaa;">-</em>'}</td>
+            <td>${nama}</td>
+            <td style="text-align:center;"><strong>${iq}</strong></td>
+            <td class="json-cell" onclick="showModal('Kemampuan – Peserta ${row.srcRow.id_x}', kemampJSON_${idx})"
+                title="Klik untuk lihat detail">${kemampPreview}</td>
+            <td class="json-cell" onclick="showModal('Kepribadian (14 Aspek) – Peserta ${row.srcRow.id_x}', kepribJSON_${idx})"
+                title="Klik untuk lihat detail">${kepribPreview}</td>
+            <td class="json-cell" onclick="showModal('Sikap Kerja – Peserta ${row.srcRow.id_x}', sikapJSON_${idx})"
+                title="Klik untuk lihat detail">${sikapPreview}</td>
+            <td>${statusBadge} ${row.existingId ? `<small style="color:#999;">id_x:${row.existingId}</small>` : ''}</td>
+            <td>
+                <button class="btn btn-primary" style="padding:4px 10px; font-size:12px;"
+                    onclick="showDetailModal(${idx})">👁️ Detail</button>
+            </td>`;
+        tbody.appendChild(tr);
+
+        window[`kemampJSON_${idx}`] = kemampJSON;
+        window[`kepribJSON_${idx}`] = kepribJSON;
+        window[`sikapJSON_${idx}`] = sikapJSON;
+
+        if (row.status === 'error') {
+            const errTr = document.createElement('tr');
+            errTr.innerHTML = `<td colspan="10" style="background:#fff5f5; color:#dc3545; font-size:12px; padding:6px 14px;">
+                ⚠️ Gagal memproses id_x ${row.srcRow.id_x}: ${row.errMsg}</td>`;
+            tbody.appendChild(errTr);
+        }
+    });
+
+    const searchInput = document.getElementById('preview-search');
+    filterPreviewTable(searchInput ? searchInput.value : '');
+}
+
+// =========================================================
+// SEARCH / FILTER
+// =========================================================
+function filterPreviewTable(keyword) {
+    const q = (keyword || '').trim().toLowerCase();
+    const tbody = document.getElementById('preview-tbody');
+    const rows = tbody ? Array.from(tbody.querySelectorAll('tr[id^="row-"]')) : [];
+    let visibleCount = 0;
+
+    rows.forEach(tr => {
+        const match = !q || (tr.dataset.search || '').includes(q);
+        tr.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+
+        const next = tr.nextElementSibling;
+        if (next && !next.id) {
+            next.style.display = match ? '' : 'none';
+        }
+    });
+
+    const countEl = document.getElementById('preview-search-count');
+    if (countEl) {
+        countEl.textContent = q ? `${visibleCount} dari ${rows.length} data cocok` : '';
+    }
+}
+
+// =========================================================
+// TOGGLE ROW / SELECT ALL
+// =========================================================
+function toggleRow(idx, checked) {
+    previewRows[idx].checked = checked;
+    const tr = document.getElementById(`row-${idx}`);
+    if (tr) tr.classList.toggle('selected', checked);
+    updateStats();
+    updateTransferBtn();
+    const allCheckable = previewRows.filter(r => r.status !== 'error');
+    const allChecked = allCheckable.every(r => r.checked);
+    document.getElementById('chk-all').checked = allChecked && allCheckable.length > 0;
+}
+
+function toggleSelectAll(checked) {
+    previewRows.forEach((row, idx) => {
+        if (row.status === 'error') return;
+        const tr = document.getElementById(`row-${idx}`);
+        if (tr && tr.style.display === 'none') return;
+        row.checked = checked;
+        const chk = document.getElementById(`chk-${idx}`);
+        if (chk) chk.checked = checked;
+        if (tr) tr.classList.toggle('selected', checked);
+    });
+    updateStats();
+    updateTransferBtn();
+}
+
+// =========================================================
+// UPDATE STATS
+// =========================================================
+function updateStats() {
+    const total = previewRows.length;
+    const newCount = previewRows.filter(r => r.status === 'new').length;
+    const updCount = previewRows.filter(r => r.status === 'update').length;
+    const selected = previewRows.filter(r => r.checked).length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-new').textContent = newCount;
+    document.getElementById('stat-update').textContent = updCount;
+    document.getElementById('stat-selected').textContent = selected;
+}
+
+function updateTransferBtn() {
+    const hasSelected = previewRows.some(r => r.checked);
+    document.getElementById('btn-transfer').disabled = !hasSelected;
+}
+
+// =========================================================
+// MODAL
+// =========================================================
+function showModal(title, jsonStr) {
+    let html = '';
+    try {
+        const pretty = JSON.stringify(JSON.parse(jsonStr), null, 2);
+        html = `<pre style="white-space:pre-wrap;word-break:break-word;font-size:13px">${pretty}</pre>`;
+    } catch {
+        html = `<pre style="white-space:pre-wrap;font-size:13px">${jsonStr}</pre>`;
+    }
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('modal-overlay').classList.add('open');
+}
+
+function showDetailModal(idx) {
+    const row = previewRows[idx];
+    if (!row || !row.mapped) return;
+    const m = row.mapped;
+
+    const kolom = [
+        { key: 'x_01', label: 'Kode Peserta', val: m.x_01 },
+        { key: 'x_02', label: 'Biodata', val: m.x_02 },
+        { key: 'x_03', label: 'Kemampuan', val: m.x_03 },
+        { key: 'x_04', label: 'Kepribadian (14 Aspek)', val: m.x_04 },
+        { key: 'x_05', label: 'Sikap Kerja', val: m.x_05 },
+        { key: 'x_06', label: 'IQ', val: m.x_06 },
+        { key: 'x_07', label: 'Kekuatan', val: m.x_07 },
+        { key: 'x_08', label: 'Kelemahan', val: m.x_08 },
+        { key: 'x_09', label: 'Rekomendasi', val: m.x_09 },
+        { key: 'x_10', label: 'Arah Minat', val: m.x_10 },
+        { key: 'x_11', label: 'Tgl Transfer', val: m.x_11 },
+        { key: 'x_12', label: 'Karakter (Angka)', val: m.x_12 },
+        { key: 'x_13', label: 'Karakter (Kalimat)', val: m.x_13 },
+        { key: 'x_15', label: 'Copy Sumber x_05', val: m.x_15 },
+        { key: 'x_16', label: 'Copy Sumber x_06', val: m.x_16 },
+        { key: 'x_17', label: 'Copy Sumber x_07', val: m.x_17 },
+        { key: 'x_18', label: 'VAK & Temperamen', val: m.x_18 },
+    ];
+
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:13px">`;
+    html += `<tr style="background:#f0eeff">
+        <th style="padding:8px 10px;text-align:left;width:110px;color:#5F4EDA;border-bottom:2px solid #ddd">Kolom</th>
+        <th style="padding:8px 10px;text-align:left;color:#5F4EDA;border-bottom:2px solid #ddd">Label</th>
+        <th style="padding:8px 10px;text-align:left;color:#5F4EDA;border-bottom:2px solid #ddd">Nilai</th>
+    </tr>`;
+
+    kolom.forEach(({ key, label, val }) => {
+        let display = '';
+        if (val === null || val === undefined || val === 'null') {
+            display = `<span style="color:#bbb;font-style:italic">null</span>`;
+        } else {
+            try {
+                const parsed = JSON.parse(val);
+                display = `<pre style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:12px;max-height:120px;overflow-y:auto;background:#f8f8ff;padding:6px;border-radius:4px">${JSON.stringify(parsed, null, 2)}</pre>`;
+            } catch {
+                display = `<span>${val}</span>`;
+            }
+        }
+        html += `<tr style="border-bottom:1px solid #eee;vertical-align:top">
+            <td style="padding:8px 10px;font-weight:700;color:#5F4EDA;white-space:nowrap">${key}</td>
+            <td style="padding:8px 10px;color:#666;white-space:nowrap">${label}</td>
+            <td style="padding:8px 10px">${display}</td>
+        </tr>`;
+    });
+    html += `</table>`;
+
+    document.getElementById('modal-title').innerHTML = `📋 Detail Kolom Tujuan — id_x <b>${row.srcRow.id_x}</b> &nbsp;<span style="font-size:12px;font-weight:normal;color:${row.status==='new'?'#28a745':'#f59e0b'}">[${row.status==='new'?'POST BARU':'UPDATE'}]</span>`;
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+    if (e.target === document.getElementById('modal-overlay')) {
+        document.getElementById('modal-overlay').classList.remove('open');
+    }
+}
+
+// =========================================================
+// TRANSFER
+// =========================================================
+async function startTransfer() {
+    const toTransfer = previewRows.filter(r => r.checked && r.status !== 'error' && r.mapped);
+    if (toTransfer.length === 0) return;
+
+    document.getElementById('btn-transfer').disabled = true;
+    document.getElementById('card-progress').style.display = 'block';
+    document.getElementById('card-progress').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const logBox = document.getElementById('log-box');
+    logBox.innerHTML = '';
+
+    let done = 0, ok = 0, fail = 0;
+    const total = toTransfer.length;
+
+    document.getElementById('prog-total').textContent = total;
+    updateProgress(0, 0, 0, total);
+    log(`🚀 Memulai transfer ${total} data...`, 'info');
+
+    for (const row of toTransfer) {
+        const pesertaId = row.srcRow.id_x;
+
+        try {
+            row.mapped = mapData(row.srcRow);
+        } catch (e) {
+            log(`❌ GAGAL hitung ulang id_x ${pesertaId} — ${e.message}`, 'err');
+            fail++;
+            done++;
+            updateProgress(done, ok, fail, total);
+            continue;
+        }
+
+        const kode = row.mapped.x_01;
+        try {
+            let result;
+            if (row.status === 'update' && row.existingId) {
+                result = await apiPut(CFG.DST_TABLE, row.existingId, row.mapped);
+                log(`✏️ UPDATE id_x ${pesertaId} (kode: ${kode}) → rekap id_x ${row.existingId} — ${result.message || 'OK'}`, 'ok');
+            } else {
+                result = await apiPost(CFG.DST_TABLE, row.mapped);
+                log(`🆕 INSERT id_x ${pesertaId} (kode: ${kode}) → rekap id_x ${result.id_x || '?'} — ${result.message || 'OK'}`, 'ok');
+            }
+            ok++;
+            updateRowBadge(row, 'success');
+        } catch (err) {
+            fail++;
+            log(`❌ GAGAL id_x ${pesertaId} (kode: ${kode}) — ${err.message}`, 'err');
+            updateRowBadge(row, 'error');
+        }
+        done++;
+        updateProgress(done, ok, fail, total);
+
+        if (done < total) await sleep(CFG.DELAY_MS);
+    }
+
+    log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'info');
+    log(`✅ Selesai! Berhasil: ${ok} | Gagal: ${fail} | Total: ${total}`, ok === total ? 'ok' : 'warn');
+
+    document.getElementById('btn-transfer').disabled = false;
+}
+
+function updateProgress(done, ok, fail, total) {
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    document.getElementById('prog-bar').style.width = pct + '%';
+    document.getElementById('prog-done').textContent = done;
+    document.getElementById('prog-ok').textContent = ok;
+    document.getElementById('prog-fail').textContent = fail;
+    document.getElementById('prog-label').textContent = `${pct}% — ${done} dari ${total} data diproses`;
+}
+
+function updateRowBadge(row, result) {
+    const idx = previewRows.indexOf(row);
+    const tr = document.getElementById(`row-${idx}`);
+    if (!tr) return;
+    const badgeCell = tr.cells[8];
+    if (result === 'success') {
+        badgeCell.innerHTML = `<span class="badge badge-success">✅ Tersimpan</span>`;
+    } else {
+        badgeCell.innerHTML = `<span class="badge badge-error">❌ Gagal</span>`;
+    }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// =========================================================
+// RESET
+// =========================================================
+function resetAll() {
+    previewRows = [];
+    document.getElementById('card-preview').style.display = 'none';
+    document.getElementById('card-progress').style.display = 'none';
+    document.getElementById('preview-tbody').innerHTML = '';
+    document.getElementById('log-box').innerHTML = '';
+    document.getElementById('chk-all').checked = false;
+    updateStats();
+}
+</script>
+</body>
+</html>
