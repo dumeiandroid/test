@@ -130,14 +130,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 .search-wrap i{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;}
 .search-inp{background:var(--s2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;width:200px;font-family:inherit;transition:border-color .2s;}
 .search-inp:focus{outline:none;border-color:var(--a1);}
-.btn-colcfg{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:7px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all .2s;flex-shrink:0;}
-.btn-colcfg:hover{border-color:var(--a1);color:var(--a1);}
-.colcfg-section{margin-bottom:4px;}
-.colcfg-lbl{font-size:11px;color:var(--muted);margin-bottom:8px;font-family:'DM Mono',monospace;}
-.colcfg-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px 10px;max-height:170px;overflow-y:auto;padding:2px;}
-.colcfg-chk{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);font-family:'DM Mono',monospace;cursor:pointer;}
-.colcfg-chk input{cursor:pointer;margin:0;}
-.colcfg-hr{border:none;border-top:1px solid var(--border);margin:16px 0;}
 
 /* data table */
 .table-wrap{flex:1;overflow:auto;padding:12px 16px;}
@@ -285,7 +277,6 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
         <button class="btn-p" onclick="openAddModal()"><i class="fa fa-plus"></i> Tambah</button>
         <button class="btn-o" onclick="loadData()"><i class="fa fa-rotate-right"></i> Refresh</button>
         <button class="btn-o" id="btnBulkDel" onclick="bulkDeleteRows()" style="display:none;color:var(--danger);border-color:var(--danger);"><i class="fa fa-trash"></i> Hapus Terpilih (<span id="bulkDelCount">0</span>)</button>
-        <button class="btn-colcfg" id="btnColCfg" onclick="openColCfgModal()" title="Pengaturan kolom pencarian & tampilan"><i class="fa fa-sliders"></i></button>
         <div class="search-wrap">
           <i class="fa fa-search"></i>
           <input type="text" id="searchBox" class="search-inp" placeholder="Cari x_01...">
@@ -469,53 +460,11 @@ tbody td[contenteditable="true"]:focus{background:rgba(79,156,249,.08);outline:1
   </div>
 </div>
 
-<!-- MODAL PENGATURAN KOLOM PENCARIAN & TAMPILAN -->
-<div class="modal-ov" id="modalColCfg">
-  <div class="modal-box" style="width:560px;">
-    <div class="modal-hdr">
-      <div class="modal-title">Pengaturan Kolom</div>
-      <button class="btn-close" onclick="closeModal('modalColCfg')"><i class="fa fa-times"></i></button>
-    </div>
-    <div class="colcfg-section">
-      <div class="colcfg-lbl">KOLOM PENCARIAN (x_01 – x_20) — teks yang dicari akan dicocokkan ke kolom yang dicentang</div>
-      <div class="colcfg-grid" id="searchColsGrid"></div>
-    </div>
-    <hr class="colcfg-hr">
-    <div class="colcfg-section">
-      <div class="colcfg-lbl">KOLOM YANG DITAMPILKAN DI TABEL (x_01 – x_25)</div>
-      <div class="colcfg-grid" id="displayColsGrid"></div>
-    </div>
-    <div class="modal-ftr" style="justify-content:space-between;">
-      <button class="btn-cancel" onclick="resetColCfg()">Clear (Default)</button>
-      <button class="btn-save" onclick="closeModal('modalColCfg')">Tutup</button>
-    </div>
-  </div>
-</div>
-
 <script>
 // ── localStorage helpers (harus paling atas) ──
 const sg = k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
 const ss = (k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
 const sr = k=>{try{localStorage.removeItem(k);}catch(e){}};
-
-// ── Konfigurasi kolom pencarian & kolom tampilan (persist ke localStorage) ──
-const COLCFG_SEARCH_KEY   = 'mdba_searchCols';
-const COLCFG_DISPLAY_KEY  = 'mdba_displayCols';
-const DEFAULT_SEARCH_COLS  = ['x_01'];
-const DEFAULT_DISPLAY_COLS = Array.from({length:20},(_,i)=>`x_${String(i+1).padStart(2,'0')}`);
-
-function loadColCfg(key, def){
-  try{
-    const raw = sg(key);
-    if(!raw) return def.slice();
-    const arr = JSON.parse(raw);
-    return (Array.isArray(arr) && arr.length) ? arr : def.slice();
-  }catch(e){ return def.slice(); }
-}
-function saveColCfg(key, arr){ ss(key, JSON.stringify(arr)); }
-
-let searchCols  = loadColCfg(COLCFG_SEARCH_KEY, DEFAULT_SEARCH_COLS);
-let displayCols = loadColCfg(COLCFG_DISPLAY_KEY, DEFAULT_DISPLAY_COLS);
 
 // ══════════════════════════════════════════════════════════
 //  SERVER LIST — tambah / kurangi / ubah akun cukup di sini
@@ -1240,11 +1189,7 @@ async function loadData(){
 async function fetchPage(offset){
   const q   = document.getElementById('searchBox').value;
   let url   = `${DBS[activeDB].api}?table=${activeTbl}&limit=${PAGE_SIZE}&offset=${offset}`;
-  if(q){
-    const cols = searchCols.length ? searchCols : DEFAULT_SEARCH_COLS;
-    // or_cols + or_val -> backend mencocokkan q ke SALAH SATU dari kolom-kolom ini (OR), bukan AND
-    url += `&or_cols=${encodeURIComponent(cols.join(','))}&or_val=${encodeURIComponent(q)}`;
-  }
+  if(q) url += `&x_01_like=${encodeURIComponent(q)}`;
   try{
     const res    = await fetch(url, { headers: hdrs(activeDB) });
     const result = await res.json();
@@ -1254,7 +1199,7 @@ async function fetchPage(offset){
 
 function buildTableShell(){
   let h = '<table id="dataTable"><thead><tr><th style="width:28px"><input type="checkbox" id="chkAll" onchange="toggleSelectAll(this.checked)"></th><th style="width:34px"></th><th>ID</th>';
-  displayCols.forEach(col => h += `<th>${col}</th>`);
+  for(let i=1;i<=20;i++) h += `<th>x_${String(i).padStart(2,'0')}</th>`;
   h += '</tr></thead><tbody id="dataTbody"></tbody></table>';
   // Sentinel div untuk IntersectionObserver
   h += '<div id="lazySentinel" style="height:1px;"></div>';
@@ -1275,9 +1220,10 @@ function appendRows(rows){
     let cells = `<td><input type="checkbox" class="rowChk" data-id="${row.id_x}" onchange="toggleRowSelect(${row.id_x},this.checked)"></td>`;
     cells += `<td><button class="btn-del" onclick="deleteRow(${row.id_x})"><i class="fa fa-trash"></i></button></td>`;
     cells += `<td class="td-id">${row.id_x}</td>`;
-    displayCols.forEach(col=>{
+    for(let i=1;i<=20;i++){
+      const col = `x_${String(i).padStart(2,'0')}`;
       cells += `<td contenteditable="true" onblur="updateField(${row.id_x},'${col}',this.innerText)">${row[col]||''}</td>`;
-    });
+    }
     tr.innerHTML = cells;
     tbody.appendChild(tr);
   });
@@ -1945,65 +1891,6 @@ function openAddModal(){
   document.getElementById('addFields').innerHTML=h;
   openModal('modalAdd');
 }
-// ── Modal pengaturan kolom pencarian & tampilan ──
-function renderColCfgUI(){
-  let sHtml = '', dHtml = '';
-  for(let i=1;i<=20;i++){
-    const col = `x_${String(i).padStart(2,'0')}`;
-    const checked = searchCols.includes(col) ? 'checked' : '';
-    sHtml += `<label class="colcfg-chk"><input type="checkbox" ${checked} onchange="toggleSearchCol('${col}',this.checked)">${col}</label>`;
-  }
-  for(let i=1;i<=25;i++){
-    const col = `x_${String(i).padStart(2,'0')}`;
-    const checked = displayCols.includes(col) ? 'checked' : '';
-    dHtml += `<label class="colcfg-chk"><input type="checkbox" ${checked} onchange="toggleDisplayCol('${col}',this.checked)">${col}</label>`;
-  }
-  document.getElementById('searchColsGrid').innerHTML  = sHtml;
-  document.getElementById('displayColsGrid').innerHTML = dHtml;
-}
-
-function openColCfgModal(){
-  renderColCfgUI();
-  openModal('modalColCfg');
-}
-
-function sortCols(arr){ return arr.slice().sort((a,b)=>a.localeCompare(b)); }
-
-function toggleSearchCol(col, checked){
-  if(checked){
-    if(!searchCols.includes(col)) searchCols.push(col);
-  } else {
-    const next = searchCols.filter(c=>c!==col);
-    searchCols = next.length ? next : [col]; // minimal 1 kolom aktif, jangan sampai kosong
-  }
-  searchCols = sortCols(searchCols);
-  saveColCfg(COLCFG_SEARCH_KEY, searchCols);
-  renderColCfgUI();
-  if(activeTbl && document.getElementById('searchBox').value) loadData();
-}
-
-function toggleDisplayCol(col, checked){
-  if(checked){
-    if(!displayCols.includes(col)) displayCols.push(col);
-  } else {
-    const next = displayCols.filter(c=>c!==col);
-    displayCols = next.length ? next : [col]; // minimal 1 kolom tampil
-  }
-  displayCols = sortCols(displayCols);
-  saveColCfg(COLCFG_DISPLAY_KEY, displayCols);
-  renderColCfgUI();
-  if(activeTbl) loadData();
-}
-
-function resetColCfg(){
-  searchCols  = DEFAULT_SEARCH_COLS.slice();
-  displayCols = DEFAULT_DISPLAY_COLS.slice();
-  saveColCfg(COLCFG_SEARCH_KEY, searchCols);
-  saveColCfg(COLCFG_DISPLAY_KEY, displayCols);
-  renderColCfgUI();
-  if(activeTbl) loadData();
-}
-
 document.querySelectorAll('.modal-ov').forEach(m=>{
   m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
 });
