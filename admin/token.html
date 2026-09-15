@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Token</title>
+<style>
+:root {
+    --primary: #667eea;
+    --purple: #764ba2;
+    --success: #28a745;
+    --danger: #dc3545;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+.main { max-width: 560px; margin: 0 auto; }
+
+/* ── LOGIN ── */
+#loginScreen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: calc(100vh - 40px);
+}
+.login-card {
+    background: #fff; border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    padding: 32px 28px; width: 100%; max-width: 380px;
+}
+.login-card h1 {
+    font-size: 22px; font-weight: 800; color: var(--text);
+    text-align: center; margin-bottom: 6px;
+}
+.login-card .sub {
+    font-size: 12.5px; color: var(--muted); text-align: center;
+    margin-bottom: 24px;
+}
+.form-group { margin-bottom: 16px; }
+.form-group label {
+    display: block; font-size: 12px; font-weight: 700; color: var(--muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.ctrl-input {
+    width: 100%; padding: 12px 14px; border: 2px solid var(--border);
+    border-radius: 10px; font-size: 14px; outline: none;
+    transition: border-color 0.2s; background: #fff; color: var(--text);
+}
+.ctrl-input:focus { border-color: var(--primary); }
+
+.remember-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 18px; cursor: pointer;
+    user-select: none;
+}
+.remember-row input[type="checkbox"] {
+    width: 17px; height: 17px; accent-color: var(--primary); cursor: pointer;
+}
+.remember-row span {
+    font-size: 13px; color: var(--text); font-weight: 600;
+}
+
+.login-error {
+    background: #fee2e2; color: #b91c1c; font-size: 12.5px;
+    padding: 9px 12px; border-radius: 8px; margin-bottom: 14px;
+    display: none; font-weight: 600;
+}
+.login-error.show { display: block; }
+
+/* ── APP ── */
+.topbar { color: white; text-align: center; margin-bottom: 18px; position: relative; }
+.topbar h1 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.topbar p { font-size: 12.5px; opacity: .85; }
+.user-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.user-info {
+    color: #fff; font-size: 12.5px; font-weight: 600;
+    background: rgba(255,255,255,0.15);
+    padding: 6px 14px; border-radius: 99px;
+}
+.user-info b { font-weight: 800; }
+.logout-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #fff; font-size: 12.5px; font-weight: 700;
+    padding: 6px 14px; border-radius: 99px; cursor: pointer;
+    transition: all .15s;
+}
+.logout-btn:hover { background: rgba(255,255,255,0.3); }
+
+.srv-wrap {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin-top: 14px;
+}
+.srv-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; opacity: .75;
+}
+.srv-chip {
+    padding: 5px 14px; border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 99px; background: rgba(255,255,255,0.08);
+    color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all .15s;
+}
+.srv-chip:hover:not(.active) { background: rgba(255,255,255,0.18); }
+.srv-chip.active { background: #fff; color: #5a67d8; border-color: #fff; }
+
+.card {
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    padding: 20px; margin-bottom: 16px;
+}
+.card-title {
+    font-size: 14px; font-weight: 700; color: var(--text);
+    margin-bottom: 12px; padding-bottom: 10px;
+    border-bottom: 2px solid #f0f2ff;
+}
+
+textarea.paste-area {
+    width: 100%; min-height: 150px; resize: vertical;
+    padding: 14px; border: 2px solid var(--border); border-radius: 12px;
+    font-family: 'Consolas', 'Courier New', monospace; font-size: 13px;
+    color: var(--text); outline: none; transition: border-color .2s;
+    background: #fafbff; line-height: 1.6;
+}
+textarea.paste-area:focus { border-color: var(--primary); }
+.hint { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 12px 22px; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--purple));
+    color: white; box-shadow: 0 3px 10px rgba(102,126,234,.3);
+}
+.btn-primary:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
+.btn-success { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+.btn-success:hover:not(:disabled) { opacity: 0.92; }
+.btn-outline { background: white; color: var(--muted); border: 2px solid var(--border); }
+.btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.btn-block { width: 100%; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+.stats-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px; margin-bottom: 14px;
+}
+.stat-box { background: #f0f2ff; border-radius: 12px; padding: 12px; text-align: center; }
+.stat-num { font-size: 22px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 10.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-box.ok .stat-num { color: var(--success); }
+.stat-box.danger .stat-num { color: var(--danger); }
+
+.table-wrap {
+    overflow-x: auto; border: 1.5px solid var(--border);
+    border-radius: 12px; max-height: 340px; overflow-y: auto;
+}
+table.preview-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.preview-tbl thead th {
+    background: linear-gradient(135deg, var(--primary), var(--purple));
+    color: white; padding: 10px 12px; font-weight: 700; text-align: left;
+    position: sticky; top: 0; white-space: nowrap;
+}
+table.preview-tbl tbody td { padding: 8px 12px; border-bottom: 1px solid #eef0f6; }
+table.preview-tbl tbody tr:nth-child(even) { background: #fafbff; }
+.token-cell { font-family: 'Courier New', monospace; font-weight: 700; color: #5a67d8; }
+
+.loading-inline { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.spinner-sm {
+    border: 3px solid #f3f3f3; border-top: 3px solid var(--primary);
+    border-radius: 50%; width: 16px; height: 16px;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1e293b; color: white; padding: 12px 22px; border-radius: 99px;
+    font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    z-index: 9999; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN SCREEN ══════════════ -->
+<div id="loginScreen">
+    <div class="login-card">
+        <h1>🔑 Create Token</h1>
+        <div class="sub">Silakan login untuk melanjutkan</div>
+
+        <div class="login-error" id="loginError"></div>
+
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" class="ctrl-input" id="loginUser" placeholder="username"
+                onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="ctrl-input" id="loginPass" placeholder="password"
+                onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+
+        <label class="remember-row">
+            <input type="checkbox" id="rememberMe">
+            <span>Ingat saya (tidak perlu login lagi)</span>
+        </label>
+
+        <button class="btn btn-primary btn-block" id="btnLogin" onclick="doLogin()">
+            🔓 Login
+        </button>
+        <div id="loginLoading" style="display:none;margin-top:12px;justify-content:center;" class="loading-inline">
+            <div class="spinner-sm"></div> <span>Memeriksa...</span>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ APP SCREEN ══════════════ -->
+<div class="main" id="appScreen" style="display:none;">
+    <div class="topbar">
+        <h1>🔑 Create Token</h1>
+        <p>Paste daftar nama → generate &amp; simpan otomatis</p>
+    </div>
+
+    <div class="user-bar">
+        <div class="user-info">👤 <b id="userLabel">-</b></div>
+        <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+    </div>
+
+    <div class="srv-wrap" style="margin-bottom:16px;">
+        <span class="srv-label">Server</span>
+        <div id="srvChips" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;"></div>
+    </div>
+
+    <!-- INPUT NAMA -->
+    <div class="card">
+        <div class="card-title">📋 Daftar Nama</div>
+        <textarea class="paste-area" id="pasteInput"
+            placeholder="Tempel daftar nama di sini, satu per baris...&#10;contoh:&#10;Budi Santoso&#10;Siti Aminah&#10;Andi Wijaya"
+            oninput="onPasteInputChange()"></textarea>
+        <div class="hint" id="pasteCount" style="display:none;"></div>
+    </div>
+
+    <!-- ANGKA SETELAH NAMA -->
+    <div class="card">
+        <div class="card-title">🔢 Angka Setelah Nama</div>
+        <div class="form-group" style="margin-bottom:0;">
+            <input type="number" class="ctrl-input" id="digitInput" value="1" min="1" max="4">
+            
+        </div>
+    </div>
+
+    <!-- TOMBOL -->
+    <div class="card">
+        <button class="btn btn-primary btn-block" id="btnGenerate" onclick="generateAndSave()" disabled>
+            ⚡ Generate &amp; Simpan Token
+        </button>
+        <div id="loadingArea" style="display:none;margin-top:12px;justify-content:center;" class="loading-inline">
+            <div class="spinner-sm"></div> <span id="loadingLabel">Memproses...</span>
+        </div>
+    </div>
+
+    <!-- HASIL -->
+    <div class="card" id="resultCard" style="display:none;">
+        <div class="card-title">✅ Hasil Token</div>
+
+        <div class="stats-row">
+            <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total</div></div>
+            <div class="stat-box ok"><div class="stat-num" id="statSaved">0</div><div class="stat-label">Tersimpan</div></div>
+            <div class="stat-box danger"><div class="stat-num" id="statFail">0</div><div class="stat-label">Gagal</div></div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="preview-tbl">
+                <thead>
+                    <tr><th style="width:46px">#</th><th>Nama</th><th>Token</th></tr>
+                </thead>
+                <tbody id="resultBody"></tbody>
+            </table>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-success" onclick="copyResult()">📋 Copy Token</button>
+            <button class="btn btn-primary" onclick="downloadTxt()">⬇️ Download TXT</button>
+            <button class="btn btn-outline" onclick="resetAll()">↺ Mulai Ulang</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════ KONFIGURASI ══════════════ */
+const SERVERS = [
+  { label: 'Lidan',     domain: 'lidan-co-id.pages.dev' },
+  { label: 'Tabi',      domain: 'tabi.my.id'             },
+  { label: 'Mobeli',    domain: 'mobeli.my.id'           },
+  { label: 'TalentMap', domain: 'talentmap.my.id'        },
+];
+let activeSrvIdx = 0;
+const API_PATH_INSERT = '/api/contacts_filter_dinamis6';
+const API_PATH_BASE   = '/api/contacts_filter_dinamis7';
+const AUTH_KEY        = 'admin';
+const TABLE_DEFAULT   = 'nilai1_json';
+const TABLE_ADMINS    = 'admins';
+const DEFAULT_DIGIT   = 1;
+
+function getApiInsert() { return `https://${SERVERS[activeSrvIdx].domain}${API_PATH_INSERT}`; }
+function getApiBase()   { return `https://${SERVERS[activeSrvIdx].domain}${API_PATH_BASE}`; }
+
+/* ══════════════ STATE ══════════════ */
+let rows = [];
+let resultTokens = [];
+let loggedInUser = null;
+
+/* ══════════════ SESSION ══════════════ */
+function saveSession(user, remember) {
+  clearSession();
+  try {
+    if (remember) {
+      localStorage.setItem('ct_user', user);
+      localStorage.setItem('ct_remember', '1');
+    } else {
+      sessionStorage.setItem('ct_user', user);
+    }
+  } catch {}
+}
+function loadSession() {
+  try {
+    const lsUser = localStorage.getItem('ct_user');
+    if (lsUser) return { user: lsUser, remember: true };
+    const ssUser = sessionStorage.getItem('ct_user');
+    if (ssUser) return { user: ssUser, remember: false };
+  } catch {}
+  return null;
+}
+function clearSession() {
+  try {
+    localStorage.removeItem('ct_user');
+    localStorage.removeItem('ct_remember');
+    sessionStorage.removeItem('ct_user');
+  } catch {}
+}
+
+/* ══════════════ LOGIN ══════════════ */
+async function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const remember = document.getElementById('rememberMe').checked;
+  const errEl = document.getElementById('loginError');
+  errEl.classList.remove('show');
+
+  if (!user || !pass) {
+    errEl.textContent = 'Username dan password wajib diisi.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true;
+  document.getElementById('loginLoading').style.display = 'flex';
+
+  try {
+    const url = `${getApiBase()}?table=${TABLE_ADMINS}&x_01_eq=${encodeURIComponent(user)}&x_02_eq=${encodeURIComponent(pass)}`;
+    const res = await fetch(url, { headers: { 'X-Custom-Auth': AUTH_KEY } });
+    const data = await res.json();
+
+    if (!data.success) {
+      throw new Error(data.message || 'Gagal menghubungi server.');
+    }
+
+    const count = data.count != null ? data.count : (data.data ? data.data.length : 0);
+    if (count > 0) {
+      loggedInUser = user;
+      saveSession(user, remember);
+      showApp();
+      showToast(remember ? `👋 Selamat datang, ${user} (diingat)` : `👋 Selamat datang, ${user}`);
+    } else {
+      errEl.textContent = 'Username atau password salah.';
+      errEl.classList.add('show');
+    }
+  } catch (e) {
+    errEl.textContent = 'Error: ' + e.message;
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('loginLoading').style.display = 'none';
+  }
+}
+
+function doLogout() {
+  if (!confirm('Logout dari aplikasi?')) return;
+  clearSession();
+  loggedInUser = null;
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('rememberMe').checked = false;
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  resetAll(true);
+  showToast('🚪 Logout berhasil');
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  document.getElementById('userLabel').textContent = loggedInUser || '-';
+}
+
+/* ══════════════ SERVER CHIPS ══════════════ */
+function renderSrvChips() {
+  const wrap = document.getElementById('srvChips');
+  wrap.innerHTML = SERVERS.map((s, i) => `
+    <button class="srv-chip${i === activeSrvIdx ? ' active' : ''}"
+      onclick="switchServer(${i})">${i === activeSrvIdx ? '✓ ' : ''}${s.label}</button>
+  `).join('');
+}
+function switchServer(idx) {
+  if (idx === activeSrvIdx) return;
+  activeSrvIdx = idx;
+  renderSrvChips();
+  resetAll(true);
+  showToast(`Server: ${SERVERS[idx].label}`);
+}
+
+/* ══════════════ UTIL ══════════════ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function extractFirstNameSlug(fullName) {
+  const trimmed = String(fullName || '').trim();
+  if (!trimmed) return '';
+  const firstWord = trimmed.split(/\s+/)[0];
+  return firstWord.toLowerCase().replace(/[^a-z]/g, '');
+}
+
+/* ══════════════ PASTE INPUT ══════════════ */
+function onPasteInputChange() {
+  const lines = document.getElementById('pasteInput').value
+    .split('\n').map(l => l.trim()).filter(l => l !== '');
+  const el = document.getElementById('pasteCount');
+  if (lines.length > 0) {
+    el.style.display = ''; el.textContent = `${lines.length} nama terdeteksi`;
+  } else {
+    el.style.display = 'none';
+  }
+  document.getElementById('btnGenerate').disabled = lines.length === 0;
+}
+
+/* ══════════════ API HELPERS ══════════════ */
+async function insertToken(token, tbl) {
+  const res = await fetch(`${getApiInsert()}?table=${tbl}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': AUTH_KEY },
+    body: JSON.stringify({ x_01: token })
+  });
+  return await res.json();
+}
+async function updateToken(idX, tokenFinal, tbl) {
+  const res = await fetch(`${getApiInsert()}?table=${tbl}&id_x=${idX}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Custom-Auth': AUTH_KEY },
+    body: JSON.stringify({ x_01: tokenFinal })
+  });
+  return await res.json();
+}
+
+/* ══════════════ PROSES UTAMA ══════════════ */
+async function generateAndSave() {
+  const tbl = TABLE_DEFAULT;
+
+  // Ambil angka setelah nama dari input user (1–4)
+  const digitInput = document.getElementById('digitInput').value;
+  const digitLen = Math.max(1, Math.min(4, parseInt(digitInput) || DEFAULT_DIGIT));
+
+  const names = document.getElementById('pasteInput').value
+    .split('\n').map(l => l.trim()).filter(l => l !== '');
+
+  if (names.length === 0) { alert('Tidak ada nama yang terbaca.'); return; }
+
+  document.getElementById('loadingArea').style.display = 'flex';
+  document.getElementById('btnGenerate').disabled = true;
+  document.getElementById('resultCard').style.display = 'none';
+
+  rows = names.map((nama, i) => {
+    const slug = extractFirstNameSlug(nama);
+    const tokenDasar = slug ? (slug + String(digitLen)) : '';
+    return { idx: i + 1, nama, token: tokenDasar, status: 'pending' };
+  });
+
+  let ok = 0, fail = 0;
+  const savedRows = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    document.getElementById('loadingLabel').textContent =
+      `Menyimpan ke server... (${i + 1}/${rows.length})`;
+
+    if (!row.token) { row.status = 'skip'; fail++; continue; }
+
+    try {
+      const ins = await insertToken(row.token, tbl);
+      if (!ins.success) {
+        row.status = 'error';
+        fail++;
+        continue;
+      }
+      const idX = ins.id_x;
+      const tokenFinal = row.token + idX;
+
+      try {
+        const upd = await updateToken(idX, tokenFinal, tbl);
+        if (upd.success) {
+          row.token = tokenFinal;
+          row.status = 'saved';
+          ok++;
+          savedRows.push({ nama: row.nama, token: tokenFinal });
+        } else {
+          row.status = 'saved';
+          ok++;
+          savedRows.push({ nama: row.nama, token: row.token });
+        }
+      } catch {
+        row.status = 'saved';
+        ok++;
+        savedRows.push({ nama: row.nama, token: row.token });
+      }
+    } catch (e) {
+      row.status = 'error';
+      fail++;
+    }
+  }
+
+  resultTokens = savedRows;
+
+  renderResult();
+  document.getElementById('statTotal').textContent = rows.length;
+  document.getElementById('statSaved').textContent = ok;
+  document.getElementById('statFail').textContent = fail;
+  document.getElementById('resultCard').style.display = 'block';
+  document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast(`✅ ${ok} token tersimpan${fail ? `, ${fail} gagal` : ''}`);
+
+  document.getElementById('loadingArea').style.display = 'none';
+  document.getElementById('btnGenerate').disabled = false;
+}
+
+function renderResult() {
+  const body = document.getElementById('resultBody');
+  body.innerHTML = '';
+  for (const row of rows) {
+    const tr = document.createElement('tr');
+    const tokenCell = row.token
+      ? `<span class="token-cell">${escHtml(row.token)}</span>`
+      : '<span style="color:var(--muted)">-</span>';
+    tr.innerHTML = `<td>${row.idx}</td><td>${escHtml(row.nama)}</td><td>${tokenCell}</td>`;
+    body.appendChild(tr);
+  }
+}
+
+/* ══════════════ COPY & DOWNLOAD ══════════════ */
+function copyResult() {
+  if (resultTokens.length === 0) { alert('Belum ada token.'); return; }
+  const text = resultTokens.map(r => r.token).join('\n');
+  navigator.clipboard.writeText(text)
+    .then(() => showToast(`📋 ${resultTokens.length} token dicopy`))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('📋 Token dicopy');
+    });
+}
+
+function downloadTxt() {
+  if (resultTokens.length === 0) { alert('Belum ada token.'); return; }
+  const text = resultTokens.map(r => r.token).join('\n');
+  const ts = new Date();
+  const stamp = `${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}`;
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `token_${stamp}.txt`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('⬇️ File TXT diunduh');
+}
+
+/* ══════════════ RESET ══════════════ */
+function resetAll(silent) {
+  if (!silent && !confirm('Mulai ulang? Hasil yang belum dicopy/didownload akan hilang.')) return;
+  document.getElementById('pasteInput').value = '';
+  document.getElementById('pasteCount').style.display = 'none';
+  document.getElementById('digitInput').value = DEFAULT_DIGIT;
+  rows = []; resultTokens = [];
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('btnGenerate').disabled = true;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ══════════════ INIT ══════════════ */
+renderSrvChips();
+
+(function initSession() {
+  const s = loadSession();
+  if (s) {
+    loggedInUser = s.user;
+    showApp();
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+})();
+</script>
+</body>
+</html>
