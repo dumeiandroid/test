@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logout – Lidan Psikologi</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',system-ui,sans-serif;
+    background:linear-gradient(135deg,#1e1b4b 0%,#3730a3 50%,#1d4ed8 100%);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 16px;
+    color:#1e293b;
+  }
+  .card{
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+    padding:36px 28px;
+    max-width:420px;
+    width:100%;
+    text-align:center;
+    animation:popIn .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  .icon{font-size:3.5em;margin-bottom:14px;line-height:1}
+  .title{font-size:1.35em;font-weight:800;color:#1e293b;margin-bottom:8px}
+  .sub{font-size:.9em;color:#64748b;line-height:1.7;margin-bottom:22px}
+  .progress-track{
+    height:8px;background:#e2e8f0;border-radius:99px;
+    overflow:hidden;margin-bottom:22px;
+  }
+  .progress-fill{
+    height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#16a34a);
+    border-radius:99px;transition:width .3s ease;
+  }
+  .status{
+    font-size:.82em;color:#64748b;font-weight:600;
+    min-height:20px;margin-bottom:18px;
+  }
+  .status.done{color:#16a34a}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:13px 24px;border:none;border-radius:12px;
+    font-size:.95em;font-weight:700;cursor:pointer;
+    font-family:inherit;transition:all .2s;
+    text-decoration:none;
+  }
+  .btn-primary{background:#2563eb;color:#fff}
+  .btn-primary:hover{background:#1d4ed8;transform:translateY(-1px)}
+  .btn-outline{
+    background:#f1f5f9;color:#475569;
+    border:2px solid #e2e8f0;margin-top:10px;
+  }
+  .btn-outline:hover{border-color:#2563eb;color:#2563eb}
+  .detail-box{
+    background:#f0fdf4;border:1px solid #bbf7d0;
+    border-radius:10px;padding:12px 16px;
+    margin-bottom:18px;text-align:left;
+    font-size:.78em;color:#166534;
+    line-height:1.6;display:none;
+  }
+  .detail-box.show{display:block}
+  .detail-box .db-title{
+    font-weight:800;font-size:.95em;margin-bottom:6px;
+    color:#15803d;text-transform:uppercase;letter-spacing:.05em;
+  }
+  .detail-box ul{margin:6px 0 0 18px;padding:0}
+  .detail-box li{margin-bottom:3px}
+  .auto-redirect{
+    font-size:.78em;color:#94a3b8;margin-top:14px;
+  }
+  .spinner-sm{
+    width:16px;height:16px;
+    border:3px solid rgba(255,255,255,.35);
+    border-top-color:#fff;border-radius:50%;
+    animation:spin .75s linear infinite;
+    display:inline-block;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="icon" id="mainIcon">🔓</div>
+  <div class="title" id="mainTitle">Logout Peserta</div>
+  <p class="sub" id="mainSub">
+    Semua data sesi tes (token, biodata, jawaban, progres) akan dihapus dari perangkat ini.
+    Anda dapat memulai tes kembali dengan token baru.
+  </p>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="status" id="statusText">Menunggu konfirmasi...</div>
+
+  <div class="detail-box" id="detailBox">
+    <div class="db-title">✅ Data yang dibersihkan:</div>
+    <ul id="detailList"></ul>
+  </div>
+
+  <button class="btn btn-primary" id="btnLogout" onclick="doFullLogout()">
+    🔓 Logout Sekarang
+  </button>
+
+  <a href="eduxecla.html" class="btn btn-outline" id="btnKembali" style="display:none">
+    🏠 Kembali ke Halaman Utama
+  </a>
+
+  <div class="auto-redirect" id="autoRedirect" style="display:none">
+    Mengalihkan otomatis dalam <span id="countdown">3</span> detik...
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// KONFIGURASI
+// ════════════════════════════════════════════════════════════
+// Daftar prefix key localStorage yang HARUS dihapus (terkait sesi tes).
+// Key di luar daftar ini TIDAK dihapus (mis. preferensi UI, cache lain).
+const TEST_KEY_PREFIXES = [
+  'token',        // token peserta
+  'db_id',        // id_x peserta di tabel
+  '_p',           // nama paket aktif
+  '_st_',         // state subtes (per _taskId)
+  '_activeTask',  // subtes yang sedang aktif (untuk resume)
+  '_krep_state',  // state Kraepelin
+  '_cu_bak_',     // backup progres lokal (failover)
+  '_bio_bak',     // backup biodata (fallback lama)
+];
+
+// Key yang PASTI dihapus tanpa cek prefix (exact match)
+const TEST_EXACT_KEYS = [
+  'token',
+  'db_id',
+  '_p',
+  '_activeTask',
+  '_krep_state',
+  '_bio_bak',
+];
+
+// Halaman utama tujuan redirect setelah logout selesai.
+const HOME_URL = 'eduxecla.html';
+
+// ════════════════════════════════════════════════════════════
+// LOGIKA PEMBERSIHAN
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Kumpulkan semua key localStorage yang cocok dengan prefix/exact
+ * yang terdaftar di atas.
+ */
+function getTestKeys() {
+  const found = new Set();
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+    // exact match
+    if (TEST_EXACT_KEYS.includes(key)) { found.add(key); continue; }
+    // prefix match
+    for (const prefix of TEST_KEY_PREFIXES) {
+      if (prefix.endsWith('_')) {
+        // prefix dengan underscore → harus diawali tepat
+        if (key.startsWith(prefix)) { found.add(key); break; }
+      } else {
+        // prefix tanpa underscore → cocokkan exact atau diawali prefix + '_'
+        if (key === prefix || key.startsWith(prefix + '_')) { found.add(key); break; }
+      }
+    }
+  }
+  return [...found];
+}
+
+/**
+ * Update progress bar & status text.
+ */
+function setProgress(pct, statusMsg, isDone) {
+  document.getElementById('progressFill').style.width = pct + '%';
+  const st = document.getElementById('statusText');
+  st.textContent = statusMsg;
+  st.className = 'status' + (isDone ? ' done' : '');
+}
+
+/**
+ * Tampilkan daftar key yang dihapus di kotak detail.
+ */
+function showDetailList(keys) {
+  const box = document.getElementById('detailBox');
+  const list = document.getElementById('detailList');
+  if (!keys.length) {
+    list.innerHTML = '<li><em>Tidak ada data sesi tes yang tersimpan.</em></li>';
+  } else {
+    list.innerHTML = keys.map(k => `<li><code>${escapeHtml(k)}</code></li>`).join('');
+  }
+  box.classList.add('show');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/**
+ * Proses utama logout:
+ * 1. Kumpulkan key yang akan dihapus
+ * 2. Hapus satu per satu dengan animasi progress
+ * 3. Tampilkan tombol kembali + auto redirect
+ */
+async function doFullLogout() {
+  const btn = document.getElementById('btnLogout');
+  const btnKembali = document.getElementById('btnKembali');
+  const autoRedir = document.getElementById('autoRedirect');
+  const icon = document.getElementById('mainIcon');
+  const title = document.getElementById('mainTitle');
+  const sub = document.getElementById('mainSub');
+
+  // Disable tombol & ganti isi
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-sm"></span> Memproses...';
+
+  setProgress(5, 'Mengumpulkan data sesi...', false);
+
+  // Kumpulkan key
+  const keys = getTestKeys();
+  const total = keys.length;
+
+  // Jika tidak ada key, langsung selesai
+  if (total === 0) {
+    setProgress(100, 'Tidak ada data sesi yang perlu dihapus.', true);
+    finishLogout();
+    return;
+  }
+
+  // Hapus satu per satu dengan jeda kecil agar user melihat progress
+  let deleted = 0;
+  for (const key of keys) {
+    try { localStorage.removeItem(key); } catch (e) { /* ignore */ }
+    deleted++;
+    const pct = Math.round((deleted / total) * 90) + 5; // 5% → 95%
+    setProgress(pct, `Menghapus data... (${deleted}/${total})`, false);
+    // jeda kecil biar animasi terlihat (50ms per key, max total ~1.5s)
+    await new Promise(r => setTimeout(r, Math.min(50, 1500 / total)));
+  }
+
+  // Verifikasi ulang — pastikan benar-benar bersih
+  const sisa = getTestKeys();
+  if (sisa.length > 0) {
+    // Coba sekali lagi
+    sisa.forEach(k => { try { localStorage.removeItem(k); } catch {} });
+  }
+
+  setProgress(100, 'Semua data sesi berhasil dihapus!', true);
+  showDetailList(keys);
+
+  // Update tampilan card
+  icon.textContent = '✅';
+  title.textContent = 'Logout Berhasil';
+  sub.innerHTML = 'Sesi tes Anda telah dibersihkan.<br>Silakan masukkan token baru untuk memulai tes kembali.';
+
+  // Tampilkan tombol kembali
+  btn.style.display = 'none';
+  btnKembali.style.display = 'inline-flex';
+
+  // Auto redirect
+  let cd = 3;
+  autoRedir.style.display = 'block';
+  const cdEl = document.getElementById('countdown');
+  cdEl.textContent = cd;
+  const cdTimer = setInterval(() => {
+    cd--;
+    cdEl.textContent = cd;
+    if (cd <= 0) {
+      clearInterval(cdTimer);
+      window.location.href = HOME_URL;
+    }
+  }, 1000);
+}
+
+/**
+ * Selesai tanpa ada key yang dihapus.
+ */
+function finishLogout() {
+  const icon = document.getElementById('mainIcon');
+  const title = document.getElementById('mainTitle');
+  const sub = document.getElementById('mainSub');
+  const btn = document.getElementById('btnLogout');
+  const btnKembali = document.getElementById('btnKembali');
+  const autoRedir = document.getElementById('autoRedirect');
+
+  showDetailList([]);
+
+  icon.textContent = 'ℹ️';
+  title.textContent = 'Tidak Ada Sesi Aktif';
+  sub.innerHTML = 'Tidak ditemukan data sesi tes di perangkat ini.<br>Anda dapat langsung kembali ke halaman utama.';
+
+  btn.style.display = 'none';
+  btnKembali.style.display = 'inline-flex';
+
+  let cd = 3;
+  autoRedir.style.display = 'block';
+  const cdEl = document.getElementById('countdown');
+  cdEl.textContent = cd;
+  const cdTimer = setInterval(() => {
+    cd--;
+    cdEl.textContent = cd;
+    if (cd <= 0) {
+      clearInterval(cdTimer);
+      window.location.href = HOME_URL;
+    }
+  }, 1000);
+}
+
+// ════════════════════════════════════════════════════════════
+// AUTO-LOGOUT jika URL diberi ?auto=1
+// ════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('auto') === '1') {
+    doFullLogout();
+  }
+});
+</script>
+</body>
+</html>
