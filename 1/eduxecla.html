@@ -279,6 +279,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 #btnAmbilSelfie{background:var(--primary);color:#fff}
 #btnUlangSelfie{background:#f1f5f9;color:var(--text);display:none}
 #btnKirimSelfie{background:var(--success);color:#fff;display:none}
+#btnLewatiSelfie{background:#fff;color:var(--muted);border:2px solid var(--border)!important;display:none}
+#btnLewatiSelfie:hover{border-color:var(--primary)!important;color:var(--primary)}
+#selfieErrMsg{display:none;max-width:360px;margin:0 auto 14px;padding:10px 14px;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:10px;font-size:.85em;line-height:1.5;font-weight:600}
 .selfie-loading{display:none;flex-direction:column;align-items:center;gap:12px;padding:24px 0}
 .selfie-loading p{color:var(--muted);font-size:.88em}
 </style>
@@ -382,6 +385,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div id="selfieVideoWrap">
       <video id="selfieVideo" autoplay playsinline muted></video>
     </div>
+    <div id="selfieErrMsg"></div>
     <canvas id="selfieCanvas"></canvas>
 
     <!-- Preview setelah capture -->
@@ -399,6 +403,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <button id="btnAmbilSelfie" onclick="ambilSelfie()">📷 Ambil Foto</button>
       <button id="btnUlangSelfie" onclick="ulangSelfie()">🔄 Foto Ulang</button>
       <button id="btnKirimSelfie" onclick="kirimSelfie()">✅ Gunakan Foto Ini & Lanjutkan</button>
+      <button id="btnLewatiSelfie" type="button" onclick="lewatiSelfie()">Lewati (tanpa foto) →</button>
     </div>
   </div>
 </div>
@@ -579,6 +584,17 @@ const CONFIG = {
     tampilkanIsiContoh: true,
   },
 
+  // ── 2b-2. SELFIE (foto verifikasi) ────────────────────────────
+  selfie: {
+    // true  = (DEFAULT) tombol "Lewati (tanpa foto)" ditampilkan di layar selfie,
+    //         sehingga peserta yang komputernya tidak punya kamera / kamera ditolak /
+    //         error tetap bisa lanjut mengerjakan tes. Foto dicatat kosong dan
+    //         ditandai selfie_dilewati:true di biodata (x_02).
+    // false = selfie WAJIB. Tidak ada tombol lewati; kalau kamera gagal diakses,
+    //         peserta dikembalikan ke form seperti perilaku lama.
+    bolehLewati: true,
+  },
+
   // ── 2c. KREPLIN OVERRIDE (percepat durasi untuk testing) ──────
   kreplinOverride: {
     // true  = pakai detikPerKolom di bawah ini (mengabaikan nilai dari kreplin.txt).
@@ -691,7 +707,10 @@ const FRAGMENT_BASE  = CONFIG.fragment.base;
 const BIODATA_FILE   = CONFIG.fragment.biodataFile;
 const PENUTUP_FILE   = CONFIG.fragment.penutupFile;
 const TAMPILKAN_ISI_CONTOH = CONFIG.cpmi.tampilkanIsiContoh !== false;
-const KREPLIN_OVERRIDE_AKTIF = !!(CONFIG.kreplinOverride && CONFIG.kreplinOverride.aktif);
+const SELFIE_BOLEH_LEWATI = !(CONFIG.selfie && CONFIG.selfie.bolehLewati === false); // default ON
+// Selfie dianggap "sudah beres" kalau ada foto ATAU sudah dilewati (supaya tidak diminta ulang)
+const selfieBeres = b => !!(b && (b.foto_selfie || b.selfie_dilewati));
+const KREPLIN_OVERRIDE_AKTIF =!!(CONFIG.kreplinOverride && CONFIG.kreplinOverride.aktif);
 const KREPLIN_OVERRIDE_DETIK = (CONFIG.kreplinOverride && CONFIG.kreplinOverride.detikPerKolom) || 3;
 
 const AUTO_PAKET = CONFIG.paket.aktif;
@@ -976,7 +995,7 @@ async function loginDenganTokenMain() {
     // Biodata sudah ada tapi SELFIE belum (mis. mode checkpoint N=1: token diminta
     // tepat setelah biodata, sebelum selfie) → arahkan langsung ke kamera selfie,
     // BUKAN ke form biodata (sudah terisi) atau langsung ke tes (selfie wajib dulu).
-    if (!bioCek.foto_selfie) {
+    if (!selfieBeres(bioCek)) {
       hl();
       _updateExistingId = String(cu.id_x);
       _pendingBio = bioCek;
@@ -1036,13 +1055,40 @@ function bukaKameraSelfie(){
   $('btnAmbilSelfie').style.display='block';
   $('btnUlangSelfie').style.display='none';
   $('btnKirimSelfie').style.display='none';
+  $('btnLewatiSelfie').style.display=SELFIE_BOLEH_LEWATI?'block':'none';
+  $('selfieErrMsg').style.display='none';
   ss('screenSelfie');
-  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:960}}})
-    .then(s=>{_selfieStream=s;$('selfieVideo').srcObject=s;})
-    .catch(()=>{
+  // Kamera tidak tersedia / ditolak / error:
+  //  - bolehLewati ON  → tetap di layar selfie, sembunyikan kamera, peserta bisa klik "Lewati".
+  //  - bolehLewati OFF → perilaku lama (alert + kembali ke form).
+  const kameraGagal=()=>{
+    if(SELFIE_BOLEH_LEWATI){
+      $('selfieVideoWrap').style.display='none';
+      $('btnAmbilSelfie').style.display='none';
+      const em=$('selfieErrMsg');
+      em.textContent='Kamera tidak terdeteksi atau izin kamera ditolak. Anda dapat melanjutkan tes dengan menekan tombol "Lewati".';
+      em.style.display='block';
+    }else{
       alert('Gagal mengakses kamera. Pastikan izin kamera diberikan lalu coba lagi.');
       ss('screenDaftar');
-    });
+    }
+  };
+  try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){kameraGagal();return;}
+    navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:960}}})
+      .then(s=>{
+        // Kalau peserta sudah keburu pindah layar (mis. klik Lewati), langsung matikan kamera
+        if(!$('screenSelfie').classList.contains('active')){s.getTracks().forEach(t=>t.stop());return;}
+        _selfieStream=s;$('selfieVideo').srcObject=s;
+      })
+      .catch(kameraGagal);
+  }catch(e){kameraGagal();}
+}
+
+// Peserta memilih melewati selfie → simpan biodata tanpa foto, lanjut alur normal.
+function lewatiSelfie(){
+  if(!SELFIE_BOLEH_LEWATI)return;
+  kirimSelfie(true);
 }
 
 function tutupKameraSelfie(){
@@ -1079,12 +1125,23 @@ function ulangSelfie(){
   $('btnKirimSelfie').style.display='none';
 }
 
-async function kirimSelfie(){
-  if(!_selfieBlob){alert('Silakan ambil foto terlebih dahulu.');return;}
+async function kirimSelfie(dilewati){
+  dilewati=(dilewati===true); // onclick tombol lain memanggil tanpa argumen
+  if(dilewati&&!SELFIE_BOLEH_LEWATI)return;
+  if(!dilewati&&!_selfieBlob){alert('Silakan ambil foto terlebih dahulu.');return;}
   $('selfieActions').style.display='none';
   const loadEl=$('selfieLoading');loadEl.style.display='flex';
   const stTxt=$('selfieLoadingText');
   try{
+    if(dilewati){
+      // 1+2 (dilewati). Tanpa upload: foto kosong, tandai selfie_dilewati supaya
+      // alur login/resume tidak meminta selfie lagi.
+      stTxt.textContent='Menyimpan data...';
+      _pendingBio.foto_selfie='';
+      _pendingBio.selfie_dilewati=true;
+      _pendingBio.selfie_dilewati_waktu=tsNow();
+      _pendingBio.nama_file=namaFile();
+    }else{
     // 1. Upload selfie ke R2
     stTxt.textContent='Mengunggah foto selfie...';
     const fn=`psikotes/selfie_${Date.now()}.jpg`;
@@ -1096,6 +1153,7 @@ async function kirimSelfie(){
     // 2. Inject URL foto ke biodata
     _pendingBio.foto_selfie=fotoUrl;
     _pendingBio.nama_file=namaFile();
+    }
 
     if(_updateExistingId){
       // ── MODE UPDATE: token sudah ada (dari login token), biodata diisi pertama kali ──
@@ -2227,7 +2285,7 @@ async function prosesCheckpointToken(){
     // Biodata sudah ada tapi SELFIE belum (checkpoint N=1: token diminta tepat
     // setelah biodata, sebelum selfie) → arahkan ke kamera selfie, bukan langsung tes.
     let bioCek2={};try{bioCek2=JSON.parse(row.x_02||'{}')}catch{}
-    if(!bioCek2.foto_selfie){
+    if(!selfieBeres(bioCek2)){
       _updateExistingId=String(row.id_x);
       _pendingBio=bioCek2;
       tutupPopupCheckpointToken();
